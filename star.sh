@@ -1,7 +1,25 @@
 #!/usr/bin/env bash
 
-STAR_DIR="$HOME/.star"
-_STAR_DIR_SEPARATOR="»"
+export STAR_DIR="$HOME/.star"
+export _STAR_DIR_SEPARATOR="»"
+
+if [ -t 1 ]; then
+    # Check for truecolor support
+    if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
+        _STAR_COLOR_STAR="\033[38;2;255;131;0m"  # Orange for star names
+        _STAR_COLOR_PATH="\033[38;2;1;169;130m"  # HPE Way
+    else
+        # Use 256-color approximation
+        _STAR_COLOR_STAR="\033[38;5;214m"
+        _STAR_COLOR_PATH="\033[38;5;36m"
+    fi
+else
+    # No color for non-interactive sessions (not a TTY)
+    _STAR_COLOR_STAR=""
+    _STAR_COLOR_PATH=""
+fi
+export _STAR_COLOR_STAR
+export _STAR_COLOR_PATH
 
 # _star_prune
 # Remove all broken symlinks in the ".star" directory.
@@ -97,9 +115,13 @@ star()
     local existing_star existing_star_display target_path line
     
     # Color codes for consistent styling
+    # Universal color reset
     local COLOR_RESET="\033[0m"
-    local COLOR_STAR="\033[38;2;255;131;0m"  # Orange for star names
-    local COLOR_PATH="\033[38;2;1;169;130m"  # HPE way
+    # Cast global variables into locals to enable potential reformat without
+    # having to rename all variables inside the function
+    local COLOR_STAR="${_STAR_COLOR_STAR}"
+    local COLOR_PATH="${_STAR_COLOR_PATH}"
+
 
     # Parse the arguments
     star_to_store=""
