@@ -94,6 +94,13 @@ star()
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
     local dst_name dst_name_slash dst_basename
     local star stars_list stars_path src_dir opt current_pwd user_input force_reset
+    
+    # Color codes for consistent styling
+    local COLOR_RESET="\033[0m"
+    local COLOR_STAR="\033[38;2;255;131;0m"  # Orange for star names
+    local COLOR_PATH="\033[38;2;1;169;130m"  # HPE way
+    local COLOR_SUCCESS="\033[32m" # Green for success messages
+    local COLOR_ERROR="\033[31m"   # Red for error messages
 
     # Parse the arguments
     star_to_store=""
@@ -193,7 +200,10 @@ star()
             # do not star this directory if it is already starred (even under another name)
             stars_path=( "$(find "$STAR_DIR" -printf "%l\n")" )
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
-                echo "Directory is already starred."
+                # Find the star name for this directory
+                existing_star=$(find "$STAR_DIR" -type l -printf "%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
+                existing_star_display=${existing_star//"${_STAR_DIR_SEPARATOR}"//}
+                echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
                 return
             fi
 
@@ -217,7 +227,7 @@ star()
                     dst_basename=$(basename "${current_pwd%%"$dst_name_slash"}")
 
                     if [[ "${dst_basename}" == "/" ]]; then
-                        echo -e "Directory already starred with maximum possible path: \e[36m${dst_name_slash}\e[0m"
+                        echo -e "Directory already starred with maximum possible path: ${COLOR_STAR}${dst_name_slash}${COLOR_RESET}"
                         return
                     fi
 
@@ -228,13 +238,15 @@ star()
             else
                 dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
                 if [[ -e ${STAR_DIR}/${dst_name} ]]; then
-                    echo -e "A directory is already starred with the name \"${dst_name_slash}\": $(find "${STAR_DIR}/${dst_name_slash}" -type l -printf "\33[36m%f\33[0m -> \33[34m%l\33[0m\n")"
+                    # Get the path without adding colors in the find command
+                    target_path=$(find "${STAR_DIR}/${dst_name}" -type l -printf "%l\n")
+                    echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}"
                     return
                 fi
             fi
 
             ln -s "${src_dir}" "${STAR_DIR}/${dst_name}" || return
-            echo -e "Added new starred directory: \e[36m${dst_name//"${_STAR_DIR_SEPARATOR}"//}\e[0m -> \e[34m${src_dir}\e[0m"
+            echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}"
             ;;
         LOAD)
             if [[ ! -d "${STAR_DIR}" ]];then
@@ -254,7 +266,7 @@ star()
                 
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars[@]}" ]]; then
-                    echo -e "Invalid star index: \e[36m${star_to_load}\e[0m. Valid range is 1-${#stars[@]}."
+                    echo -e "Invalid star index: ${COLOR_STAR}${star_to_load}${COLOR_RESET}. Valid range is 1-${#stars[@]}."
                     return
                 fi
                 
@@ -267,7 +279,7 @@ star()
             fi
 
             if [[ ! -e ${STAR_DIR}/${star_to_load} ]]; then
-                echo -e "Star \e[36m${star_to_load}\e[0m does not exist."
+                echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
             else
                 cd -P "${STAR_DIR}/${star_to_load}" || return
                 # update access time
@@ -280,10 +292,15 @@ star()
             else
                 # sort according to access time (last accessed is on top)
                 # Add index numbers to the output for easy reference
-                stars_list=$(find ${STAR_DIR} -type l -printf "%As \33[36m%f\33[0m -> \33[34m%l\33[0m\n" | sort -nr | cut -d" " -f2- | column -t -s " ")
+                # Use printf to generate the formatted output with colors
+                stars_list=$(find ${STAR_DIR} -type l -printf "%As %f %l\n" | sort -nr | 
+                            awk -v star="${COLOR_STAR}" -v path="${COLOR_PATH}" -v reset="${COLOR_RESET}" \
+                            '{printf "%s%s%s -> %s%s%s\n", star, $2, reset, path, $3, reset}' | 
+                            column -t)
+                
                 index=1
                 while IFS= read -r line; do
-                    echo -e "$index:  $line"
+                    printf "%-3s  %s\n" "${index}." "$line"
                     ((index++))
                 done <<< "${stars_list//"${_STAR_DIR_SEPARATOR}"//}"
             fi
@@ -291,14 +308,14 @@ star()
         RENAME)
             if [[ -e "${STAR_DIR}/${rename_src}" ]]; then
                 if [[ -e "${STAR_DIR}/${rename_dst}" ]]; then
-                    echo -e "There is already a star named \e[36m${rename_dst}\e[0m."
+                    echo -e "There is already a star named ${COLOR_STAR}${rename_dst}${COLOR_RESET}."
                     return
                 fi
 
                 mv "${STAR_DIR}/${rename_src}" "${STAR_DIR}/${rename_dst}" || return
-                echo -e "Renamed star \e[36m${rename_src//"${_STAR_DIR_SEPARATOR}"//}\e[0m to \e[36m${rename_dst//"${_STAR_DIR_SEPARATOR}"//}\e[0m."
+                echo -e "Renamed star ${COLOR_STAR}${rename_src//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} to ${COLOR_STAR}${rename_dst//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
             else
-                echo -e "Star \e[36m${rename_src}\e[0m does not exist."
+                echo -e "Star ${COLOR_STAR}${rename_src}${COLOR_RESET} does not exist."
             fi
             ;;
         REMOVE)
@@ -310,9 +327,9 @@ star()
             for star in "${stars_to_remove[@]}"; do
                 if [[ -e "${STAR_DIR}/${star}" ]]; then
                     rm "${STAR_DIR}/${star}" || return
-                    echo -e "Removed starred directory: \e[36m${star//"${_STAR_DIR_SEPARATOR}"//}\e[0m"
+                    echo -e "Removed starred directory: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
                 else
-                    echo -e "Couldn't find any starred directory with the name: \e[36m${star//"${_STAR_DIR_SEPARATOR}"//}\e[0m"
+                    echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
                 fi
             done
             ;;
