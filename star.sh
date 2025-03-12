@@ -94,13 +94,12 @@ star()
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
     local dst_name dst_name_slash dst_basename
     local star stars_list stars_path src_dir opt current_pwd user_input force_reset
+    local existing_star existing_star_display target_path
     
     # Color codes for consistent styling
     local COLOR_RESET="\033[0m"
     local COLOR_STAR="\033[38;2;255;131;0m"  # Orange for star names
     local COLOR_PATH="\033[38;2;1;169;130m"  # HPE way
-    local COLOR_SUCCESS="\033[32m" # Green for success messages
-    local COLOR_ERROR="\033[31m"   # Red for error messages
 
     # Parse the arguments
     star_to_store=""
