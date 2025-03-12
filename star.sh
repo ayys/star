@@ -94,7 +94,7 @@ star()
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
     local dst_name dst_name_slash dst_basename
     local star stars_list stars_path src_dir opt current_pwd user_input force_reset
-    local existing_star existing_star_display target_path
+    local existing_star existing_star_display target_path line
     
     # Color codes for consistent styling
     local COLOR_RESET="\033[0m"
@@ -256,24 +256,23 @@ star()
             # Check if argument is purely numeric
             if [[ "${star_to_load}" =~ ^[0-9]+$ ]]; then
                 # Get the list of stars sorted by access time (same as LIST mode)
-                stars=()
+                stars_list=()
                 while IFS= read -r line; do
                     # Extract just the star name from each line
-                    star_name=$(echo "$line" | awk '{print $1}' | sed 's/\x1B\[[0-9;]*[mK]//g')
-                    stars+=("$star_name")
-                done < <(find ${STAR_DIR} -type l -printf "%As %f\n" | sort -nr | cut -d" " -f2-)
+                    stars_list+=("$line")
+                done < <(find "${STAR_DIR}" -type l -printf "%As %f\n" | sort -nr | cut -d" " -f2-)
                 
                 # Check if the index is valid
-                if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars[@]}" ]]; then
-                    echo -e "Invalid star index: ${COLOR_STAR}${star_to_load}${COLOR_RESET}. Valid range is 1-${#stars[@]}."
+                if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
+                    echo -e "Invalid star index: ${COLOR_STAR}${star_to_load}${COLOR_RESET}. Valid range is 1-${#stars_list[@]}."
                     return
                 fi
                 
                 # Use shell detection to handle both bash and zsh
                 if [[ -n "${ZSH_VERSION}" ]]; then
-                    star_to_load="${stars[$star_to_load]}"
+                    star_to_load="${stars_list[$star_to_load]}"
                 else
-                    star_to_load="${stars[$((star_to_load-1))]}"
+                    star_to_load="${stars_list[$((star_to_load-1))]}"
                 fi
             fi
 
