@@ -22,6 +22,64 @@ fi
 export _STAR_COLOR_STAR
 export _STAR_COLOR_PATH
 
+_star_set_variables()
+{
+    local stars_list star star_name star_path line env_var_name shell
+
+    stars_list=()
+    while IFS= read -r line; do
+        # Extract just the star name from each line
+        stars_list+=("$line")
+    done < <(find "${_STAR_DIR}" -type l -printf "%f %l\n")
+
+    for star in "${stars_list[@]}"; do
+        star_name="${star%% *}"
+        star_path="${star##* }"
+        star_name="${star_name//"${_STAR_DIR_SEPARATOR}"/_}"
+
+        # convert name to a suitable environment variable name
+        star_name=$(echo "$star_name" | tr ' +-.!?():,;=' '_' | tr -cd "a-zA-Z0-9_" | tr '[:lower:]' '[:upper:]')
+
+        env_var_name="${_STAR_ENV_PREFIX}${star_name//"${_STAR_DIR_SEPARATOR}"/_}"
+
+        if test -n "$ZSH_VERSION"; then
+            shell=zsh
+        elif test -n "$BASH_VERSION"; then
+            shell=bash
+        fi
+
+        # do not overwrite the variable if it already exists
+        case $shell in
+            zsh)    [ -z "${(P)env_var_name+x}" ] || continue ;;
+            bash)   [ -z "${!env_var_name+x}" ] || continue ;;
+        esac
+
+        export "$env_var_name"="$star_path"
+    done
+}
+
+_star_unset_variables()
+{
+    local variables_list variable env_var_name line star_path
+
+    # get all the environment variables starting with _STAR_ENV_PREFIX
+    # format: <NAME>=<VALUE>
+    variables_list=()
+    while IFS= read -r line; do
+        variables_list+=("$line")
+    done < <(env | grep "^${_STAR_ENV_PREFIX}")
+
+    for variable in "${variables_list[@]}"; do
+        # unset the variable only if its value corresponds to an existing star path (absolute path of a starred directory)
+        star_path="$(echo "$variable" | cut -d"=" -f2)"
+        if ! find "${_STAR_DIR}" -type l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
+            continue
+        fi
+        env_var_name="$(echo "$variable" | cut -d"=" -f1)"
+        unset "$env_var_name"
+    done
+}
+
 # _star_prune
 # Remove all broken symlinks in the ".star" directory.
 # A broken symlink corresponds to a starred directory that does not exist anymore.
