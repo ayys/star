@@ -327,6 +327,9 @@ star()
 
             ln -s "${src_dir}" "${_STAR_DIR}/${dst_name}" || return
             echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}"
+
+            # update environment variables
+            _star_set_variables
             ;;
         LOAD)
             if [[ ! -d "${_STAR_DIR}" ]];then
@@ -379,6 +382,10 @@ star()
             fi
             ;;
         RENAME)
+            # remove the environment variable corresponding to the old name
+            # (easier to remove all environment variables)
+            _star_unset_variables
+
             if [[ -e "${_STAR_DIR}/${rename_src}" ]]; then
                 if [[ -e "${_STAR_DIR}/${rename_dst}" ]]; then
                     echo -e "There is already a star named ${COLOR_STAR}${rename_dst}${COLOR_RESET}."
@@ -390,12 +397,18 @@ star()
             else
                 echo -e "Star ${COLOR_STAR}${rename_src}${COLOR_RESET} does not exist."
             fi
+
+            # update environment variables
+            _star_set_variables
             ;;
         REMOVE)
             if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No star can be removed, as there is not any starred directory."
                 return
             fi
+
+            # remove all env variables while their paths are still known
+            _star_unset_variables
 
             for star in "${stars_to_remove[@]}"; do
                 if [[ -e "${_STAR_DIR}/${star}" ]]; then
@@ -405,6 +418,8 @@ star()
                     echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
                 fi
             done
+            # re create the other environment variables
+            _star_set_variables
             ;;
         RESET)
             if [[ ! -d "${_STAR_DIR}" ]];then
@@ -413,6 +428,9 @@ star()
             fi
 
             if [[ "${force_reset}" -eq 1 ]]; then
+                # remove all env variables while their paths are still known
+                _star_unset_variables
+
                 rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
                 return
             fi
@@ -422,6 +440,9 @@ star()
                 read user_input
                 case $user_input in
                     [Yy]*|yes )
+                        # remove all env variables while their paths are still known
+                        _star_unset_variables
+
                         rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
                         return;;
                     # case "" corresponds to pressing enter
@@ -517,3 +538,6 @@ complete -F _star_completion sah
 
 # remove broken symlinks directly when sourcing this file
 _star_prune
+
+# set environment variables
+_star_set_variables
