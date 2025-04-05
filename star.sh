@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-export STAR_DIR="$HOME/.star"
+export _STAR_DIR="$HOME/.star"
 export _STAR_DIR_SEPARATOR="»"
+export _STAR_ENV_PREFIX="STAR_"
 
 if [ -t 1 ]; then
     # Check for truecolor support
@@ -27,12 +28,12 @@ export _STAR_COLOR_PATH
 _star_prune()
 {
     # return if the star directory does not exist
-    if [[ ! -d ${STAR_DIR} ]];then
+    if [[ ! -d ${_STAR_DIR} ]];then
         return
     fi
 
     local broken_stars_name bl
-    broken_stars_name=( $(find $STAR_DIR -xtype l -printf "%f\n") )
+    broken_stars_name=( $(find $_STAR_DIR -xtype l -printf "%f\n") )
 
     # return if no broken link was found
     if [[ ${#broken_stars_name[@]} -le 0 ]]; then
@@ -41,7 +42,7 @@ _star_prune()
 
     # else remove each broken link
     for bl in "${broken_stars_name[@]}"; do
-        rm "${STAR_DIR}/${bl}" || return
+        rm "${_STAR_DIR}/${bl}" || return
     done
 }
 
@@ -108,7 +109,7 @@ star()
 {
     _star_prune
 
-    # all variables are local except STAR_DIR and _STAR_DIR_SEPARATOR
+    # all variables are local except _STAR_DIR and _STAR_DIR_SEPARATOR
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
     local dst_name dst_name_slash dst_basename
     local star stars_list stars_list_str stars_path src_dir opt current_pwd user_input force_reset
@@ -205,8 +206,8 @@ star()
     # process the selected mode
     case ${mode} in
         STORE)
-            if [[ ! -d "${STAR_DIR}" ]]; then
-                mkdir "${STAR_DIR}"
+            if [[ ! -d "${_STAR_DIR}" ]]; then
+                mkdir "${_STAR_DIR}"
             fi
 
             src_dir=$(pwd)
@@ -219,10 +220,10 @@ star()
             fi
 
             # do not star this directory if it is already starred (even under another name)
-            stars_path=( "$(find "$STAR_DIR" -printf "%l\n")" )
+            stars_path=( "$(find "$_STAR_DIR" -printf "%l\n")" )
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
                 # Find the star name for this directory
-                existing_star=$(find "$STAR_DIR" -type l -printf "%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
+                existing_star=$(find "$_STAR_DIR" -type l -printf "%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
                 existing_star_display=${existing_star//"${_STAR_DIR_SEPARATOR}"//}
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
                 return
@@ -243,7 +244,7 @@ star()
             # The variable _STAR_DIR_SEPARATOR must not be manualy changed, as it would cause the non-recognition of previously starred directories (their star name could contain that separator).
             if [[ "${star_to_store}" == "" ]]; then
                 current_pwd=$(pwd)
-                while [[ -e ${STAR_DIR}/${dst_name} ]]; do
+                while [[ -e ${_STAR_DIR}/${dst_name} ]]; do
                     dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
                     dst_basename=$(basename "${current_pwd%%"$dst_name_slash"}")
 
@@ -258,19 +259,19 @@ star()
             # then the name should not already exist
             else
                 dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
-                if [[ -e ${STAR_DIR}/${dst_name} ]]; then
+                if [[ -e ${_STAR_DIR}/${dst_name} ]]; then
                     # Get the path without adding colors in the find command
-                    target_path=$(find "${STAR_DIR}/${dst_name}" -type l -printf "%l\n")
+                    target_path=$(find "${_STAR_DIR}/${dst_name}" -type l -printf "%l\n")
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}"
                     return
                 fi
             fi
 
-            ln -s "${src_dir}" "${STAR_DIR}/${dst_name}" || return
+            ln -s "${src_dir}" "${_STAR_DIR}/${dst_name}" || return
             echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}"
             ;;
         LOAD)
-            if [[ ! -d "${STAR_DIR}" ]];then
+            if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No star can be loaded because there is no starred directory."
                 return
             fi
@@ -282,7 +283,7 @@ star()
                 while IFS= read -r line; do
                     # Extract just the star name from each line
                     stars_list+=("$line")
-                done < <(find "${STAR_DIR}" -type l -printf "%As %f\n" | sort -nr | cut -d" " -f2-)
+                done < <(find "${_STAR_DIR}" -type l -printf "%As %f\n" | sort -nr | cut -d" " -f2-)
                 
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
@@ -298,21 +299,21 @@ star()
                 fi
             fi
 
-            if [[ ! -e ${STAR_DIR}/${star_to_load} ]]; then
+            if [[ ! -e ${_STAR_DIR}/${star_to_load} ]]; then
                 echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
             else
-                cd -P "${STAR_DIR}/${star_to_load}" || return
+                cd -P "${_STAR_DIR}/${star_to_load}" || return
                 # update access time
-                touch -ah "${STAR_DIR}/${star_to_load}"
+                touch -ah "${_STAR_DIR}/${star_to_load}"
             fi
             ;;
         LIST)
-            if [[ ! -d "${STAR_DIR}" ]];then
+            if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No \".star\" directory (will be created when adding new starred directories)."
             else
                 # sort according to access time (last accessed is on top)
                 # Use printf to generate the formatted output with colors and add index numbers to the output for easy reference
-                stars_list_str=$(find "${STAR_DIR}" -type l -printf "%As %f %l\n" | sort -nr |
+                stars_list_str=$(find "${_STAR_DIR}" -type l -printf "%As %f %l\n" | sort -nr |
                             awk -v star="${COLOR_STAR}" -v path="${COLOR_PATH}" -v reset="${COLOR_RESET}" \
                             '{printf "%s: %s%s%s -> %s%s%s\n", (NR), star, $2, reset, path, $3, reset}' |
                             column -t)
@@ -320,27 +321,27 @@ star()
             fi
             ;;
         RENAME)
-            if [[ -e "${STAR_DIR}/${rename_src}" ]]; then
-                if [[ -e "${STAR_DIR}/${rename_dst}" ]]; then
+            if [[ -e "${_STAR_DIR}/${rename_src}" ]]; then
+                if [[ -e "${_STAR_DIR}/${rename_dst}" ]]; then
                     echo -e "There is already a star named ${COLOR_STAR}${rename_dst}${COLOR_RESET}."
                     return
                 fi
 
-                mv "${STAR_DIR}/${rename_src}" "${STAR_DIR}/${rename_dst}" || return
+                mv "${_STAR_DIR}/${rename_src}" "${_STAR_DIR}/${rename_dst}" || return
                 echo -e "Renamed star ${COLOR_STAR}${rename_src//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} to ${COLOR_STAR}${rename_dst//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
             else
                 echo -e "Star ${COLOR_STAR}${rename_src}${COLOR_RESET} does not exist."
             fi
             ;;
         REMOVE)
-            if [[ ! -d "${STAR_DIR}" ]];then
+            if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No star can be removed, as there is not any starred directory."
                 return
             fi
 
             for star in "${stars_to_remove[@]}"; do
-                if [[ -e "${STAR_DIR}/${star}" ]]; then
-                    rm "${STAR_DIR}/${star}" || return
+                if [[ -e "${_STAR_DIR}/${star}" ]]; then
+                    rm "${_STAR_DIR}/${star}" || return
                     echo -e "Removed starred directory: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
                 else
                     echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
@@ -348,13 +349,13 @@ star()
             done
             ;;
         RESET)
-            if [[ ! -d "${STAR_DIR}" ]];then
+            if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No \".star\" directory to remove."
                 return
             fi
 
             if [[ "${force_reset}" -eq 1 ]]; then
-                rm -r "${STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
+                rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
                 return
             fi
 
@@ -363,7 +364,7 @@ star()
                 read user_input
                 case $user_input in
                     [Yy]*|yes )
-                        rm -r "${STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
+                        rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
                         return;;
                     # case "" corresponds to pressing enter
                     # by default, pressing enter aborts the reset
@@ -407,7 +408,7 @@ _star_completion()
     second_cw="${COMP_WORDS[COMP_CWORD-COMP_CWORD+1]}"
 
     # get list of stars only if ".star" directory exists
-    stars_list=$([[ -d "${STAR_DIR}" ]] && find ${STAR_DIR} -type l -printf "%f ")
+    stars_list=$([[ -d "${_STAR_DIR}" ]] && find ${_STAR_DIR} -type l -printf "%f ")
 
     # in REMOVE mode: suggest all starred directories, even after selecting a first star to remove
     if [[ "${first_cw}" == "srm" \
