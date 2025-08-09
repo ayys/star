@@ -70,10 +70,10 @@ MODE
 
     load, l [STAR]
         Navigate (cd) into the starred directory.
-        Equivalent to \"star list\" when no starred directory is given.
+        Equivalent to "star list" when no starred directory is given.
 
         STAR should be the name or index of a starred directory.
-        (one that is listed using \"star list\").
+        (one that is listed using "star list").
 
     rename <EXISTING_STAR> <NEW_STAR_NAME>
         Rename an existing star.
@@ -84,7 +84,7 @@ MODE
         STAR should be the name of a starred directory.
 
     reset [-f|--force]
-        Remove the \".star\" directory (hence remove the starred directories).
+        Remove the ".star" directory (hence remove the starred directories).
         The argument -f or --force will force the reset without prompting the user.
 
     help, h, --help, -h
@@ -93,13 +93,13 @@ MODE
 ALIASES
 The following aliases are provided:
     sL
-        corresponds to \"star list\"
+        corresponds to "star list"
     sl
-        corresponds to \"star load\"
+        corresponds to "star load"
     srm, unstar
-        both corresponds to \"star remove\"
+        both corresponds to "star remove"
     sa, sah
-        both corresponds to \"star add\"
+        both corresponds to "star add"
 
 EOF
 }
