@@ -136,6 +136,7 @@ star()
         # remove multiple stars
         if [[ ${mode} == REMOVE ]]; then
             stars_to_remove+=("${opt//\//"${_STAR_DIR_SEPARATOR}"}")
+            continue
         fi
 
         case "$opt" in
