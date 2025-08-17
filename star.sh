@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 
+# Directory in which to store the symlinks (stars)
+# Will be created if it does not exist, and will be removed when resetting star
+export _STAR_DIR="$HOME/.star"
+
 # Enable (yes) or disable (no) environment variables
 export _STAR_EXPORT_ENV_VARIABLES="yes"
 
-export _STAR_DIR="$HOME/.star"
-export _STAR_DIR_SEPARATOR="»"
+# The common prefix of the environment variables created according to the star names
 export _STAR_ENV_PREFIX="STAR_"
+
+# A character used to replace slashes in the star names
+# This should not be changed
+export _STAR_DIR_SEPARATOR="»"
 
 if [ -t 1 ]; then
     # Check for truecolor support

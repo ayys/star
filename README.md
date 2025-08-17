@@ -27,6 +27,17 @@ or `.zshrc`:
 echo "source $(pwd)/star.sh" >> ~/.zshrc
 ```
 
+### Customization
+
+You can customize star by editing the following variables at the top of the `star.sh` file:
+
+| Variable | Value | Description |
+| - | - | - |
+| `_STAR_EXPORT_ENV_VARIABLES` | `yes\|no` | Enable or disable [environment variables](#environment-variables). |
+| `_STAR_ENV_PREFIX` | String composed of upper case letters and underscores | The common prefix of the environment variables created according to the star names |
+| `_STAR_DIR` | Path | Directory in which to store the symbolink links (stars). Will be created if it does not exist. Will be removed when resetting star. |
+
+I strongly advise against modifying the value of `_STAR_DIR_SEPARATOR`.
 
 ## Usage
 
@@ -141,6 +152,31 @@ fruchix@debian:~/Documents/star$ sl my/docs
 fruchix@debian:~/Documents$ unstar my/docs
 Removed starred directory: my/docs
 ```
+
+## Environment variables
+
+To allow users to list, copy or even archive their files located in a starred directory, `star` exports environment variables that leads to them.
+
+For each starred directory, an environment variable is exported with the format: `STAR_NAME=/path/to/starred/directory`. 
+
+For example, with the following stars:
+- work
+- one-drive
+- projects/star
+
+The following environment variables will be exported:
+- STAR_WORK
+- STAR_ONE_DRIVE
+- STAR_PROJECTS_STAR
+
+By default, the prefix of the environment variable is "STAR_", but it can be edited by changing the value of `_STAR_ENV_PREFIX` (see [Customization](#customization)).
+
+This default prefix allows users to type `$STAR` then use tab and autocompletion to select a starred directory.
+
+Example usages:
+- List files in starred directory: `ls $STAR_WORK`
+- Copy a file: `cp $STAR_ONE_DRIVE/myfile .`
+
 
 ## License
 
