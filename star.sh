@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Enable (yes) or disable (no) environment variables
+export _STAR_EXPORT_ENV_VARIABLES="yes"
+
 export _STAR_DIR="$HOME/.star"
 export _STAR_DIR_SEPARATOR="»"
 export _STAR_ENV_PREFIX="STAR_"
@@ -24,6 +27,10 @@ export _STAR_COLOR_PATH
 
 _star_set_variables()
 {
+    if [[ $_STAR_EXPORT_ENV_VARIABLES != "yes" ]]; then
+        return
+    fi
+
     local stars_list star star_name star_path line env_var_name shell
 
     stars_list=()
