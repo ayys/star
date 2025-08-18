@@ -37,6 +37,10 @@ _star_set_variables()
     if [[ $_STAR_EXPORT_ENV_VARIABLES != "yes" ]]; then
         return
     fi
+    # return if the star directory does not exist
+    if [[ ! -d ${_STAR_DIR} ]];then
+        return
+    fi
 
     local stars_list star star_name star_path line env_var_name shell
 
@@ -74,6 +78,11 @@ _star_set_variables()
 
 _star_unset_variables()
 {
+    # return if the star directory does not exist
+    if [[ ! -d ${_STAR_DIR} ]]; then
+        return
+    fi
+
     local variables_list variable env_var_name line star_path
 
     # get all the environment variables starting with _STAR_ENV_PREFIX
@@ -100,7 +109,7 @@ _star_unset_variables()
 _star_prune()
 {
     # return if the star directory does not exist
-    if [[ ! -d ${_STAR_DIR} ]];then
+    if [[ ! -d ${_STAR_DIR} ]]; then
         return
     fi
 
@@ -347,7 +356,7 @@ star()
             _star_set_variables
             ;;
         LOAD)
-            if [[ ! -d "${_STAR_DIR}" ]];then
+            if [[ ! -d "${_STAR_DIR}" ]]; then
                 echo "No star can be loaded because there is no starred directory."
                 return
             fi
