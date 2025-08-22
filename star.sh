@@ -123,7 +123,7 @@ _star_prune()
 
     # else remove each broken link
     for bl in "${broken_stars_name[@]}"; do
-        /bin/rm "${_STAR_DIR}/${bl}" || return
+        command rm "${_STAR_DIR}/${bl}" || return
     done
 }
 
@@ -436,7 +436,7 @@ star()
 
             for star in "${stars_to_remove[@]}"; do
                 if [[ -e "${_STAR_DIR}/${star}" ]]; then
-                    /bin/rm "${_STAR_DIR}/${star}" || return
+                    command rm "${_STAR_DIR}/${star}" || return
                     echo -e "Removed starred directory: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
                 else
                     echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
@@ -455,7 +455,7 @@ star()
                 # remove all env variables while their paths are still known
                 _star_unset_variables
 
-                /bin/rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
+                command rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
                 return
             fi
 
@@ -467,7 +467,7 @@ star()
                         # remove all env variables while their paths are still known
                         _star_unset_variables
 
-                        /bin/rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
+                        command rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
                         return;;
                     # case "" corresponds to pressing enter
                     # by default, pressing enter aborts the reset
