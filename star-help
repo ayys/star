@@ -2,7 +2,7 @@
 
 usage-add() {
     cat << EOF
-usage: star add PATH [NAME]
+Usage: star add PATH [NAME]
        star a PATH [NAME]
 
 Add a new bookmark.
@@ -20,7 +20,7 @@ EOF
 
 usage-list() {
     cat << EOF
-usage: star list
+Usage: star list
        star L
        star l
 
@@ -31,7 +31,7 @@ EOF
 
 usage-load() {
     cat << EOF
-usage: star load [STAR]
+Usage: star load [STAR]
        star l [STAR]
 
 Navigate (cd) into the bookmarked directory. Equivalent to "star list" when no bookmarked directory is given.
@@ -43,7 +43,7 @@ EOF
 
 usage-rename() {
     cat << EOF
-usage: star rename <STAR> <NEW_STAR_NAME>
+Usage: star rename <STAR> <NEW_STAR_NAME>
 
 Rename an existing bookmark.
 
@@ -59,7 +59,7 @@ EOF
 
 usage-remove() {
     cat << EOF
-usage: star remove <STAR> [STAR]...
+Usage: star remove <STAR> [STAR]...
        star rm <STAR> [STAR]...
 
 Remove one or more bookmarks.
@@ -71,7 +71,7 @@ EOF
 
 usage-reset() {
     cat << EOF
-usage: star reset [-f|--force]
+Usage: star reset [-f|--force]
 
 Remove all bookmarks and the ".star" directory.
 
@@ -82,20 +82,33 @@ EOF
 
 usage-config() {
     cat << EOF
-usage: star config [OPTION]
+Usage: star config [OPTION]
 
 Display or edit the "star" configuration.
 
+(d) default config
+
 OPTION
-    sort
-    label
-    variables
+    list.sort
+        name (d)    Sort according to bookmark's name.
+        loaded      Sort according to bookmark's most recent load (cd)
+    list.order
+        desc (d)    Descending order
+        asc         Ascending order
+    list.index
+        none        No index
+        desc (d)    Descending numeric index
+        asc         Ascending numeric index
+
+    variables       Whether to enable (yes) or disable (no) the environment variables
+        yes (d)
+        no
 EOF
 }
 
 usage-default() {
     cat << EOF
-usage: star [MODE]
+Usage: star [MODE]
 
 Dynamically bookmark and cd into directories.
 Bookmarks are called "stars".
