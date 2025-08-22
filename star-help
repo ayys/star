@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+usage-add() {
+    cat << EOF
+usage: star add PATH [NAME]
+       star a PATH [NAME]
+
+Add a new bookmark.
+
+PATH
+    Relative path of the directory to bookmark.
+    e.g. "star add ." will bookmark the current directory
+
+NAME
+    The name of the new bookmark if provided, otherwise it will use the name of the current directory.
+    - Must be unique (among all bookmarks)
+    - Can contain slashes /
+EOF
+}
+
+usage-list() {
+    cat << EOF
+usage: star list
+       star L
+       star l
+
+List all bookmarks, sorted according to last load (top ones are the last loaded bookmarks).
+Calling "star load" without parameters will trigger "star list".
+EOF
+}
+
+usage-load() {
+    cat << EOF
+usage: star load [STAR]
+       star l [STAR]
+
+Navigate (cd) into the bookmarked directory. Equivalent to "star list" when no bookmarked directory is given.
+
+STAR
+    Should be the name or index of a bookmarked directory (one that is listed using "star list").
+EOF
+}
+
+usage-rename() {
+    cat << EOF
+usage: star rename <STAR> <NEW_STAR_NAME>
+
+Rename an existing bookmark.
+
+STAR
+    Should be the name of a bookmarked directory.
+
+NEW_STAR_NAME
+    The new name of the bookmark.
+    - Must be unique (among all bookmarks)
+    - Can contain slashes /
+EOF
+}
+
+usage-remove() {
+    cat << EOF
+usage: star remove <STAR> [STAR]...
+       star rm <STAR> [STAR]...
+
+Remove one or more bookmarks.
+
+STAR
+    Should be the name of a bookmarked directory.
+EOF
+}
+
+usage-reset() {
+    cat << EOF
+usage: star reset [-f|--force]
+
+Remove all bookmarks and the ".star" directory.
+
+--force, -f
+    Force reset without prompting the user.
+EOF
+}
+
+usage-config() {
+    cat << EOF
+usage: star config [OPTION]
+
+Display or edit the "star" configuration.
+
+OPTION
+    sort
+    label
+    variables
+EOF
+}
+
+usage-default() {
+    cat << EOF
+usage: star [MODE]
+
+Dynamically bookmark and cd into directories.
+Bookmarks are called "stars".
+
+MODE
+    add     Add a new bookmark
+    list    List all bookmarks
+    load    cd into a bookmarked directory
+    rename  Change the name of a bookmark
+    remove  Remove a bookmark
+    reset   Delete all bookmarks
+
+Get more information for each mode using: star MODE --help
+EOF
+}
+
+mode=default
+
+while [[ $# -gt 0 ]]; do
+    opt="$1";
+    shift;
+    # we could remove double quotes
+    case "$opt" in
+        "--" ) break 2;;
+        "-" ) break 2;;
+        "--mode" )
+            mode="$1"
+            shift
+            modes_list=(default add list load rename remove reset config)
+
+            if [[ ! "${modes_list[*]}" =~ (^|[[:space:]])"$mode"($|[[:space:]]) ]]; then
+                echo >&2 "Invalid mode: $mode"
+                exit 2
+            fi
+
+            ;;
+        -*|--*)
+            echo >&2 "Invalid option: $opt"
+            exit 1
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$opt") # save positional arg that do not depend on a specific named arg
+            ;;
+   esac
+done
+
+usage-$mode
