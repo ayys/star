@@ -150,7 +150,8 @@ while [[ $# -gt 0 ]]; do
             exit 1
             ;;
         *)
-            POSITIONAL_ARGS+=("$opt") # save positional arg that do not depend on a specific named arg
+            echo >&2 "Invalid argument: $opt"
+            exit 1
             ;;
    esac
 done
