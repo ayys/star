@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+
+usage() {
+    cat << EOF
+Usage: star-list [MODE]... [OPTIONS]...
+
+Choose one of the following modes (exclusives):
+    -f, --format=FORMAT     Print with a custom format. See "Formatting".
+    -n, --names             Only print the star's names.
+    -p, --paths             Only print the star's paths
+
+Options:
+    -s, --sort={name|loaded}
+    -o, --order={desc|asc}
+    -i, --index={none|desc|asc}     Only with "--format".
+    -d, --dir=PATH
+
+Formatting:
+The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
+This script also provide the following formatting:
+    \i      index
+EOF
+}
+
+# Possible values for options
+MODE_NAMES="names"
+MODE_PATHS="paths"
+MODE_CUSTOM_FORMAT="custom-format"
+
+SORT_NAME="name"
+SORT_LOADED="loaded"
+
+ORDER_DESC="desc"
+ORDER_ASC="asc"
+
+INDEX_NONE="none"
+INDEX_DESC="desc"
+INDEX_ASC="asc"
+
+
+# Default values
+MODE=$MODE_NAMES
+FORMAT="\n"
+
+SORT=$SORT_NAME
+ORDER=$ORDER_DESC
+INDEX=$INDEX_DESC
+
+DIR="$HOME/.star"
+
+# TODO: source config file with environment variables
+
+list_stars() {
+    if [[ $# -lt 1 ]]; then
+        return 1
+    fi
+    local custom_format="$1"
+
+    local format=""
+    local sort_options="--numeric-sort"
+
+    # the sort is applied to the first "column"
+    # this column is delimited by the first whitespace, and will be removed before printing
+    [[ "$SORT" == "$SORT_LOADED" ]] && format="%As $format" || format="%f $format"
+
+    # one result per line
+    format="$format $custom_format\n"
+
+    # apply the sort order
+    # by default, sorting with numeric values (last loaded time) is smaller number to higher,
+    # but we want a descending order, so we need to reverse it if sort=loaded and order is desc
+    if [[ "$SORT" == "$SORT_LOADED" && "$ORDER" == "$ORDER_DESC" 
+        || "$SORT" == "$SORT_NAME" && "$ORDER" == "$ORDER_ASC" ]]; then
+        sort_options="$sort_options  --reverse"
+    fi
+
+    find "$DIR" -type l -printf "$format" | sort $sort_options | cut -d' ' -f3-
+}
+
+list_names() {
+    list_stars "%f"
+}
+
+list_paths() {
+    list_stars "%l"
+}
+
+list_custom_format() {
+    local stars
+    stars=( $(list_stars "$FORMAT") )
+    
+}
+
+main() {
+    local value
+
+    while [[ $# -gt 0 ]]; do
+        opt="$1";
+        shift;
+        case "$opt" in
+            "--" ) break 2;;
+            "-" ) break 2;;
+            "-f"|"--format="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+                FORMAT="$value"
+                MODE=$MODE_CUSTOM_FORMAT
+                ;;
+            "-p"|"--paths" )
+                MODE=$MODE_PATHS
+                ;;
+            "-n"|"--names" )
+                MODE=$MODE_NAMES
+                ;;
+            "-s"|"--sort="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ "$value" != "$SORT_NAME" && "$value" != "$SORT_LOADED" ]]; then
+                    echo "Invalid sort value: $value"
+                    usage
+                    exit 1
+                fi
+                SORT="$value"
+                ;;
+            "-o"|"--order="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ "$value" != "$ORDER_DESC" && "$value" != "$ORDER_ASC" ]]; then
+                    echo "Invalid order value: $value"
+                    usage
+                    exit 1
+                fi
+                ORDER="$value"
+                ;;
+            "-i"|"--index="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ "$value" != "$INDEX_DESC" && "$value" != "$INDEX_ASC" ]]; then
+                    echo "Invalid order value: $value"
+                    usage
+                    exit 1
+                fi
+                INDEX="$value"
+                ;;
+            "-d"|"--dir="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ ! -d "$value" ]]; then
+                    echo "Invalid dir value: $value"
+                    usage
+                    exit 1
+                fi
+                DIR="$value"
+                ;;
+            *)
+                echo >&2 "Invalid option/argument: $opt"
+                usage
+                exit 1
+                ;;
+        esac
+    done
+
+    case "$MODE" in
+        "$MODE_NAMES" )
+            list_names
+            ;;
+        "$MODE_PATHS" )
+            list_paths
+            ;;
+        "$MODE_CUSTOM_FORMAT" )
+            list_custom_format
+            ;;
+    esac
+}
+
+main "$@"
