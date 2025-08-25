@@ -97,8 +97,8 @@ OPTION
         asc         Ascending order
     list.index
         none        No index
-        desc (d)    Descending numeric index
-        asc         Ascending numeric index
+        desc        Descending numeric index
+        asc (d)     Ascending numeric index
 
     variables       Whether to enable (yes) or disable (no) the environment variables
         yes (d)
