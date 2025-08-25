@@ -18,7 +18,7 @@ Options:
 Formatting:
 The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
 This script also provide the following formatting:
-    \i      index
+    <INDEX>     will be replaced by an index
 EOF
 }
 
@@ -86,9 +86,24 @@ list_paths() {
 }
 
 list_custom_format() {
-    local stars
-    stars=( $(list_stars "$FORMAT") )
-    
+    local stars=()
+    while IFS= read -r; do
+        stars+=("$REPLY")
+    done < <(list_stars "$FORMAT")
+
+    if [[ "$FORMAT" == *"<INDEX>"* ]]; then
+        local index
+        [[ "$INDEX" == "$INDEX_ASC" ]] && index=1 || index="${#stars[@]}"
+
+        for s in "${stars[@]}"; do
+            echo "${s//<INDEX>/$index}"
+            [[ "$INDEX" == "$INDEX_ASC" ]] && ((index++)) || ((index--))
+        done
+    else
+        for s in "${stars[@]}"; do
+            echo $s
+        done
+    fi
 }
 
 main() {
