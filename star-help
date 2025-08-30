@@ -134,16 +134,19 @@ while [[ $# -gt 0 ]]; do
     case "$opt" in
         "--" ) break 2;;
         "-" ) break 2;;
-        "--mode" )
-            mode="$1"
-            shift
+        "-m"|"--mode="* )
+            if [[ ${#opt} -eq 2 ]]; then
+                mode="$1"
+                shift
+            else
+                mode="${opt#*=}"
+            fi
             modes_list=(default add list load rename remove reset config)
 
             if [[ ! "${modes_list[*]}" =~ (^|[[:space:]])"$mode"($|[[:space:]]) ]]; then
                 echo >&2 "Invalid mode: $mode"
                 exit 2
             fi
-
             ;;
         -*|--*)
             echo >&2 "Invalid option: $opt"
