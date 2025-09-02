@@ -2,23 +2,24 @@
 
 usage() {
     cat << EOF
-Usage: star-list [MODE]... [OPTIONS]...
+    Usage: star-list [MODE]... [OPTIONS]...
 
-Choose one of the following modes (exclusives):
-    -f, --format=FORMAT     Print with a custom format. See "Formatting".
-    -n, --names             Only print the star's names.
-    -p, --paths             Only print the star's paths
+    Choose one of the following modes (exclusives):
+        -f, --format=FORMAT     Print with a custom format. See "Formatting".
+        -n, --names             Only print the star's names.
+        -p, --paths             Only print the star's paths.
 
-Options:
-    -s, --sort={name|loaded}
-    -o, --order={desc|asc}
-    -i, --index={none|desc|asc}     Only with "--format".
-    -d, --dir=PATH
+    Options:
+        -s, --sort={name|loaded}
+        -o, --order={desc|asc}
+        -i, --index={none|desc|asc}     Only with "--format".
+        -d, --dir=PATH                  Relative or absolute path.
+        -b, --broken                    Only search for broken symlinks.
 
-Formatting:
-The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
-This script also provide the following formatting:
-    <INDEX>     will be replaced by an index
+    Formatting:
+    The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
+    This script also provide the following formatting:
+        <INDEX>     will be replaced by an index
 EOF
 }
 
@@ -150,7 +151,7 @@ main() {
                 fi
 
                 if [[ "$value" != "$SORT_NAME" && "$value" != "$SORT_LOADED" ]]; then
-                    echo "Invalid sort value: $value"
+                    echo -e "Invalid sort value: $value\n"
                     usage
                     exit 1
                 fi
@@ -165,7 +166,7 @@ main() {
                 fi
 
                 if [[ "$value" != "$ORDER_DESC" && "$value" != "$ORDER_ASC" ]]; then
-                    echo "Invalid order value: $value"
+                    echo -e "Invalid order value: $value\n"
                     usage
                     exit 1
                 fi
@@ -180,7 +181,7 @@ main() {
                 fi
 
                 if [[ "$value" != "$INDEX_DESC" && "$value" != "$INDEX_ASC" ]]; then
-                    echo "Invalid order value: $value"
+                    echo -e "Invalid index value: $value\n"
                     usage
                     exit 1
                 fi
@@ -195,14 +196,14 @@ main() {
                 fi
 
                 if [[ ! -d "$value" ]]; then
-                    echo "Invalid dir value: $value"
+                    echo -e "Invalid dir value: $value\n"
                     usage
                     exit 1
                 fi
                 DIR=$(realpath "$value")
                 ;;
             *)
-                echo >&2 "Invalid option/argument: $opt"
+                echo -e "Invalid option/argument: $opt\n"
                 usage
                 exit 1
                 ;;
@@ -212,12 +213,15 @@ main() {
     case "$MODE" in
         "$MODE_NAMES" )
             list_names
+            exit $?
             ;;
         "$MODE_PATHS" )
             list_paths
+            exit $?
             ;;
         "$MODE_CUSTOM_FORMAT" )
             list_custom_format
+            exit $?
             ;;
     esac
 }
