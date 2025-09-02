@@ -111,7 +111,6 @@ main() {
                 shift
                 if [[ ! -d $src_dir ]]; then
                     echo -e "Directory does not exist: '$src_dir'.\n"
-                    star-help --mode=add
                     return 1
                 fi
 
