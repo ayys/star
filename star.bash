@@ -1,6 +1,6 @@
 star() {
     local mode arg_mode arguments
-    mode=HELP
+    mode=
 
     if [ $# -eq 0 ]; then
         star-help
@@ -20,7 +20,7 @@ star() {
             return 0
             ;;
         *)
-            echo >&2 "Invalid mode: $mode"
+            echo -e "Invalid mode: $arg_mode\n"
             star-help
             return 1
             ;;

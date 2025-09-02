@@ -39,7 +39,7 @@ export _STAR_COLOR_PATH
 prune_broken_symlinks() {
     # return if the star directory does not exist
     if [[ -z ${_STAR_DIR+x} || ! -d ${_STAR_DIR} ]]; then
-        return
+        return 2
     fi
     local broken_stars_name bl line
 
@@ -52,7 +52,7 @@ prune_broken_symlinks() {
 
     # return if no broken link was found
     if [[ ${#broken_stars_name[@]} -le 0 ]]; then
-        return
+        return 0
     fi
 
     # else remove each broken link
@@ -111,10 +111,10 @@ main() {
                 shift
                 if [[ ! -d $src_dir ]]; then
                     echo -e "Directory does not exist: '$src_dir'.\n"
-                    return 1
+                    return 2
                 fi
 
-                # If there's an argument after "add", use it as star name
+                # If there's another argument, use it as star name
                 if [[ $# -gt 0 && ! "$1" =~ ^- ]]; then
                     star_to_store="$1"
                     shift
@@ -141,17 +141,19 @@ main() {
             "rename" )
                 mode=RENAME
                 if [[ $# -lt 2 ]]; then
-                    echo "Missing argument. Usage: star rename <EXISTING_STAR> <NEW_STAR_NAME>"
-                    return
+                    echo -e "Missing argument(s).\n"
+                    star-help --mode=rename
+                    return 1
                 fi
                 rename_src="${1//\//"${_STAR_DIR_SEPARATOR}"}"
                 rename_dst="${2//\//"${_STAR_DIR_SEPARATOR}"}"
                 break
                 ;;
             "rm"|"remove" )
-                if [[ $# -eq 0 ]]; then
-                    echo "Missing argument. Usage: star remove <STAR> [STAR]..."
-                    return
+                if [[ $# -lt 1 ]]; then
+                    echo -e "Missing argument(s).\n"
+                    star-help --mode=remove
+                    return 1
                 fi
                 stars_to_remove+=("${1//\//"${_STAR_DIR_SEPARATOR}"}")
                 mode=REMOVE
@@ -167,8 +169,9 @@ main() {
                 break 2
                 ;;
             *)
-                echo >&2 "Invalid mode: $opt"
-                return
+                echo -e "Invalid mode: $opt\n"
+                star-help
+                return 2
                 ;;
        esac
     done
@@ -194,7 +197,7 @@ main() {
                 existing_star=$(find "$_STAR_DIR" -type l -printf "%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
                 existing_star_display=${existing_star//"${_STAR_DIR_SEPARATOR}"//}
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
-                return
+                return 0
             fi
 
             # star names have to be unique: When adding a new starred directory using the basename of the path,
@@ -218,7 +221,7 @@ main() {
 
                     if [[ "${dst_basename}" == "/" ]]; then
                         echo -e "Directory already starred with maximum possible path: ${COLOR_STAR}${dst_name_slash}${COLOR_RESET}"
-                        return
+                        return 0
                     fi
 
                     dst_name="${dst_basename}${_STAR_DIR_SEPARATOR}${dst_name}"
@@ -231,7 +234,7 @@ main() {
                     # Get the path without adding colors in the find command
                     target_path=$(find "${_STAR_DIR}/${dst_name}" -type l -printf "%l\n")
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}"
-                    return
+                    return 0
                 fi
             fi
 
@@ -244,7 +247,7 @@ main() {
         LOAD)
             if [[ ! -d "${_STAR_DIR}" ]]; then
                 echo "No star can be loaded because there is no starred directory."
-                return
+                return 0
             fi
 
             # Check if argument is purely numeric
@@ -259,7 +262,7 @@ main() {
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
                     echo -e "Invalid star index: ${COLOR_STAR}${star_to_load}${COLOR_RESET}. Valid range is 1-${#stars_list[@]}."
-                    return
+                    return 2
                 fi
                 
                 # Use shell detection to handle both bash and zsh
@@ -299,7 +302,7 @@ main() {
             if [[ -e "${_STAR_DIR}/${rename_src}" ]]; then
                 if [[ -e "${_STAR_DIR}/${rename_dst}" ]]; then
                     echo -e "There is already a star named ${COLOR_STAR}${rename_dst}${COLOR_RESET}."
-                    return
+                    return 0
                 fi
 
                 mv "${_STAR_DIR}/${rename_src}" "${_STAR_DIR}/${rename_dst}" || return
@@ -314,7 +317,7 @@ main() {
         REMOVE)
             if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No star can be removed, as there is not any starred directory."
-                return
+                return 0
             fi
 
             # remove all env variables while their paths are still known
@@ -334,7 +337,7 @@ main() {
         RESET)
             if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No \".star\" directory to remove."
-                return
+                return 0
             fi
 
             if [[ "${force_reset}" -eq 1 ]]; then
@@ -354,12 +357,14 @@ main() {
                         _star_unset_variables
 
                         command rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
-                        return;;
+                        return 0
+                        ;;
                     # case "" corresponds to pressing enter
                     # by default, pressing enter aborts the reset
                     [Nn]*|no|"" )
                         echo "Aborting reset." 
-                        return;;
+                        return 0
+                        ;;
                     * )
                         echo "Not a valid answer.";;
                 esac
@@ -375,3 +380,4 @@ main() {
 }
 
 main "$@"
+exit $?
