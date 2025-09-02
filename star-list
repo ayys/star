@@ -76,7 +76,10 @@ list_stars() {
 
     # the sort is applied to the first "column"
     # this column is delimited by the first whitespace, and will be removed before printing
-    [[ "$SORT" == "$SORT_LOADED" ]] && format="%As $format" || format="%f $format"
+    case $SORT in
+        "$SORT_LOADED" ) format="%As $format" ;;
+        "$SORT_NAME" ) format="%f $format" ;;
+    esac
 
     # one result per line
     format="$format $custom_format\n"
@@ -116,7 +119,7 @@ list_custom_format() {
         done
     else
         for s in "${stars[@]}"; do
-            echo $s
+            echo "$s"
         done
     fi
 }
