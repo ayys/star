@@ -46,7 +46,7 @@ SORT=$SORT_LOADED
 ORDER=$ORDER_DESC
 INDEX=$INDEX_ASC
 
-DIR="$HOME/.star"
+DIR=
 
 # TODO: source config file with environment variables
 
@@ -55,6 +55,16 @@ list_stars() {
         return 1
     fi
     local custom_format="$1"
+
+    if [[ ! -n $DIR ]]; then
+        echo -e "Directory in which to search is unset. Set it with '--dir' option.\n"
+        usage
+        return 2
+    fi
+    if [[ ! -d $DIR ]]; then
+        echo -e "Directory in which to search does not exist: '$DIR'.\n"
+        return 2
+    fi
 
     local format=""
     local sort_options="--numeric-sort"
@@ -189,7 +199,7 @@ main() {
                     usage
                     exit 1
                 fi
-                DIR="$value"
+                DIR=$(realpath "$value")
                 ;;
             *)
                 echo >&2 "Invalid option/argument: $opt"
