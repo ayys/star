@@ -220,7 +220,7 @@ main() {
                     dst_basename=$(basename "${current_pwd%%"$dst_name_slash"}")
 
                     if [[ "${dst_basename}" == "/" ]]; then
-                        echo -e "Directory already starred with maximum possible path: ${COLOR_STAR}${dst_name_slash}${COLOR_RESET}"
+                        echo -e "Directory already starred with maximum possible path: ${COLOR_STAR}${dst_name_slash}${COLOR_RESET}."
                         return 0
                     fi
 
@@ -233,13 +233,17 @@ main() {
                 if [[ -e ${_STAR_DIR}/${dst_name} ]]; then
                     # Get the path without adding colors in the find command
                     target_path=$(find "${_STAR_DIR}/${dst_name}" -type l -printf "%l\n")
-                    echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}"
+                    echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
                     return 0
                 fi
             fi
 
-            ln -s "${src_dir}" "${_STAR_DIR}/${dst_name}" || return
-            echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}"
+            if ! ln -s "${src_dir}" "${_STAR_DIR}/${dst_name}"; then
+                local res=$?
+                echo -e "Failed to add a new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
+                return $res
+            fi
+            echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
 
             # update environment variables
             _star_set_variables
@@ -276,7 +280,11 @@ main() {
             if [[ ! -e ${_STAR_DIR}/${star_to_load} ]]; then
                 echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
             else
-                cd -P "${_STAR_DIR}/${star_to_load}" || return
+                if ! cd -P "${_STAR_DIR}/${star_to_load}"; then
+                    local res=$?
+                    echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\"."
+                    return $res
+                fi
                 # update access time
                 touch -ah "${_STAR_DIR}/${star_to_load}"
             fi
@@ -305,7 +313,11 @@ main() {
                     return 0
                 fi
 
-                mv "${_STAR_DIR}/${rename_src}" "${_STAR_DIR}/${rename_dst}" || return
+                if ! mv "${_STAR_DIR}/${rename_src}" "${_STAR_DIR}/${rename_dst}"; then
+                    local res=$?
+                    echo -e "Failed to rename star ${COLOR_STAR}${rename_src//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} to ${COLOR_STAR}${rename_dst//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
+                    return $res
+                fi
                 echo -e "Renamed star ${COLOR_STAR}${rename_src//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} to ${COLOR_STAR}${rename_dst//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
             else
                 echo -e "Star ${COLOR_STAR}${rename_src}${COLOR_RESET} does not exist."
@@ -325,10 +337,14 @@ main() {
 
             for star in "${stars_to_remove[@]}"; do
                 if [[ -e "${_STAR_DIR}/${star}" ]]; then
-                    command rm "${_STAR_DIR}/${star}" || return
-                    echo -e "Removed starred directory: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
+                    if ! command rm "${_STAR_DIR}/${star}"; then
+                        local res=$?
+                        echo -e "Failed to remove starred directory: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
+                        return $res
+                    fi
+                    echo -e "Removed starred directory: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
                 else
-                    echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}"
+                    echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET}."
                 fi
             done
             # re create the other environment variables
@@ -345,7 +361,7 @@ main() {
                 _star_unset_variables
 
                 command rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
-                return
+                return $?
             fi
 
             while true; do
@@ -357,7 +373,7 @@ main() {
                         _star_unset_variables
 
                         command rm -r "${_STAR_DIR}" && echo "All stars and the \".star\" directory have been removed." || echo "Failed to remove the \".star\" directory."
-                        return 0
+                        return $?
                         ;;
                     # case "" corresponds to pressing enter
                     # by default, pressing enter aborts the reset
