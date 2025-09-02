@@ -23,6 +23,8 @@ usage() {
 EOF
 }
 
+MAX_DEPTH=1
+
 # Possible values for options
 MODE_NAMES="names"
 MODE_PATHS="paths"
@@ -48,6 +50,8 @@ ORDER=$ORDER_DESC
 INDEX=$INDEX_ASC
 
 DIR=
+
+TYPE_TEST="type"
 
 # TODO: source config file with environment variables
 
@@ -85,7 +89,7 @@ list_stars() {
         sort_options="$sort_options  --reverse"
     fi
 
-    find "$DIR" -type l -printf "$format" | sort $sort_options | cut -d' ' -f3-
+    find "$DIR" -maxdepth "$MAX_DEPTH" -$TYPE_TEST l -printf "$format" | sort $sort_options | cut -d' ' -f3-
 }
 
 list_names() {
@@ -201,6 +205,9 @@ main() {
                     exit 1
                 fi
                 DIR=$(realpath "$value")
+                ;;
+            "-b"|"--broken" )
+                TYPE_TEST="xtype"
                 ;;
             *)
                 echo -e "Invalid option/argument: $opt\n"
