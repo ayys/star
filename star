@@ -32,6 +32,17 @@ fi
 export _STAR_COLOR_STAR
 export _STAR_COLOR_PATH
 
+# Color codes for consistent styling
+# Universal color reset
+export COLOR_RESET="\033[0m"
+# Cast global variables into locals to enable potential reformat without
+# having to rename all variables inside the function
+export COLOR_STAR="${_STAR_COLOR_STAR}"
+export COLOR_PATH="${_STAR_COLOR_PATH}"
+
+export DISPLAY_FORMAT="<INDEX>: ${COLOR_STAR}%f${COLOR_RESET} -> ${COLOR_PATH}%l${COLOR_RESET}"
+export DISPLAY_COLUMN_COMMAND="column -t"
+
 # TODO: move config file to $HOME/config/
 
 # Remove all broken symlinks in the ".star" directory.
@@ -69,15 +80,6 @@ main() {
     local dst_name dst_name_slash dst_basename
     local star stars_list stars_list_str stars_path src_dir opt current_pwd user_input force_reset
     local existing_star existing_star_display target_path line
-    
-    # Color codes for consistent styling
-    # Universal color reset
-    local COLOR_RESET="\033[0m"
-    # Cast global variables into locals to enable potential reformat without
-    # having to rename all variables inside the function
-    local COLOR_STAR="${_STAR_COLOR_STAR}"
-    local COLOR_PATH="${_STAR_COLOR_PATH}"
-
 
     # Parse the arguments
     star_to_store=""
@@ -190,11 +192,16 @@ main() {
                 dst_name=$(basename "${src_dir}")
             fi
 
+            # get the paths of all starred directories
+            stars_path=()
+            while IFS= read -r line; do
+                stars_path+=("$line")
+            done < <(star-list --dir="$_STAR_DIR" --paths)
+
             # do not star this directory if it is already starred (even under another name)
-            stars_path=( "$(find "$_STAR_DIR" -printf "%l\n")" )
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
-                # Find the star name for this directory
-                existing_star=$(find "$_STAR_DIR" -type l -printf "%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
+                # Find the star name for this directory's path
+                existing_star=$(star-list --dir="$_STAR_DIR" --format="%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
                 existing_star_display=${existing_star//"${_STAR_DIR_SEPARATOR}"//}
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
                 return 0
@@ -231,8 +238,8 @@ main() {
             else
                 dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
                 if [[ -e ${_STAR_DIR}/${dst_name} ]]; then
-                    # Get the path without adding colors in the find command
-                    target_path=$(find "${_STAR_DIR}/${dst_name}" -type l -printf "%l\n")
+                    # Get the path associated with star name
+                    target_path=$(star-list --dir="$_STAR_DIR" --format="%f %l\n" | grep "^${dst_name} " | head -n1 | cut -d' ' -f2)
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
                     return 0
                 fi
@@ -256,25 +263,19 @@ main() {
 
             # Check if argument is purely numeric
             if [[ "${star_to_load}" =~ ^[0-9]+$ ]]; then
-                # Get the list of stars sorted by access time (same as LIST mode)
+                # Get the list of star names
                 stars_list=()
                 while IFS= read -r line; do
-                    # Extract just the star name from each line
                     stars_list+=("$line")
-                done < <(find "${_STAR_DIR}" -type l -printf "%As %f\n" | sort -nr | cut -d" " -f2-)
-                
+                done < <(star-list --dir="${_STAR_DIR}" --names) # TODO: pass sorting parameters to star-list
+
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
                     echo -e "Invalid star index: ${COLOR_STAR}${star_to_load}${COLOR_RESET}. Valid range is 1-${#stars_list[@]}."
                     return 2
                 fi
                 
-                # Use shell detection to handle both bash and zsh
-                if [[ -n "${ZSH_VERSION}" ]]; then
-                    star_to_load="${stars_list[$star_to_load]}"
-                else
-                    star_to_load="${stars_list[$((star_to_load-1))]}"
-                fi
+                star_to_load="${stars_list[$((star_to_load-1))]}"
             fi
 
             if [[ ! -e ${_STAR_DIR}/${star_to_load} ]]; then
@@ -293,13 +294,9 @@ main() {
             if [[ ! -d "${_STAR_DIR}" ]];then
                 echo "No \".star\" directory (will be created when adding new starred directories)."
             else
-                # sort according to access time (last accessed is on top)
-                # Use printf to generate the formatted output with colors and add index numbers to the output for easy reference
-                stars_list_str=$(find "${_STAR_DIR}" -type l -printf "%As %f %l\n" | sort -nr |
-                            awk -v star="${COLOR_STAR}" -v path="${COLOR_PATH}" -v reset="${COLOR_RESET}" \
-                            '{printf "%s: %s%s%s -> %s%s%s\n", (NR), star, $2, reset, path, $3, reset}' |
-                            column -t)
-                echo "${stars_list_str//"${_STAR_DIR_SEPARATOR}"//}"
+                # TODO: pass sorting parameters to star-list
+                stars_list_str=$(star-list --dir="${_STAR_DIR}" --format="$DISPLAY_FORMAT")
+                echo "${stars_list_str//"${_STAR_DIR_SEPARATOR}"//}" | $DISPLAY_COLUMN_COMMAND
             fi
             ;;
         RENAME)
