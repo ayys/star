@@ -2,126 +2,126 @@
 
 usage-add() {
     cat << EOF
-Usage: star add PATH [NAME]
-       star a PATH [NAME]
+    Usage: star add PATH [NAME]
+           star a PATH [NAME]
 
-Add a new bookmark.
+    Add a new bookmark.
 
-PATH
-    Relative path of the directory to bookmark.
-    e.g. "star add ." will bookmark the current directory
+    PATH
+        Relative path of the directory to bookmark.
+        e.g. "star add ." will bookmark the current directory
 
-NAME
-    The name of the new bookmark if provided, otherwise it will use the name of the current directory.
-    - Must be unique (among all bookmarks)
-    - Can contain slashes /
+    NAME
+        The name of the new bookmark if provided, otherwise it will use the name of the current directory.
+        - Must be unique (among all bookmarks)
+        - Can contain slashes /
 EOF
 }
 
 usage-list() {
     cat << EOF
-Usage: star list
-       star L
-       star l
+    Usage: star list
+           star L
+           star l
 
-List all bookmarks, sorted according to last load (top ones are the last loaded bookmarks).
-Calling "star load" without parameters will trigger "star list".
+    List all bookmarks, sorted according to last load (top ones are the last loaded bookmarks).
+    Calling "star load" without parameters will trigger "star list".
 EOF
 }
 
 usage-load() {
     cat << EOF
-Usage: star load [STAR]
-       star l [STAR]
+    Usage: star load [STAR]
+           star l [STAR]
 
-Navigate (cd) into the bookmarked directory. Equivalent to "star list" when no bookmarked directory is given.
+    Navigate (cd) into the bookmarked directory. Equivalent to "star list" when no bookmarked directory is given.
 
-STAR
-    Should be the name or index of a bookmarked directory (one that is listed using "star list").
+    STAR
+        Should be the name or index of a bookmarked directory (one that is listed using "star list").
 EOF
 }
 
 usage-rename() {
     cat << EOF
-Usage: star rename <STAR> <NEW_STAR_NAME>
+    Usage: star rename <STAR> <NEW_STAR_NAME>
 
-Rename an existing bookmark.
+    Rename an existing bookmark.
 
-STAR
-    Should be the name of a bookmarked directory.
+    STAR
+        Should be the name of a bookmarked directory.
 
-NEW_STAR_NAME
-    The new name of the bookmark.
-    - Must be unique (among all bookmarks)
-    - Can contain slashes /
+    NEW_STAR_NAME
+        The new name of the bookmark.
+        - Must be unique (among all bookmarks)
+        - Can contain slashes /
 EOF
 }
 
 usage-remove() {
     cat << EOF
-Usage: star remove <STAR> [STAR]...
-       star rm <STAR> [STAR]...
+    Usage: star remove <STAR> [STAR]...
+           star rm <STAR> [STAR]...
 
-Remove one or more bookmarks.
+    Remove one or more bookmarks.
 
-STAR
-    Should be the name of a bookmarked directory.
+    STAR
+        Should be the name of a bookmarked directory.
 EOF
 }
 
 usage-reset() {
     cat << EOF
-Usage: star reset [-f|--force]
+    Usage: star reset [-f|--force]
 
-Remove all bookmarks and the ".star" directory.
+    Remove all bookmarks and the ".star" directory.
 
---force, -f
-    Force reset without prompting the user.
+    --force, -f
+        Force reset without prompting the user.
 EOF
 }
 
 usage-config() {
     cat << EOF
-Usage: star config [OPTION]
+    Usage: star config [OPTION]
 
-Display or edit the "star" configuration.
+    Display or edit the "star" configuration.
 
-(d) default config
+    (d) default config
 
-OPTION
-    list.sort
-        name (d)    Sort according to bookmark's name.
-        loaded      Sort according to bookmark's most recent load (cd)
-    list.order
-        desc (d)    Descending order
-        asc         Ascending order
-    list.index
-        none        No index
-        desc        Descending numeric index
-        asc (d)     Ascending numeric index
+    OPTION
+        list.sort
+            name (d)    Sort according to bookmark's name.
+            loaded      Sort according to bookmark's most recent load (cd)
+        list.order
+            desc (d)    Descending order
+            asc         Ascending order
+        list.index
+            none        No index
+            desc        Descending numeric index
+            asc (d)     Ascending numeric index
 
-    variables       Whether to enable (yes) or disable (no) the environment variables
-        yes (d)
-        no
+        variables       Whether to enable (yes) or disable (no) the environment variables
+            yes (d)
+            no
 EOF
 }
 
 usage-default() {
     cat << EOF
-Usage: star [MODE]
+    Usage: star [MODE]
 
-Dynamically bookmark and cd into directories.
-Bookmarks are called "stars".
+    Dynamically bookmark and cd into directories.
+    Bookmarks are called "stars".
 
-MODE
-    add     Add a new bookmark
-    list    List all bookmarks
-    load    cd into a bookmarked directory
-    rename  Change the name of a bookmark
-    remove  Remove a bookmark
-    reset   Delete all bookmarks
+    MODE
+        add     Add a new bookmark
+        list    List all bookmarks
+        load    cd into a bookmarked directory
+        rename  Change the name of a bookmark
+        remove  Remove a bookmark
+        reset   Delete all bookmarks
 
-Get more information for each mode using: star MODE --help
+    Get more information for each mode using: star MODE --help
 EOF
 }
 
