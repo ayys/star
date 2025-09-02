@@ -34,9 +34,7 @@ export _STAR_COLOR_PATH
 
 # TODO: move config file to $HOME/config/
 
-
-
-star() {
+main() {
     # _star_prune
 
     # all variables are local except _STAR_DIR and _STAR_DIR_SEPARATOR
@@ -350,4 +348,4 @@ star() {
     esac
 }
 
-star "$@"
+main "$@"
