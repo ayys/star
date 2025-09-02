@@ -34,8 +34,35 @@ export _STAR_COLOR_PATH
 
 # TODO: move config file to $HOME/config/
 
+# Remove all broken symlinks in the ".star" directory.
+# A broken symlink corresponds to a starred directory that does not exist anymore.
+prune_broken_symlinks() {
+    # return if the star directory does not exist
+    if [[ -z ${_STAR_DIR+x} || ! -d ${_STAR_DIR} ]]; then
+        return
+    fi
+    local broken_stars_name bl line
+
+    broken_stars_name=()
+
+    while IFS= read -r line; do
+        # Extract just the star name from each line
+        broken_stars_name+=("$line")
+    done < <(star-list --dir="$_STAR_DIR" --names --broken)
+
+    # return if no broken link was found
+    if [[ ${#broken_stars_name[@]} -le 0 ]]; then
+        return
+    fi
+
+    # else remove each broken link
+    for bl in "${broken_stars_name[@]}"; do
+        command rm "${_STAR_DIR}/${bl}" || return
+    done
+}
+
 main() {
-    # _star_prune
+    prune_broken_symlinks
 
     # all variables are local except _STAR_DIR and _STAR_DIR_SEPARATOR
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
