@@ -75,6 +75,21 @@ star() {
             "-" ) break 2;;
             "add" )
                 mode=STORE
+
+                # first argument has to be the relative path
+                if [[ $# -lt 1 ]]; then
+                    echo -e "Missing argument.\n"
+                    star-help --mode=add
+                    return 1
+                fi
+                src_dir=$(realpath "$1")
+                shift
+                if [[ ! -d $src_dir ]]; then
+                    echo -e "Directory does not exist: '$src_dir'.\n"
+                    star-help --mode=add
+                    return 1
+                fi
+
                 # If there's an argument after "add", use it as star name
                 if [[ $# -gt 0 && ! "$1" =~ ^- ]]; then
                     star_to_store="$1"
@@ -140,8 +155,6 @@ star() {
             if [[ ! -d "${_STAR_DIR}" ]]; then
                 mkdir "${_STAR_DIR}"
             fi
-
-            src_dir=$(pwd)
 
             if [[ ! "${star_to_store}" == "" ]]; then
                 # replace slashes by dir separator char: a star name can contain slashes
