@@ -42,12 +42,12 @@ star() {
         STORE)
             ;;
         LIST)
-            command star list "${arguments[*]}"
+            command star list $arguments
             return $?
             ;;
         LOAD)
             local load_res load_output
-            load_output=$(command star load "${arguments[*]}")
+            load_output=$(command star load $arguments)
             load_res=$?
 
             if [[ -d $load_output ]]; then
@@ -71,5 +71,5 @@ star() {
             ;;
     esac
 
-    command star "$arg_mode" "${arguments[*]}"
+    command star "$arg_mode" $arguments
 }
