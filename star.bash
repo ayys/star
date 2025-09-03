@@ -7,11 +7,12 @@ star() {
         return 0
     fi
     arg_mode=$1
+    shift
 
     case $arg_mode in
         add) mode=STORE        ;;
         L|list) mode=LIST      ;;
-        l|load) mode=LOAD      ;;
+        l|load) [[ $# -lt 1 ]] && mode=LIST || mode=LOAD ;;
         rename) mode=RENAME    ;;
         rm|remove) mode=REMOVE ;;
         reset) mode=RESET      ;;
@@ -25,7 +26,6 @@ star() {
             return 1
             ;;
     esac
-    shift
 
     arguments=("$@")
 
@@ -42,8 +42,20 @@ star() {
         STORE)
             ;;
         LIST)
+            command star list "${arguments[*]}"
+            return $?
             ;;
         LOAD)
+            local load_res load_output
+            load_output=$(command star load "${arguments[*]}")
+            load_res=$?
+
+            if [[ -d $load_output ]]; then
+                cd "$load_output"
+            else
+                echo -e "$load_output"
+            fi
+            return $load_res
             ;;
         RENAME)
             ;;

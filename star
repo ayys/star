@@ -131,10 +131,11 @@ main() {
                 break
                 ;;
             "l"|"load" )
-                # load without arguments is equivalent to "star list"
-                if [[ $# -eq 0 ]]; then
-                    mode=LIST
-                    break 2
+                # first argument should be the name or the index of the star to load
+                if [[ $# -lt 1 ]]; then
+                    echo -e "star load: missing STAR argument.\n"
+                    star-help --mode=load
+                    return 1
                 fi
                 star_to_load="${1//\//"${_STAR_DIR_SEPARATOR}"}"
                 mode=LOAD
@@ -281,11 +282,13 @@ main() {
             if [[ ! -e ${_STAR_DIR}/${star_to_load} ]]; then
                 echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
             else
-                if ! cd -P "${_STAR_DIR}/${star_to_load}"; then
-                    local res=$?
-                    echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\"."
-                    return $res
+                local star_to_load_path
+                star_to_load_path=$(star-list --dir="$_STAR_DIR" --format="%f %l\n" | grep "^${star_to_load} " | head -n1 | cut -d' ' -f2)
+                if [[ ! -d "$star_to_load_path" ]]; then
+                    echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\": associated directory  \"${COLOR_PATH}${star_to_load_path}${COLOR_RESET}\" does not exist."
+                    return 2
                 fi
+                echo "$star_to_load_path"
                 # update access time
                 touch -ah "${_STAR_DIR}/${star_to_load}"
             fi
