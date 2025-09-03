@@ -14,7 +14,8 @@ usage-add() {
     NAME
         The name of the new bookmark if provided, otherwise it will use the name of the current directory.
         - Must be unique (among all bookmarks)
-        - Can contain slashes /
+        - Can contain slashes: "/"
+        - Whitespaces will be replaced by a dash: "-"
 EOF
 }
 

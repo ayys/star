@@ -40,8 +40,10 @@ export COLOR_RESET="\033[0m"
 export COLOR_STAR="${_STAR_COLOR_STAR}"
 export COLOR_PATH="${_STAR_COLOR_PATH}"
 
+# it is strongly recommended to set the number of columns in the 'column' command (--table-columns-limit) and to put the path in the last column, 
+# as a path can contain whitespaces (which is the characyer used by 'column' to split columns)
 export DISPLAY_FORMAT="<INDEX>: ${COLOR_STAR}%f${COLOR_RESET} -> ${COLOR_PATH}%l${COLOR_RESET}"
-export DISPLAY_COLUMN_COMMAND="column -t"
+export DISPLAY_COLUMN_COMMAND="command column --table --table-columns-limit 3"
 
 # TODO: move config file to $HOME/config/
 
@@ -78,7 +80,7 @@ main() {
     # all variables are local except _STAR_DIR and _STAR_DIR_SEPARATOR
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
     local dst_name dst_name_slash dst_basename
-    local star stars_list stars_list_str stars_path src_dir opt current_pwd user_input force_reset
+    local star stars_list stars_list_str stars_path src_dir opt user_input force_reset
     local existing_star existing_star_display target_path line
 
     # Parse the arguments
@@ -116,7 +118,8 @@ main() {
                     return 2
                 fi
 
-                # If there's another argument, use it as star name
+                # If there's another argument then use it as star name,
+                # else the star name will be created from the name of the directory
                 if [[ $# -gt 0 && ! "$1" =~ ^- ]]; then
                     star_to_store="$1"
                     shift
@@ -190,6 +193,7 @@ main() {
                 # replace slashes by dir separator char: a star name can contain slashes
                 dst_name="${star_to_store//\//"${_STAR_DIR_SEPARATOR}"}"
             else
+                # else get the star name from the name of the directory
                 dst_name=$(basename "${src_dir}")
             fi
 
@@ -222,10 +226,12 @@ main() {
             # that will be replaced by a slash when printing the star name or suggesting completion.
             # The variable _STAR_DIR_SEPARATOR must not be manualy changed, as it would cause the non-recognition of previously starred directories (their star name could contain that separator).
             if [[ "${star_to_store}" == "" ]]; then
-                current_pwd=$(pwd)
-                while [[ -e ${_STAR_DIR}/${dst_name} ]]; do
+                # need to store the whitespace-free name in a temporary variable in order to keep the existing path
+                local tmp_name=$(echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
+
+                while [[ -e ${_STAR_DIR}/${tmp_name} ]]; do
                     dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
-                    dst_basename=$(basename "${current_pwd%%"$dst_name_slash"}")
+                    dst_basename=$(basename "${src_dir%%"$dst_name_slash"}")
 
                     if [[ "${dst_basename}" == "/" ]]; then
                         echo -e "Directory already starred with maximum possible path: ${COLOR_STAR}${dst_name_slash}${COLOR_RESET}."
@@ -233,10 +239,18 @@ main() {
                     fi
 
                     dst_name="${dst_basename}${_STAR_DIR_SEPARATOR}${dst_name}"
+                    # update the temporary name in order to check if it exists in the star names
+                    tmp_name=$(echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
                 done
+                # replace whitespaces with a single dash (needs to be done AFTER looping over paths, to keep the existing paths)
+                dst_name=$( echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
+
             # When adding a new starred directory with a given name (as argument),
             # then the name should not already exist
             else
+                # replace whitespaces with a single dash
+                dst_name=$( echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
+
                 dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
                 if [[ -e ${_STAR_DIR}/${dst_name} ]]; then
                     # Get the path associated with star name
