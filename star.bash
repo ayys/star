@@ -71,5 +71,5 @@ star() {
             ;;
     esac
 
-    command star $arg_mode $arguments
+    command star "$arg_mode" "${arguments[*]}"
 }

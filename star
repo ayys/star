@@ -105,7 +105,7 @@ main() {
 
                 # first argument has to be the relative path
                 if [[ $# -lt 1 ]]; then
-                    echo -e "Missing argument.\n"
+                    echo -e "star add: missing PATH argument.\n"
                     star-help --mode=add
                     return 1
                 fi
@@ -144,7 +144,7 @@ main() {
             "rename" )
                 mode=RENAME
                 if [[ $# -lt 2 ]]; then
-                    echo -e "Missing argument(s).\n"
+                    echo -e "star rename: missing argument(s).\n"
                     star-help --mode=rename
                     return 1
                 fi
@@ -154,7 +154,7 @@ main() {
                 ;;
             "rm"|"remove" )
                 if [[ $# -lt 1 ]]; then
-                    echo -e "Missing argument(s).\n"
+                    echo -e "star remove: missing argument(s).\n"
                     star-help --mode=remove
                     return 1
                 fi
