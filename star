@@ -260,6 +260,11 @@ main() {
                 fi
             fi
 
+            # if name is purely numeric, add a prefix in order to not mix with index based navigation
+            if [[ "${dst_name}" =~ ^[0-9]+$ ]]; then
+                dst_name="dir-${dst_name}"
+            fi
+
             if ! ln -s "${src_dir}" "${_STAR_DIR}/${dst_name}"; then
                 local res=$?
                 echo -e "Failed to add a new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."

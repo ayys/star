@@ -16,6 +16,7 @@ usage-add() {
         - Must be unique (among all bookmarks)
         - Can contain slashes: "/"
         - Whitespaces will be replaced by a dash: "-"
+        - Names with only numeric characters will by prefixed by "dir-"
 EOF
 }
 
