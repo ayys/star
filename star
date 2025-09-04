@@ -61,7 +61,7 @@ prune_broken_symlinks() {
     while IFS= read -r line; do
         # Extract just the star name from each line
         broken_stars_name+=("$line")
-    done < <(star-list --dir="$_STAR_DIR" --names --broken)
+    done < <(star-list "$_STAR_DIR" --names --broken)
 
     # return if no broken link was found
     if [[ ${#broken_stars_name[@]} -le 0 ]]; then
@@ -201,12 +201,12 @@ main() {
             stars_path=()
             while IFS= read -r line; do
                 stars_path+=("$line")
-            done < <(star-list --dir="$_STAR_DIR" --paths)
+            done < <(star-list "$_STAR_DIR" --paths)
 
             # do not star this directory if it is already starred (even under another name)
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
                 # Find the star name for this directory's path
-                existing_star=$(star-list --dir="$_STAR_DIR" --format="%f %l\n" | grep " ${src_dir}$" | head -n1 | cut -d' ' -f1)
+                existing_star=$(star-list "$_STAR_DIR" --get-name="$src_dir")
                 existing_star_display=${existing_star//"${_STAR_DIR_SEPARATOR}"//}
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
                 return 0
@@ -254,7 +254,8 @@ main() {
                 dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
                 if [[ -e ${_STAR_DIR}/${dst_name} ]]; then
                     # Get the path associated with star name
-                    target_path=$(star-list --dir="$_STAR_DIR" --format="%f %l\n" | grep "^${dst_name} " | head -n1 | cut -d' ' -f2-)
+                    target_path=$(star-list "$_STAR_DIR" --get-path="$dst_name")
+
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
                     return 0
                 fi
@@ -284,7 +285,7 @@ main() {
                 stars_list=()
                 while IFS= read -r line; do
                     stars_list+=("$line")
-                done < <(star-list --dir="${_STAR_DIR}" --names) # TODO: pass sorting parameters to star-list
+                done < <(star-list "${_STAR_DIR}" --names) # TODO: pass sorting parameters to star-list
 
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
@@ -299,7 +300,9 @@ main() {
                 echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
             else
                 local star_to_load_path
-                star_to_load_path=$(star-list --dir="$_STAR_DIR" --format="%f %l\n" | grep "^${star_to_load} " | head -n1 | cut -d' ' -f2)
+                # get path according to name
+                star_to_load_path=$(star-list "$_STAR_DIR" --get-path="$star_to_load")
+
                 if [[ ! -d "$star_to_load_path" ]]; then
                     echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\": associated directory  \"${COLOR_PATH}${star_to_load_path}${COLOR_RESET}\" does not exist."
                     return 2
@@ -314,7 +317,7 @@ main() {
                 echo "No \".star\" directory (will be created when adding new starred directories)."
             else
                 # TODO: pass sorting parameters to star-list
-                stars_list_str=$(star-list --dir="${_STAR_DIR}" --format="$DISPLAY_FORMAT")
+                stars_list_str=$(star-list "${_STAR_DIR}" --format="$DISPLAY_FORMAT")
                 echo "${stars_list_str//"${_STAR_DIR_SEPARATOR}"//}" | $DISPLAY_COLUMN_COMMAND
             fi
             ;;

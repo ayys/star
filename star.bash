@@ -28,7 +28,7 @@ _star_set_variables()
     while IFS= read -r line; do
         # Extract just the star name from each line
         stars_list+=("$line")
-    done < <(star-list --dir="$_STAR_DIR" --format="%f %l")
+    done < <(star-list "$_STAR_DIR" --format="%f %l")
 
     for star in "${stars_list[@]}"; do
         star_name=$(echo "$star" | cut -d' ' -f1)
@@ -75,8 +75,7 @@ _star_unset_variables()
     for variable in "${variables_list[@]}"; do
         # unset the variable only if its value corresponds to an existing star path (absolute path of a starred directory)
         star_path="$(echo "$variable" | cut -d"=" -f2-)"
-        # if ! find "${_STAR_DIR}" -type l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
-        if ! star-list --dir="${_STAR_DIR}" --paths | grep "^${star_path}$" &> /dev/null ; then
+        if ! star-list "${_STAR_DIR}" --paths | grep "^${star_path}$" &> /dev/null ; then
             continue
         fi
         env_var_name="$(echo "$variable" | cut -d"=" -f1)"

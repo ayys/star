@@ -1,25 +1,33 @@
 #!/usr/bin/env bash
 
+export _STAR_DIR_SEPARATOR="»"
+
 usage() {
     cat << EOF
-    Usage: star-list [MODE]... [OPTIONS]...
+    Usage: star-list DIR [LIST_MODE] [OPTIONS]...
+           star-list DIR ITEM_MODE
 
-    Choose one of the following modes (exclusives):
-        -f, --format=FORMAT     Print with a custom format. See "Formatting".
+    DIR                         Relative or absolute path.
+
+    LIST_MODE: To display the starred directorus. Choose one of the following list modes (exclusives):
         -n, --names             Only print the star's names.
         -p, --paths             Only print the star's paths.
+        -f, --format=FORMAT     Print with a custom format. See "Formatting".
 
-    Options:
+            Formatting:
+            The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
+            This script also provide the following formatting:
+                <INDEX>     will be replaced by an index
+
+    OPTIONS:
         -s, --sort={name|loaded}
         -o, --order={desc|asc}
         -i, --index={none|desc|asc}     Only with "--format".
-        -d, --dir=PATH                  Relative or absolute path.
         -b, --broken                    Only search for broken symlinks.
-
-    Formatting:
-    The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
-    This script also provide the following formatting:
-        <INDEX>     will be replaced by an index
+    
+    ITEM_MODE: To retrieve a single bit of information
+        -P, --get-path=NAME     Get the path of a star according to its name
+        -N, --get-name=PATH     Get the name of a star according to its path
 EOF
 }
 
@@ -29,6 +37,8 @@ MAX_DEPTH=1
 MODE_NAMES="names"
 MODE_PATHS="paths"
 MODE_CUSTOM_FORMAT="custom-format"
+MODE_GET_PATH="get-path"
+MODE_GET_NAME="get-name"
 
 SORT_NAME="name"
 SORT_LOADED="loaded"
@@ -60,16 +70,6 @@ list_stars() {
         return 1
     fi
     local custom_format="$1"
-
-    if [[ ! -n $DIR ]]; then
-        echo -e "Directory in which to search is unset. Set it with '--dir' option.\n"
-        usage
-        return 2
-    fi
-    if [[ ! -d $DIR ]]; then
-        echo -e "Directory in which to search does not exist: '$DIR'.\n"
-        return 2
-    fi
 
     local format=""
     local sort_options="--numeric-sort"
@@ -124,8 +124,25 @@ list_custom_format() {
     fi
 }
 
+get_item_name() {
+    list_stars "%f %l\n" | grep " ${GET_NAME}$" | head -n1 | cut -d' ' -f1
+}
+
+get_item_path() {
+    list_stars "%f %l\n" | grep "^${GET_PATH//\//"${_STAR_DIR_SEPARATOR}"} " | head -n1 | cut -d' ' -f2-
+}
+
 main() {
     local value
+
+    value="$1"
+    if [[ ! -d "$value" ]]; then
+        echo -e "Invalid dir value: $value\n"
+        usage
+        exit 1
+    fi
+    DIR=$(realpath "$value")
+    shift
 
     while [[ $# -gt 0 ]]; do
         opt="$1";
@@ -148,6 +165,26 @@ main() {
                 ;;
             "-n"|"--names" )
                 MODE=$MODE_NAMES
+                ;;
+            "-P"|"--get-path="*)
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+                GET_PATH="$value"
+                MODE=$MODE_GET_PATH
+                ;;
+            "-N"|"--get-name="*)
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+                GET_NAME="$value"
+                MODE=$MODE_GET_NAME
                 ;;
             "-s"|"--sort="* )
                 if [[ ${#opt} -eq 2 ]]; then
@@ -194,21 +231,6 @@ main() {
                 fi
                 INDEX="$value"
                 ;;
-            "-d"|"--dir="* )
-                if [[ ${#opt} -eq 2 ]]; then
-                    value="$1"
-                    shift
-                else
-                    value="${opt#*=}"
-                fi
-
-                if [[ ! -d "$value" ]]; then
-                    echo -e "Invalid dir value: $value\n"
-                    usage
-                    exit 1
-                fi
-                DIR=$(realpath "$value")
-                ;;
             "-b"|"--broken" )
                 TYPE_TEST="xtype"
                 ;;
@@ -219,6 +241,16 @@ main() {
                 ;;
         esac
     done
+
+    if [[ ! -n $DIR ]]; then
+        echo -e "Directory in which to search is unset. Set it with '--dir' option.\n"
+        usage
+        return 2
+    fi
+    if [[ ! -d $DIR ]]; then
+        echo -e "Directory in which to search does not exist: '$DIR'.\n"
+        return 2
+    fi
 
     case "$MODE" in
         "$MODE_NAMES" )
@@ -231,6 +263,14 @@ main() {
             ;;
         "$MODE_CUSTOM_FORMAT" )
             list_custom_format
+            exit $?
+            ;;
+        "$MODE_GET_NAME" )
+            get_item_name
+            exit $?
+            ;;
+        "$MODE_GET_PATH" )
+            get_item_path
             exit $?
             ;;
     esac
