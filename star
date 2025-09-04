@@ -47,36 +47,7 @@ export DISPLAY_COLUMN_COMMAND="command column --table --table-columns-limit 3"
 
 # TODO: move config file to $HOME/config/
 
-# Remove all broken symlinks in the ".star" directory.
-# A broken symlink corresponds to a starred directory that does not exist anymore.
-prune_broken_symlinks() {
-    # return if the star directory does not exist
-    if [[ -z ${_STAR_DIR+x} || ! -d ${_STAR_DIR} ]]; then
-        return 2
-    fi
-    local broken_stars_name bl line
-
-    broken_stars_name=()
-
-    while IFS= read -r line; do
-        # Extract just the star name from each line
-        broken_stars_name+=("$line")
-    done < <(star-list "$_STAR_DIR" --names --broken)
-
-    # return if no broken link was found
-    if [[ ${#broken_stars_name[@]} -le 0 ]]; then
-        return 0
-    fi
-
-    # else remove each broken link
-    for bl in "${broken_stars_name[@]}"; do
-        command rm "${_STAR_DIR}/${bl}" || return
-    done
-}
-
 main() {
-    prune_broken_symlinks
-
     # all variables are local except _STAR_DIR and _STAR_DIR_SEPARATOR
     local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
     local dst_name dst_name_slash dst_basename

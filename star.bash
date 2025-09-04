@@ -11,6 +11,37 @@ export _STAR_ENV_PREFIX="STAR_"
 # This should not be changed
 export _STAR_DIR_SEPARATOR="»"
 
+# Remove all broken symlinks in the ".star" directory.
+# A broken symlink corresponds to a starred directory that does not exist anymore.
+prune_broken_symlinks() {
+    # return if the star directory does not exist
+    if [[ -z ${_STAR_DIR+x} || ! -d ${_STAR_DIR} ]]; then
+        return 2
+    fi
+    local broken_stars_name bl line
+
+    broken_stars_name=()
+
+    while IFS= read -r line; do
+        # Extract just the star name from each line
+        broken_stars_name+=("$line")
+    done < <(find "$_STAR_DIR" -xtype l -printf "%f\n")
+
+    # return if no broken link was found
+    if [[ ${#broken_stars_name[@]} -le 0 ]]; then
+        return 0
+    fi
+
+    # else remove each broken link
+    for bl in "${broken_stars_name[@]}"; do
+        command rm "${_STAR_DIR}/${bl}" || return
+    done
+}
+
+prune_broken_symlinks
+
+unset -f prune_broken_symlinks
+
 _star_set_variables()
 {
     if [[ $_STAR_EXPORT_ENV_VARIABLES != "yes" ]]; then
@@ -28,7 +59,7 @@ _star_set_variables()
     while IFS= read -r line; do
         # Extract just the star name from each line
         stars_list+=("$line")
-    done < <(star-list "$_STAR_DIR" --format="%f %l")
+    done < <(find "$_STAR_DIR" -type l -printf "%f %l\n")
 
     for star in "${stars_list[@]}"; do
         star_name=$(echo "$star" | cut -d' ' -f1)
@@ -75,7 +106,7 @@ _star_unset_variables()
     for variable in "${variables_list[@]}"; do
         # unset the variable only if its value corresponds to an existing star path (absolute path of a starred directory)
         star_path="$(echo "$variable" | cut -d"=" -f2-)"
-        if ! star-list "${_STAR_DIR}" --paths | grep "^${star_path}$" &> /dev/null ; then
+        if ! find "${_STAR_DIR}" -type l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
             continue
         fi
         env_var_name="$(echo "$variable" | cut -d"=" -f1)"
@@ -122,9 +153,6 @@ star() {
         shift
     done
 
-    # remove all env variables while their paths are still known and their names still the same
-    _star_unset_variables
-
     local ret
 
     # process the selected mode
@@ -144,7 +172,23 @@ star() {
                 echo -e "$load_output"
             fi
             ;;
-        STORE|RENAME|REMOVE|RESET)
+        STORE)
+            command star "$arg_mode" $arguments
+            ret=$?
+            # update environment variables
+            _star_set_variables
+            ;;
+        RENAME|REMOVE)
+            # remove all env variables while their paths are still known and their names still the same
+            _star_unset_variables
+            command star "$arg_mode" $arguments
+            ret=$?
+            # set back environment variables
+            _star_set_variables
+            ;;
+        RESET)
+            # remove all env variables while their paths are still known and their names still the same
+            _star_unset_variables
             command star "$arg_mode" $arguments
             ret=$?
             ;;
@@ -155,9 +199,6 @@ star() {
         *)
             ;;
     esac
-
-    # set back environment variables
-    _star_set_variables
 
     return "$ret"
 }

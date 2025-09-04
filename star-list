@@ -20,7 +20,7 @@ usage() {
                 <INDEX>     will be replaced by an index
 
     OPTIONS:
-        -s, --sort={name|loaded}
+        -s, --sort={name|loaded|none}
         -o, --order={desc|asc}
         -i, --index={none|desc|asc}     Only with "--format".
         -b, --broken                    Only search for broken symlinks.
@@ -42,6 +42,7 @@ MODE_GET_NAME="get-name"
 
 SORT_NAME="name"
 SORT_LOADED="loaded"
+SORT_NONE="none"
 
 ORDER_DESC="desc"
 ORDER_ASC="asc"
@@ -61,7 +62,8 @@ INDEX=$INDEX_ASC
 
 DIR=
 
-TYPE_TEST="type"
+# by default, search for non broken symlinks
+TYPE_TEST="-type l -not -xtype l"
 
 # TODO: source config file with environment variables
 
@@ -70,6 +72,11 @@ list_stars() {
         return 1
     fi
     local custom_format="$1"
+
+    if [[ "$SORT" == "$SORT_NONE" ]]; then
+        find "$DIR" -maxdepth "$MAX_DEPTH" $TYPE_TEST -printf "$format"
+        return $?
+    fi
 
     local format=""
     local sort_options="--numeric-sort"
@@ -92,7 +99,7 @@ list_stars() {
         sort_options="$sort_options  --reverse"
     fi
 
-    find "$DIR" -maxdepth "$MAX_DEPTH" -$TYPE_TEST l -printf "$format" | sort $sort_options | cut -d' ' -f3-
+    find "$DIR" -maxdepth "$MAX_DEPTH" $TYPE_TEST -printf "$format" | sort $sort_options | cut -d' ' -f3-
 }
 
 list_names() {
@@ -194,7 +201,7 @@ main() {
                     value="${opt#*=}"
                 fi
 
-                if [[ "$value" != "$SORT_NAME" && "$value" != "$SORT_LOADED" ]]; then
+                if [[ "$value" != "$SORT_NAME" && "$value" != "$SORT_LOADED" && "$value" != "$SORT_NONE" ]]; then
                     echo -e "Invalid sort value: $value\n"
                     usage
                     exit 1
@@ -232,7 +239,7 @@ main() {
                 INDEX="$value"
                 ;;
             "-b"|"--broken" )
-                TYPE_TEST="xtype"
+                TYPE_TEST="-xtype l"
                 ;;
             *)
                 echo -e "Invalid option/argument: $opt\n"
