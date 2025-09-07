@@ -56,7 +56,7 @@ _star_set_variables()
         star_name="${star_name//"${_STAR_DIR_SEPARATOR}"/_}"
 
         # convert name to a suitable environment variable name
-        star_name=$(echo "$star_name" | tr ' +-.!?():,;=' '_' | tr -cd "a-zA-Z0-9_" | tr '[:lower:]' '[:upper:]')
+        star_name=$(echo "$star_name" | tr ' +-.!?():,;=' '_' | tr --complement --delete "a-zA-Z0-9_" | tr '[:lower:]' '[:upper:]')
 
         env_var_name="${_STAR_ENV_PREFIX}${star_name//"${_STAR_DIR_SEPARATOR}"/_}"
 
