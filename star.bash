@@ -129,12 +129,12 @@ star() {
     # process the selected mode
     case ${mode} in
         LIST)
-            command star list $arguments
+            command star list "${arguments[@]}"
             ret=$?
             ;;
         LOAD)
             local load_output
-            load_output=$(command star load $arguments)
+            load_output=$(command star load "${arguments[@]}")
             ret=$?
 
             if [[ -d $load_output ]]; then
@@ -144,7 +144,7 @@ star() {
             fi
             ;;
         STORE)
-            command star "$arg_mode" $arguments
+            command star "$arg_mode" "${arguments[@]}"
             ret=$?
             # update environment variables
             _star_set_variables
@@ -152,7 +152,7 @@ star() {
         RENAME|REMOVE)
             # remove all env variables while their paths are still known and their names still the same
             _star_unset_variables
-            command star "$arg_mode" $arguments
+            command star "$arg_mode" "${arguments[@]}"
             ret=$?
             # set back environment variables
             _star_set_variables
@@ -160,7 +160,7 @@ star() {
         RESET)
             # remove all env variables while their paths are still known and their names still the same
             _star_unset_variables
-            command star "$arg_mode" $arguments
+            command star "$arg_mode" "${arguments[@]}"
             ret=$?
             ;;
         HELP)
