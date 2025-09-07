@@ -7,7 +7,7 @@ usage() {
     Usage: star-list DIR [LIST_MODE] [OPTIONS]...
            star-list DIR ITEM_MODE
 
-    DIR                         Relative or absolute path.
+    DIR: Where to search for the symlinks. Relative or absolute path.
 
     LIST_MODE: To display the starred directorus. Choose one of the following list modes (exclusives):
         -n, --names             Only print the star's names.
