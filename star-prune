@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+usage() {
+    cat << EOF
+    Usage: star-prune DIR
+
+    Remove all broken symlinks in the given directory. A broken symlink corresponds to a starred directory that does not exist anymore.
+
+    DIR: Where to search for the symlinks. Relative or absolute path.
+EOF
+}
+
+main() {
+    local value
+
+    value="$1"
+    if [[ ! -d "$value" ]]; then
+        echo -e "Invalid dir value: $value\n"
+        usage
+        exit 1
+    fi
+    DIR=$(realpath "$value")
+    shift
+
+    if [[ ! -n $DIR ]]; then
+        echo -e "Directory in which to search is unset. Set it with '--dir' option.\n"
+        usage
+        return 2
+    fi
+    if [[ ! -d $DIR ]]; then
+        echo -e "Directory in which to search does not exist: '$DIR'.\n"
+        return 2
+    fi
+
+    local broken_stars_name bl line
+
+    broken_stars_name=()
+
+    while IFS= read -r line; do
+        # Extract just the star name from each line
+        broken_stars_name+=("$line")
+    # done < <(find "$_STAR_DIR" -xtype l -printf "%f\n")
+    done < <(star-list "$_STAR_DIR" --broken)
+
+    # return if no broken link was found
+    if [[ ${#broken_stars_name[@]} -le 0 ]]; then
+        return 0
+    fi
+
+    # else remove each broken link
+    for bl in "${broken_stars_name[@]}"; do
+        command rm "${_STAR_DIR}/${bl}" || return
+    done
+
+}
+
+main "$@"
