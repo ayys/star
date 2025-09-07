@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export _STAR_DIR_SEPARATOR="»"
-
 usage() {
     cat << EOF
     Usage: star-list DIR [LIST_MODE] [OPTIONS]...
@@ -26,7 +24,7 @@ usage() {
         -b, --broken                    Only search for broken symlinks.
     
     ITEM_MODE: To retrieve a single bit of information
-        -P, --get-path=NAME     Get the path of a star according to its name
+        -P, --get-path=NAME     Get the path of a star according to its name. Slashes should have been replaced by the separator.
         -N, --get-name=PATH     Get the name of a star according to its path
 EOF
 }
@@ -116,13 +114,17 @@ list_custom_format() {
         stars+=("$REPLY")
     done < <(list_stars "$FORMAT")
 
-    if [[ "$FORMAT" == *"<INDEX>"* ]]; then
+    if [[ "$INDEX" == "$INDEX_NONE" && "$FORMAT" == *"<INDEX>"* ]]; then
+        for s in "${stars[@]}"; do
+            echo "${s//<INDEX>/""}"
+        done
+    elif [[ "$FORMAT" == *"<INDEX>"* ]]; then
         local index
         [[ "$INDEX" == "$INDEX_ASC" ]] && index=1 || index="${#stars[@]}"
 
         for s in "${stars[@]}"; do
             echo "${s//<INDEX>/$index}"
-            [[ "$INDEX" == "$INDEX_ASC" ]] && ((index++)) || ((index--))
+            [[ "$INDEX" == "$INDEX_ASC" ]] || ((index--)) && ((index++))
         done
     else
         for s in "${stars[@]}"; do
@@ -136,7 +138,7 @@ get_item_name() {
 }
 
 get_item_path() {
-    list_stars "%f %l\n" | grep "^${GET_PATH//\//"${_STAR_DIR_SEPARATOR}"} " | head -n1 | cut -d' ' -f2-
+    list_stars "%f %l\n" | grep "^${GET_PATH} " | head -n1 | cut -d' ' -f2-
 }
 
 main() {
@@ -231,7 +233,7 @@ main() {
                     value="${opt#*=}"
                 fi
 
-                if [[ "$value" != "$INDEX_DESC" && "$value" != "$INDEX_ASC" ]]; then
+                if [[ "$value" != "$INDEX_DESC" && "$value" != "$INDEX_ASC" && "$value" != "$INDEX_NONE" ]]; then
                     echo -e "Invalid index value: $value\n"
                     usage
                     exit 1

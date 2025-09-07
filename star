@@ -225,7 +225,7 @@ main() {
                 dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
                 if [[ -e ${_STAR_DIR}/${dst_name} ]]; then
                     # Get the path associated with star name
-                    target_path=$(star-list "$_STAR_DIR" --get-path="$dst_name")
+                    target_path=$(star-list "$_STAR_DIR" --get-path="${dst_name//\//"${_STAR_DIR_SEPARATOR}"}")
 
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
                     return 0
@@ -272,7 +272,7 @@ main() {
             else
                 local star_to_load_path
                 # get path according to name
-                star_to_load_path=$(star-list "$_STAR_DIR" --get-path="$star_to_load")
+                star_to_load_path=$(star-list "$_STAR_DIR" --get-path="${star_to_load//\//"${_STAR_DIR_SEPARATOR}"}")
 
                 if [[ ! -d "$star_to_load_path" ]]; then
                     echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\": associated directory  \"${COLOR_PATH}${star_to_load_path}${COLOR_RESET}\" does not exist."

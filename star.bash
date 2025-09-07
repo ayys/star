@@ -11,36 +11,7 @@ export _STAR_ENV_PREFIX="STAR_"
 # This should not be changed
 export _STAR_DIR_SEPARATOR="»"
 
-# Remove all broken symlinks in the ".star" directory.
-# A broken symlink corresponds to a starred directory that does not exist anymore.
-prune_broken_symlinks() {
-    # return if the star directory does not exist
-    if [[ -z ${_STAR_DIR+x} || ! -d ${_STAR_DIR} ]]; then
-        return 2
-    fi
-    local broken_stars_name bl line
-
-    broken_stars_name=()
-
-    while IFS= read -r line; do
-        # Extract just the star name from each line
-        broken_stars_name+=("$line")
-    done < <(find "$_STAR_DIR" -xtype l -printf "%f\n")
-
-    # return if no broken link was found
-    if [[ ${#broken_stars_name[@]} -le 0 ]]; then
-        return 0
-    fi
-
-    # else remove each broken link
-    for bl in "${broken_stars_name[@]}"; do
-        command rm "${_STAR_DIR}/${bl}" || return
-    done
-}
-
-prune_broken_symlinks
-
-unset -f prune_broken_symlinks
+star-prune "$_STAR_DIR"
 
 _star_set_variables()
 {
