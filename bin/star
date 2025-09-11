@@ -3,6 +3,7 @@
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 export _STAR_DIR="${script_dir}/test/.star"
+# export _STAR_DIR="$HOME/.star"
 
 # Enable (yes) or disable (no) environment variables
 export _STAR_EXPORT_ENV_VARIABLES="no"
@@ -14,7 +15,9 @@ export _STAR_ENV_PREFIX="STAR_"
 # This should not be changed
 export _STAR_DIR_SEPARATOR="»"
 
-if [ -t 1 ]; then
+COLOR=always
+
+if [ -t 1 ] || [ "$COLOR" == "always" ]; then
     # Check for truecolor support
     if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
         _STAR_COLOR_STAR="\033[38;2;255;131;0m"  # Orange for star names
@@ -198,7 +201,8 @@ main() {
             # The variable _STAR_DIR_SEPARATOR must not be manualy changed, as it would cause the non-recognition of previously starred directories (their star name could contain that separator).
             if [[ "${star_to_store}" == "" ]]; then
                 # need to store the whitespace-free name in a temporary variable in order to keep the existing path
-                local tmp_name=$(echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
+                local tmp_name
+                tmp_name=$(echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
 
                 while [[ -e ${_STAR_DIR}/${tmp_name} ]]; do
                     dst_name_slash=${dst_name//"${_STAR_DIR_SEPARATOR}"//}
