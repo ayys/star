@@ -1,12 +1,14 @@
 # Directory in which to store the symlinks (stars)
 # Will be created if it does not exist, and will be removed when resetting star
-export _STAR_HOME="$HOME/.star"
+# if _STAR_HOME is already set then use this directory,
+# else use $HOME/.star
+export _STAR_HOME="${_STAR_HOME:-$HOME/.star}"
 
 # Enable (yes) or disable (no) environment variables
-export _STAR_EXPORT_ENV_VARIABLES="yes"
+export _STAR_EXPORT_ENV_VARIABLES="${_STAR_EXPORT_ENV_VARIABLES:-"yes"}"
 
 # The common prefix of the environment variables created according to the star names
-export _STAR_ENV_PREFIX="STAR_"
+export _STAR_ENV_PREFIX="${_STAR_ENV_PREFIX:-"STAR_"}"
 
 # A character used to replace slashes in the star names
 # This should not be changed
@@ -15,29 +17,36 @@ export _STAR_DIR_SEPARATOR="»"
 if [ -t 1 ]; then
     # Check for truecolor support
     if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
-        _STAR_COLOR_STAR="\033[38;2;255;131;0m"  # Orange for star names
-        _STAR_COLOR_PATH="\033[38;2;1;169;130m"  # HPE Way
-        _STAR_COLOR_RESET="\033[0m"
+        _STAR_COLOR_STAR=${_STAR_COLOR_STAR:-"\033[38;2;255;131;0m"}
+        _STAR_COLOR_PATH=${_STAR_COLOR_PATH:-"\033[38;2;1;169;130m"}
+        _STAR_COLOR_RESET=${_STAR_COLOR_RESET:-"\033[0m"}
     else
         # Use 256-color approximation
-        _STAR_COLOR_STAR="\033[38;5;214m"
-        _STAR_COLOR_PATH="\033[38;5;36m"
-        _STAR_COLOR_RESET="\033[0m"
+        _STAR_COLOR_STAR=${_STAR_COLOR_STAR:-"\033[38;5;214m"}
+        _STAR_COLOR_PATH=${_STAR_COLOR_PATH:-"\033[38;5;36m"}
+        _STAR_COLOR_RESET=${_STAR_COLOR_RESET:-"\033[0m"}
     fi
 else
     # No color for non-interactive sessions (not a TTY)
-    _STAR_COLOR_STAR=""
-    _STAR_COLOR_PATH=""
-    _STAR_COLOR_RESET=""
+    _STAR_COLOR_STAR=${_STAR_COLOR_STAR:-""}
+    _STAR_COLOR_PATH=${_STAR_COLOR_PATH:-""}
+    _STAR_COLOR_RESET=${_STAR_COLOR_RESET:-""}
 fi
 export _STAR_COLOR_STAR
 export _STAR_COLOR_PATH
 export _STAR_COLOR_RESET
 
 # it is strongly recommended to set the number of columns in the 'column' command (--table-columns-limit) and to put the path in the last column, 
-# as a path can contain whitespaces (which is the characyer used by 'column' to split columns)
-export _STAR_DISPLAY_FORMAT="<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
-export _STAR_DISPLAY_COLUMN_COMMAND=(command column --table --table-columns-limit 3)
+# as a path can contain whitespaces (which is the character used by 'column' to split columns)
+
+# if there is no format provided, then use a default one with its custom column command
+# else if a format is provided but there is no column command then use a default one
+if [[ -z "$_STAR_DISPLAY_FORMAT" ]]; then
+    export _STAR_DISPLAY_FORMAT="<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
+    export _STAR_DISPLAY_COLUMN_COMMAND=( command column --table --table-columns-limit 3 )
+elif [[ ${#_STAR_DISPLAY_COLUMN_COMMAND[@]} -eq 0 ]]; then
+    export _STAR_DISPLAY_COLUMN_COMMAND=( command column --table )
+fi
 
 _star_set_variables()
 {
