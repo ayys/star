@@ -39,8 +39,8 @@ main() {
     while IFS= read -r line; do
         # Extract just the star name from each line
         broken_stars_name+=("$line")
-    # done < <(find "$_STAR_DIR" -xtype l -printf "%f\n")
-    done < <(star-list "$_STAR_DIR" --broken)
+    # done < <(find "$DIR" -xtype l -printf "%f\n")
+    done < <(star-list "$DIR" --broken)
 
     # return if no broken link was found
     if [[ ${#broken_stars_name[@]} -le 0 ]]; then
@@ -49,7 +49,7 @@ main() {
 
     # else remove each broken link
     for bl in "${broken_stars_name[@]}"; do
-        command rm "${_STAR_DIR}/${bl}" || return
+        command rm "${DIR}/${bl}" || return
     done
 
 }
