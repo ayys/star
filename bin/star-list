@@ -109,27 +109,27 @@ list_paths() {
 }
 
 list_custom_format() {
-    local stars=()
-    while IFS= read -r; do
-        stars+=("$REPLY")
-    done < <(list_stars "$FORMAT")
+    if [[ "$FORMAT" == *"<INDEX>"* ]]; then
+        local stars=()
+        while IFS= read -r; do
+            stars+=("$REPLY")
+        done < <(list_stars "$FORMAT")
 
-    if [[ "$INDEX" == "$INDEX_NONE" && "$FORMAT" == *"<INDEX>"* ]]; then
-        for s in "${stars[@]}"; do
-            echo "${s//<INDEX>/""}"
-        done
-    elif [[ "$FORMAT" == *"<INDEX>"* ]]; then
-        local index
-        [[ "$INDEX" == "$INDEX_ASC" ]] && index=1 || index="${#stars[@]}"
+        if [[ "$INDEX" == "$INDEX_NONE" ]]; then
+            for s in "${stars[@]}"; do
+                echo "${s//<INDEX>/""}"
+            done
+        else
+            local index
+            [[ "$INDEX" == "$INDEX_ASC" ]] && index=1 || index="${#stars[@]}"
 
-        for s in "${stars[@]}"; do
-            echo "${s//<INDEX>/$index}"
-            [[ "$INDEX" == "$INDEX_ASC" ]] || ((index--)) && ((index++))
-        done
+            for s in "${stars[@]}"; do
+                echo "${s//<INDEX>/$index}"
+                [[ "$INDEX" == "$INDEX_ASC" ]] || ((index--)) && ((index++))
+            done
+        fi
     else
-        for s in "${stars[@]}"; do
-            echo "$s"
-        done
+        list_stars "$FORMAT"
     fi
 }
 
