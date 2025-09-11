@@ -1,7 +1,6 @@
 #!/usr/bin/env bats
 
 load ../helpers/helper_setup
-load ../helpers/assertions
 
 setup() { setup_tmpdir; }
 teardown() { teardown_tmpdir; }
