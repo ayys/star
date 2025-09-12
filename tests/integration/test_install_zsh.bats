@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
 
-@test "zsh installation works" {
+@test "zsh integration - installation works" {
   skip "not implemented yet"
 }

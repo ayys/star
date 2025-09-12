@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
 
-@test "bash installation works" {
+@test "bash integration - installation works" {
   skip "not implemented yet"
 }

@@ -5,10 +5,10 @@ load ../helpers/helper_setup
 setup() { setup_tmpdir; }
 teardown() { teardown_tmpdir; }
 
-@test "list shows bookmarks" {
+@test "star list - list shows bookmarks" {
   skip "not implemented yet"
 }
 
-@test "list order can be changed with config" {
+@test "star list - list order can be changed with config" {
   skip "not implemented yet"
 }

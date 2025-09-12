@@ -5,10 +5,10 @@ load ../helpers/helper_setup
 setup() { setup_tmpdir; }
 teardown() { teardown_tmpdir; }
 
-@test "load by name navigates to correct dir" {
+@test "star load - load by name navigates to correct dir" {
   skip "not implemented yet"
 }
 
-@test "load by index works" {
+@test "star load - load by index works" {
   skip "not implemented yet"
 }

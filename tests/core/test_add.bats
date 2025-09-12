@@ -5,13 +5,13 @@ load ../helpers/helper_setup
 setup() { setup_tmpdir; }
 teardown() { teardown_tmpdir; }
 
-@test "star add requires at least one argument" {
+@test "star add - star add requires at least one argument" {
   run star add
   [ "$status" -ne 0 ]
   [[ "$output" == *"Usage"* ]]
 }
 
-@test "adding star without name uses basename" {
+@test "star add - adding star without name uses basename" {
   mkdir "$TEST_ROOT/foo_basename"
   run star add "$TEST_ROOT/foo_basename"
   [ "$status" -eq 0 ]
@@ -19,7 +19,7 @@ teardown() { teardown_tmpdir; }
   [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_basename")" = "$(realpath "$TEST_ROOT/foo_basename")" ]
 }
 
-@test "starring current directory without name uses basename" {
+@test "star add - starring current directory without name uses basename" {
   mkdir "$TEST_ROOT/foo_current"
   cd "$TEST_ROOT/foo_current"
   run star add .
@@ -28,35 +28,35 @@ teardown() { teardown_tmpdir; }
   [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_current")" = "$(realpath "$TEST_ROOT/foo_current")" ]
 }
 
-@test "using a star name with slashes is allowed (slashes are replaced by \"${_STAR_DIR_SEPARATOR}\")" {
+@test "star add - using a star name with slashes is allowed (slashes are replaced by \"${_STAR_DIR_SEPARATOR}\")" {
   mkdir "$TEST_ROOT/foo_slash"
   run star add "$TEST_ROOT/foo_slash" "slash/path"
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/slash${_STAR_DIR_SEPARATOR}path" ]
 }
 
-@test "using a star name with spaces is allowed (spaces are replaced by \"-\")" {
+@test "star add - using a star name with spaces is allowed (spaces are replaced by \"-\")" {
   mkdir "$TEST_ROOT/foo_space"
   run star add "$TEST_ROOT/foo_space" " my star "
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/-my-star-" ]
 }
 
-@test "multiple spaces in star name are replaced by one dash only" {
+@test "star add - multiple spaces in star name are replaced by one dash only" {
   mkdir "$TEST_ROOT/foo_multiple_spaces"
   run star add "$TEST_ROOT/foo_multiple_spaces" "   my    dir  "
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/-my-dir-" ]
 }
 
-@test "adding star with a basename containing spaces is allowed" {
+@test "star add - adding star with a basename containing spaces is allowed" {
   mkdir "$TEST_ROOT/my dir"
   run star add "$TEST_ROOT/my dir"
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/my-dir" ]
 }
 
-@test "using a star name with numbers is allowed" {
+@test "star add - using a star name with numbers is allowed" {
   mkdir "$TEST_ROOT/foo_number"
   run star add "$TEST_ROOT/foo_number" "abc123"
   [ "$status" -eq 0 ]
@@ -68,20 +68,20 @@ teardown() { teardown_tmpdir; }
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/foo_basename_321" ]
 }
 
-@test "adding star with a basename containing only numbers is allowed but it adds a dir- prefix" {
+@test "star add - adding star with a basename containing only numbers is allowed but it adds a dir- prefix" {
   mkdir "$TEST_ROOT/456"
   run star add "$TEST_ROOT/456"
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/dir-456" ]
 }
 
-@test "cannot star a directory that does not exist" {
+@test "star add - cannot star a directory that does not exist" {
   run star add "$TEST_ROOT/missing"
   [ "$status" -ne 0 ]
   [[ "$output" == *"does not exist"* ]]
 }
 
-@test "cannot star a directory that is already starred (without providing a different name)" {
+@test "star add - cannot star a directory that is already starred (without providing a different name)" {
   mkdir "$TEST_ROOT/foo_already_starred"
   star add "$TEST_ROOT/foo_already_starred"
   run star add "$TEST_ROOT/foo_already_starred"
@@ -89,7 +89,7 @@ teardown() { teardown_tmpdir; }
   [[ "$output" == *"already starred"* ]]
 }
 
-@test "cannot star a directory that is already starred (even if providing a different name)" {
+@test "star add - cannot star a directory that is already starred (even if providing a different name)" {
   mkdir "$TEST_ROOT/foo"
   star add "$TEST_ROOT/foo" "foo"
   run star add "$TEST_ROOT/foo" "bar"
@@ -97,7 +97,7 @@ teardown() { teardown_tmpdir; }
   [[ "$output" == *"already starred"* ]]
 }
 
-@test "cannot use the same star name twice (when passing it as argument to star add)" {
+@test "star add - cannot use the same star name twice (when passing it as argument to star add)" {
   mkdir "$TEST_ROOT/a" "$TEST_ROOT/b"
   star add "$TEST_ROOT/a" "same_name"
   run star add "$TEST_ROOT/b" "same_name"
@@ -105,7 +105,7 @@ teardown() { teardown_tmpdir; }
   [[ "$output" == *"already starred"* ]]
 }
 
-@test "conflicting star name when using basename resolves to parent/basename" {
+@test "star add - conflicting star name when using basename resolves to parent/basename" {
   mkdir -p "$TEST_ROOT/foo/config" "$TEST_ROOT/bar/config"
   run star add "$TEST_ROOT/foo/config"
   [ "$status" -eq 0 ]
