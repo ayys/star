@@ -283,7 +283,7 @@ star()
                 existing_star=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --get-name="$src_dir")
                 existing_star_display=${existing_star//"${_STAR_DIR_SEPARATOR}"//}
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
-                return 0
+                return 2
             fi
 
             # star names have to be unique: When adding a new starred directory using the basename of the path,
@@ -310,7 +310,7 @@ star()
 
                     if [[ "${dst_basename}" == "/" ]]; then
                         echo -e "Directory already starred with maximum possible path: ${COLOR_STAR}${dst_name_slash}${COLOR_RESET}."
-                        return 0
+                        return 2
                     fi
 
                     dst_name="${dst_basename}${_STAR_DIR_SEPARATOR}${dst_name}"
@@ -332,7 +332,7 @@ star()
                     target_path=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --get-path="${dst_name//\//"${_STAR_DIR_SEPARATOR}"}")
 
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
-                    return 0
+                    return 2
                 fi
             fi
 
