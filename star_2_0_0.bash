@@ -5,6 +5,21 @@
 export _STAR_HOME="${_STAR_HOME:-$HOME/.star}"
 export _STAR_STARS_DIR="stars"
 
+if [ -n "${BASH_SOURCE:-}" ]; then
+  script_path="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION:-}" ]; then
+  script_path="${(%):-%N}"
+fi
+
+script_dir="$( cd -- "$( dirname -- "$script_path" )" && pwd )"
+
+if [[ $PATH != *$script_dir* ]]; then
+    PATH="$script_dir/bin:$PATH"
+    export PATH
+fi
+unset script_path
+unset script_dir
+
 if [[ ! -d "$_STAR_HOME" ]]; then
     mkdir -p "$_STAR_HOME"
 fi
