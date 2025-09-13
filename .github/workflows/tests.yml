@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,3 +34,7 @@ jobs:
       - name: Environment variables tests
         run: |
           bats tests/envvars
+      
+      - name: Performance tests
+        run: |
+          bats tests/perf

@@ -9,3 +9,7 @@ bats tests/integration
 
 echo "Running environment variables tests."
 bats tests/envvars
+
+echo "Running performance tests."
+bats tests/perf
+
