@@ -68,6 +68,34 @@ elif [[ ${#_STAR_DISPLAY_COLUMN_COMMAND[@]} -eq 0 ]]; then
     export _STAR_DISPLAY_COLUMN_COMMAND=( command column --table )
 fi
 
+_star_add_variable()
+{
+    local star_name=$1
+    local star_path=$2
+    local env_var_name
+
+    star_name="${star_name//"${_STAR_DIR_SEPARATOR}"/_}"
+
+    # convert name to a suitable environment variable name
+    star_name=$(echo "$star_name" | tr ' +-.!?():,;=' '_' | tr --complement --delete "a-zA-Z0-9_" | tr '[:lower:]' '[:upper:]')
+
+    env_var_name="${_STAR_ENV_PREFIX}${star_name}"
+
+    if test -n "$ZSH_VERSION"; then
+        shell=zsh
+    elif test -n "$BASH_VERSION"; then
+        shell=bash
+    fi
+
+    # do not overwrite the variable if it already exists
+    case $shell in
+        zsh)    [ -z "${(P)env_var_name+x}" ] || continue ;;
+        bash)   [ -z "${!env_var_name+x}" ] || continue ;;
+    esac
+
+    export "$env_var_name"="$star_path"
+}
+
 _star_set_variables()
 {
     if [[ $_STAR_EXPORT_ENV_VARIABLES != "yes" ]]; then
@@ -85,31 +113,10 @@ _star_set_variables()
     while IFS= read -r line; do
         # Extract just the star name from each line
         stars_list+=("$line")
-    done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -printf "%f %l\n")
+    done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%f %l\n")
 
     for star in "${stars_list[@]}"; do
-        star_name="${star%% *}"
-        star_path="${star##* }"
-        star_name="${star_name//"${_STAR_DIR_SEPARATOR}"/_}"
-
-        # convert name to a suitable environment variable name
-        star_name=$(echo "$star_name" | tr ' +-.!?():,;=' '_' | tr --complement --delete "a-zA-Z0-9_" | tr '[:lower:]' '[:upper:]')
-
-        env_var_name="${_STAR_ENV_PREFIX}${star_name}"
-
-        if test -n "$ZSH_VERSION"; then
-            shell=zsh
-        elif test -n "$BASH_VERSION"; then
-            shell=bash
-        fi
-
-        # do not overwrite the variable if it already exists
-        case $shell in
-            zsh)    [ -z "${(P)env_var_name+x}" ] || continue ;;
-            bash)   [ -z "${!env_var_name+x}" ] || continue ;;
-        esac
-
-        export "$env_var_name"="$star_path"
+        _star_add_variable "${star%% *}" "${star##* }"
     done
 }
 
@@ -132,7 +139,7 @@ _star_unset_variables()
     for variable in "${variables_list[@]}"; do
         # unset the variable only if its value corresponds to an existing star path (absolute path of a starred directory)
         star_path="$(echo "$variable" | cut -d"=" -f2)"
-        if ! find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
+        if ! find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
             continue
         fi
         env_var_name="$(echo "$variable" | cut -d"=" -f1)"
@@ -275,7 +282,7 @@ star()
             stars_path=()
             while IFS= read -r line; do
                 stars_path+=("$line")
-            done < <(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --paths)
+            done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%l\n")
 
             # do not star this directory if it is already starred (even under another name)
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
@@ -349,7 +356,7 @@ star()
             echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//"${_STAR_DIR_SEPARATOR}"//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
 
             # update environment variables
-            _star_set_variables
+            _star_add_variable "${dst_name}" "${src_dir}"
             ;;
         LOAD)
             if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
