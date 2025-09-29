@@ -16,7 +16,7 @@ teardown() { teardown_tmpdir; }
   run star add "$TEST_ROOT/foo_basename"
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/foo_basename" ]
-  [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_basename")" = "$(realpath "$TEST_ROOT/foo_basename")" ]
+  [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_basename")" = "$TEST_ROOT/foo_basename" ]
 }
 
 @test "star add - starring current directory without name uses basename" {
@@ -25,7 +25,7 @@ teardown() { teardown_tmpdir; }
   run star add .
   [ "$status" -eq 0 ]
   [ -L "$_STAR_HOME/$_STAR_STARS_DIR/foo_current" ]
-  [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_current")" = "$(realpath "$TEST_ROOT/foo_current")" ]
+  [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_current")" = "$TEST_ROOT/foo_current" ]
 }
 
 @test "star add - using a star name with slashes is allowed (slashes are replaced by \"${_STAR_DIR_SEPARATOR}\")" {
