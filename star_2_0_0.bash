@@ -360,7 +360,7 @@ star()
             ;;
         LOAD)
             if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
-                echo "No star can be loaded because there is no starred directory."
+                echo "No star can be loaded because there are no starred directories."
                 return 0
             fi
 
