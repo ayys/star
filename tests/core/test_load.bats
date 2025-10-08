@@ -87,7 +87,7 @@ star_load_and_echo_pwd() {
   cd /
 
   # need to sleep else the updated time would be the same as the creation time
-  sleep 1
+  sleep 4
 
   star list
 
