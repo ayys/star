@@ -86,6 +86,8 @@ star_load_and_echo_pwd() {
 
   cd /
 
+  # TODO: set STAR SORT to sort according to access time
+
   # need to sleep else the updated time would be the same as the creation time
   sleep 1
 
