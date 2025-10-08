@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 load ../helpers/helper_setup
+load ../helpers/helper_log
 
 setup() { setup_common; }
 teardown() { teardown_common; }
@@ -33,6 +34,7 @@ star_load_and_echo_pwd() {
   if ! star load 1; then
     return 1
   fi
+  log_variable PWD
   [ "$PWD" = "$TEST_ROOT/foo_index" ]
 }
 
@@ -58,6 +60,7 @@ star_load_and_echo_pwd() {
   if ! star load NAME_FOO; then
     return 1
   fi
+  log_variable PWD
   [ "$PWD" = "$TEST_ROOT/foo_name" ]
 }
 
@@ -71,6 +74,7 @@ star_load_and_echo_pwd() {
   if ! star load FOO/SLASH; then
     return 1
   fi
+  log_variable PWD
   [ "$PWD" = "$TEST_ROOT/foo_slash" ]
 }
 
@@ -85,15 +89,21 @@ star_load_and_echo_pwd() {
   # need to sleep else the updated time would be the same as the creation time
   sleep 1
 
-  # cannot use bats' "run" command as it creates a subshell
-  if ! star load 2; then
-    return 1
-  fi
-  [ "$PWD" = "$TEST_ROOT/foo_A" ]
+  star list
 
   # cannot use bats' "run" command as it creates a subshell
   if ! star load 2; then
     return 1
   fi
+  log_variable PWD
+  [ "$PWD" = "$TEST_ROOT/foo_A" ]
+
+  star list
+
+  # cannot use bats' "run" command as it creates a subshell
+  if ! star load 2; then
+    return 1
+  fi
+  log_variable PWD
   [ "$PWD" = "$TEST_ROOT/foo_B" ]
 }
