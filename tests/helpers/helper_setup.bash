@@ -34,6 +34,7 @@ teardown_common() {
     echo "----------"
     tree -a "$TEST_ROOT"
     echo "----------"
+    find "$_STAR_HOME/$_STAR_STARS_DIR" -type l -not -xtype l -printf "%As %f %l\n"
     echo "========================================"
     echo
   fi

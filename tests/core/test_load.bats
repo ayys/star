@@ -90,6 +90,7 @@ star_load_and_echo_pwd() {
   sleep 4
 
   star list
+  find "$_STAR_HOME/$_STAR_STARS_DIR" -type l -not -xtype l -printf "%As %f %l\n"
 
   # cannot use bats' "run" command as it creates a subshell
   if ! star load 2; then
@@ -99,6 +100,7 @@ star_load_and_echo_pwd() {
   [ "$PWD" = "$TEST_ROOT/foo_A" ]
 
   star list
+  find "$_STAR_HOME/$_STAR_STARS_DIR" -type l -not -xtype l -printf "%As %f %l\n"
 
   # cannot use bats' "run" command as it creates a subshell
   if ! star load 2; then
