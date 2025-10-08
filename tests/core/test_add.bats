@@ -2,10 +2,10 @@
 
 load ../helpers/helper_setup
 
-setup() { setup_tmpdir; }
-teardown() { teardown_tmpdir; }
+setup() { setup_common; }
+teardown() { teardown_common; }
 
-@test "star add - star add requires at least one argument" {
+@test "star add - requires at least one argument" {
   run star add
   [ "$status" -ne 0 ]
   [[ "$output" == *"Usage"* ]]

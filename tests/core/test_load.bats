@@ -1,10 +1,9 @@
 #!/usr/bin/env bats
 
 load ../helpers/helper_setup
-load ../helpers/helper_log
 
-setup() { setup_tmpdir; }
-teardown() { teardown_tmpdir; }
+setup() { setup_common; }
+teardown() { teardown_common; }
 
 star_load_and_echo_pwd() {
   cd /
@@ -14,14 +13,12 @@ star_load_and_echo_pwd() {
 
 @test "star load - requires at least one argument" {
   run star load
-  log_bats_run
   [ "$status" -ne 0 ]
   [[ "$output" == *"Usage"* ]]
 }
 
 @test "star load - load without any starred directories fails" {
   run star load 1
-  log_bats_run
   [ "$status" -eq 0 ]
   [[ "$output" == *"no starred directories"* ]]
 }

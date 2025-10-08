@@ -2,8 +2,8 @@
 
 load ../helpers/helper_setup
 
-setup() { setup_tmpdir; }
-teardown() { teardown_tmpdir; }
+setup() { setup_common; }
+teardown() { teardown_common; }
 
 @test "star list - _STAR_DISPLAY_FORMAT variable can be used to set the format" {
   mkdir -p "$TEST_ROOT/dir"
