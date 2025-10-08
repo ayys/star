@@ -87,7 +87,7 @@ star_load_and_echo_pwd() {
   cd /
 
   # need to sleep else the updated time would be the same as the creation time
-  sleep 4
+  sleep 1
 
   star list
   find "$_STAR_HOME/$_STAR_STARS_DIR" -type l -not -xtype l -printf "%As %f %l\n"
@@ -98,6 +98,8 @@ star_load_and_echo_pwd() {
   fi
   log_variable PWD
   [ "$PWD" = "$TEST_ROOT/foo_A" ]
+
+  sleep 1
 
   star list
   find "$_STAR_HOME/$_STAR_STARS_DIR" -type l -not -xtype l -printf "%As %f %l\n"
