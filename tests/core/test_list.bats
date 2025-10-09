@@ -9,13 +9,13 @@ teardown() { teardown_common; }
   mkdir -p "$TEST_ROOT/dir"
   star add "$TEST_ROOT/dir" "name"
 
-  _STAR_DISPLAY_FORMAT="%f %l"
+  export _STAR_DISPLAY_FORMAT="%f %l"
   run star list
   [ "$status" -eq 0 ]
   # default command "column" produces a two whitespaces separation
   [[ "$output" == "name  $TEST_ROOT/dir" ]]
 
-  _STAR_DISPLAY_FORMAT="%f - %l"
+  export _STAR_DISPLAY_FORMAT="%f - %l"
   run star list
   [ "$status" -eq 0 ]
   [[ "$output" == "name  -  $TEST_ROOT/dir" ]]
@@ -28,7 +28,7 @@ teardown() { teardown_common; }
   star add "$TEST_ROOT/dir1" "name1"
   star add "$TEST_ROOT/dir2" "name2"
 
-  _STAR_DISPLAY_FORMAT="<INDEX>"
+  export _STAR_DISPLAY_FORMAT="<INDEX>"
   run star list
   [ "$status" -eq 0 ]
   [[ "$(echo "$output" | head -n 1)" == "1" ]]
