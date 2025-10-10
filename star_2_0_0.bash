@@ -63,9 +63,9 @@ export _STAR_COLOR_RESET
 # else if a format is provided but there is no column command then use a default one
 if [[ -z "$_STAR_DISPLAY_FORMAT" ]]; then
     export _STAR_DISPLAY_FORMAT="<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
-    export _STAR_DISPLAY_COLUMN_COMMAND=( command column --table --table-columns-limit 3 )
-elif [[ ${#_STAR_DISPLAY_COLUMN_COMMAND[@]} -eq 0 ]]; then
-    export _STAR_DISPLAY_COLUMN_COMMAND=( command column --table )
+    export _STAR_DISPLAY_COLUMN_COMMAND="command column --table --table-columns-limit 3"
+elif [[ -z "$_STAR_DISPLAY_COLUMN_COMMAND" ]]; then
+    export _STAR_DISPLAY_COLUMN_COMMAND="command column --table"
 fi
 
 _star_add_variable()
@@ -162,7 +162,7 @@ star()
     local COLOR_PATH="${_STAR_COLOR_PATH}"
     local COLOR_RESET="$_STAR_COLOR_RESET"
     local DISPLAY_FORMAT="${_STAR_DISPLAY_FORMAT}"
-    local DISPLAY_COLUMN_COMMAND=("${_STAR_DISPLAY_COLUMN_COMMAND[@]}")
+    local DISPLAY_COLUMN_COMMAND="${_STAR_DISPLAY_COLUMN_COMMAND}"
 
     # Parse the arguments
     star_to_store=""
@@ -413,7 +413,7 @@ star()
                 local stars_list_str
                 # TODO: pass sorting parameters to star-list
                 stars_list_str=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --format="$DISPLAY_FORMAT")
-                echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | "${DISPLAY_COLUMN_COMMAND[@]}"
+                echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | ${DISPLAY_COLUMN_COMMAND}
             fi
             ;;
         RENAME)
