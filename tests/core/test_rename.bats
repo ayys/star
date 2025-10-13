@@ -5,10 +5,37 @@ load ../helpers/helper_setup
 setup() { setup_common; }
 teardown() { teardown_common; }
 
+@test "star rename - requires two arguments" {
+  run star rename
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Usage"* ]]
+
+  run star rename foo
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Usage"* ]]
+}
+
 @test "star rename - rename works with new unique name" {
-  skip "not implemented yet"
+  mkdir "$TEST_ROOT/foo"
+  star add "$TEST_ROOT/foo" "name1"
+
+  run star rename name1 name2
+  [ "$status" -eq 0 ]
+  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/name2" ]]
+  [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/name2")" = "$TEST_ROOT/foo" ]
 }
 
 @test "star rename - rename fails if new name exists" {
-  skip "not implemented yet"
+  mkdir "$TEST_ROOT/foo"
+  mkdir "$TEST_ROOT/bar"
+  star add "$TEST_ROOT/foo"
+  star add "$TEST_ROOT/bar"
+
+  run star rename foo bar
+  [ "$status" -ne 0 ]
+}
+
+@test "star rename - cannot rename a star that does not exist" {
+  run star rename foo bar
+  [ "$status" -ne 0 ]
 }
