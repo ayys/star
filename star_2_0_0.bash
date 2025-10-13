@@ -424,7 +424,7 @@ star()
             if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_src}" ]]; then
                 if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_dst}" ]]; then
                     echo -e "There is already a star named ${COLOR_STAR}${rename_dst}${COLOR_RESET}."
-                    return 0
+                    return 2
                 fi
 
                 if ! mv "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_src}" "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_dst}"; then
@@ -435,6 +435,7 @@ star()
                 echo -e "Renamed star ${COLOR_STAR}${rename_src//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET} to ${COLOR_STAR}${rename_dst//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
             else
                 echo -e "Star ${COLOR_STAR}${rename_src}${COLOR_RESET} does not exist."
+                return 1
             fi
 
             # update environment variables
