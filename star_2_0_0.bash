@@ -442,9 +442,9 @@ star()
             _star_set_variables
             ;;
         REMOVE)
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]];then
+            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" || -z "$( ls -A "${_STAR_HOME}/${_STAR_STARS_DIR}" )" ]];then
                 echo "There are no starred directories to remove."
-                return 0
+                return 1
             fi
 
             # remove all env variables while their paths are still known
@@ -459,7 +459,8 @@ star()
                     fi
                     echo -e "Removed starred directory: ${COLOR_STAR}${star//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
                 else
-                    echo -e "Couldn't find any starred directory with the name: ${COLOR_STAR}${star//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
+                    echo -e "Could not find any starred directory with the name: ${COLOR_STAR}${star//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
+                    return 1
                 fi
             done
             # re create the other environment variables
