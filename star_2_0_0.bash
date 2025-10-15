@@ -89,8 +89,8 @@ _star_add_variable()
 
     # do not overwrite the variable if it already exists
     case $shell in
-        zsh)    [ -z "${(P)env_var_name+x}" ] || continue ;;
-        bash)   [ -z "${!env_var_name+x}" ] || continue ;;
+        zsh)    [ -z "${(P)env_var_name+x}" ] && return ;;
+        bash)   [ -z "${!env_var_name+x}" ] && return ;;
     esac
 
     export "$env_var_name"="$star_path"
@@ -356,7 +356,9 @@ star()
             echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
 
             # update environment variables
-            _star_add_variable "${dst_name}" "${src_dir}"
+            if [[ "$_STAR_EXPORT_ENV_VARIABLES" == "yes" ]]; then
+                _star_add_variable "${dst_name}" "${src_dir}"
+            fi
             ;;
         LOAD)
             if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
