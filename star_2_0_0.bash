@@ -415,7 +415,18 @@ star()
                 local stars_list_str
                 # TODO: pass sorting parameters to star-list
                 stars_list_str=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --format="$DISPLAY_FORMAT")
-                echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | ${DISPLAY_COLUMN_COMMAND}
+
+                if test -n "$ZSH_VERSION"; then
+                    shell=zsh
+                elif test -n "$BASH_VERSION"; then
+                    shell=bash
+                fi
+
+                # do not overwrite the variable if it already exists
+                case $shell in
+                    zsh)    "${(z)_STAR_DISPLAY_COLUMN_COMMAND}" <<< "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" ;;
+                    bash)   echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | ${DISPLAY_COLUMN_COMMAND} ;;
+                esac
             fi
             ;;
         RENAME)
