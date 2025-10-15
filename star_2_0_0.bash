@@ -467,9 +467,9 @@ star()
             _star_set_variables
             ;;
         RESET)
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]];then
+            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" || -z "$( ls -A "${_STAR_HOME}/${_STAR_STARS_DIR}" )" ]];then
                 echo "There are no starred directories to remove."
-                return 0
+                return 1
             fi
 
             if [[ "${force_reset}" -eq 1 ]]; then
