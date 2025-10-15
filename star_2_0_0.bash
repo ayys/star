@@ -485,7 +485,7 @@ star()
 
             while true; do
                 echo -n "Remove all starred directories? [y/N] "
-                read user_input
+                read -r user_input
                 case $user_input in
                     [Yy]*|yes )
                         # remove all env variables while their paths are still known
