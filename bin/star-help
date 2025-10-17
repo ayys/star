@@ -2,10 +2,10 @@
 
 usage-add() {
     cat << EOF
-    Usage: star add PATH [NAME]
-           star a PATH [NAME]
+Usage: star add PATH [NAME]
+       star a PATH [NAME]
 
-    Add a new bookmark.
+Add a new bookmark.
 
     PATH
         Relative path to the directory to bookmark.
@@ -22,19 +22,19 @@ EOF
 
 usage-list() {
     cat << EOF
-    Usage: star list
-           star L
+Usage: star list
+       star L
 
-    List all bookmarks, sorted according to last load (top ones are the last loaded bookmarks).
+List all bookmarks, sorted according to last load (top ones are the last loaded bookmarks).
 EOF
 }
 
 usage-load() {
     cat << EOF
-    Usage: star load STAR
-           star l STAR
+Usage: star load STAR
+       star l STAR
 
-    Navigate (cd) into the bookmarked directory.
+Navigate (cd) into the bookmarked directory.
 
     STAR
         Should be the name or index of a bookmarked directory (one that is listed using "star list").
@@ -43,9 +43,9 @@ EOF
 
 usage-rename() {
     cat << EOF
-    Usage: star rename <STAR> <NEW_STAR_NAME>
+Usage: star rename <STAR> <NEW_STAR_NAME>
 
-    Rename an existing bookmark.
+Rename an existing bookmark.
 
     STAR
         Should be the name of a bookmarked directory.
@@ -59,10 +59,10 @@ EOF
 
 usage-remove() {
     cat << EOF
-    Usage: star remove <STAR> [STAR]...
-           star rm <STAR> [STAR]...
+Usage: star remove <STAR> [STAR]...
+       star rm <STAR> [STAR]...
 
-    Remove one or more bookmarks.
+Remove one or more bookmarks.
 
     STAR
         Should be the name of a bookmarked directory.
@@ -71,9 +71,9 @@ EOF
 
 usage-reset() {
     cat << EOF
-    Usage: star reset [-f|--force]
+Usage: star reset [-f|--force]
 
-    Remove all bookmarks and the ".star" directory.
+Remove all bookmarks and the ".star" directory.
 
     --force, -f
         Force reset without prompting the user.
@@ -82,9 +82,9 @@ EOF
 
 usage-config() {
     cat << EOF
-    Usage: star config [OPTION]
+Usage: star config [OPTION]
 
-    Display or edit the "star" configuration.
+Display or edit the "star" configuration.
 
     (d) default config
 
@@ -108,10 +108,10 @@ EOF
 
 usage-default() {
     cat << EOF
-    Usage: star [MODE]
+Usage: star [MODE]
 
-    Dynamically bookmark and cd into directories.
-    Bookmarks are called "stars".
+Dynamically bookmark and cd into directories.
+Bookmarks are called "stars".
 
     MODE
         add     Add a new bookmark

@@ -2,28 +2,28 @@
 
 usage() {
     cat << EOF
-    Usage: star-list DIR [LIST_MODE] [OPTIONS]...
-           star-list DIR ITEM_MODE
+Usage: star-list [LIST_MODE] [OPTIONS]...
+       star-list ITEM_MODE
 
-    DIR: Where to search for the symlinks. Relative or absolute path.
+    List stars in ${_STAR_HOME}/${_STAR_STARS_DIR}.
 
-    LIST_MODE: To display the starred directorus. Choose one of the following list modes (exclusives):
+    LIST_MODE: Display the starred directories. List modes are exclusives.
+        -f, --format=FORMAT     Default mode, to print with a custom format.
         -n, --names             Only print the star's names.
         -p, --paths             Only print the star's paths.
-        -f, --format=FORMAT     Print with a custom format. See "Formatting".
 
-            Formatting:
-            The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
-            This script also provide the following formatting:
-                <INDEX>     will be replaced by an index
+        FORMAT:
+        The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
+        This script also provides the following formatting:
+            <INDEX>     will be replaced by an index
 
-    OPTIONS:
-        -s, --sort={name|loaded|none}
-        -o, --order={desc|asc}
-        -i, --index={none|desc|asc}     Only with "--format".
-        -b, --broken                    Only search for broken symlinks.
+        OPTIONS: Changes how the stars are listed.
+            -s, --sort={name|loaded|none}   Default: loaded.
+            -o, --order={desc|asc}          Default: desc.
+            -i, --index={none|desc|asc}     Only with "--format". Default: asc.
+            -b, --broken                    Only search for broken symlinks.
     
-    ITEM_MODE: To retrieve a single bit of information
+    ITEM_MODE: To retrieve a single bit of information.
         -P, --get-path=NAME     Get the path of a star according to its name. Slashes should have been replaced by the separator.
         -N, --get-name=PATH     Get the name of a star according to its path
 EOF
@@ -214,7 +214,7 @@ main() {
                 fi
 
                 if [[ "$value" != "$SORT_NAME" && "$value" != "$SORT_LOADED" && "$value" != "$SORT_NONE" ]]; then
-                    echo -e "Invalid sort value: $value\n"
+                    echo "Invalid sort value: $value"
                     usage
                     exit 1
                 fi
@@ -229,7 +229,7 @@ main() {
                 fi
 
                 if [[ "$value" != "$ORDER_DESC" && "$value" != "$ORDER_ASC" ]]; then
-                    echo -e "Invalid order value: $value\n"
+                    echo "Invalid order value: $value"
                     usage
                     exit 1
                 fi
@@ -244,17 +244,18 @@ main() {
                 fi
 
                 if [[ "$value" != "$INDEX_DESC" && "$value" != "$INDEX_ASC" && "$value" != "$INDEX_NONE" ]]; then
-                    echo -e "Invalid index value: $value\n"
+                    echo "Invalid index value: $value"
                     usage
                     exit 1
                 fi
                 INDEX="$value"
                 ;;
             "-b"|"--broken" )
+                MODE="$MODE_NAMES"
                 TYPE_TEST="-xtype l"
                 ;;
             *)
-                echo -e "Invalid option/argument: $opt\n"
+                echo "Invalid option/argument: $opt"
                 usage
                 exit 1
                 ;;
