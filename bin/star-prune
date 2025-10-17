@@ -2,15 +2,18 @@
 
 usage() {
     cat << EOF
-    Usage: star-prune DIR
+Usage: star-prune
 
-    Remove all broken symlinks in the given directory. A broken symlink corresponds to a starred directory that does not exist anymore.
-
-    DIR: Where to search for the symlinks. Relative or absolute path.
+    Remove all broken symlinks in ${_STAR_HOME}/${_STAR_STARS_DIR}.
+    A broken symlink corresponds to a starred directory that does not exist anymore.
 EOF
 }
 
 main() {
+    if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
+        return 0
+    fi
+
     local broken_stars_name bl line
 
     broken_stars_name=()
@@ -28,7 +31,7 @@ main() {
 
     # else remove each broken link
     for bl in "${broken_stars_name[@]}"; do
-        command rm "${DIR}/${bl}" || return
+        command rm "${_STAR_HOME}/${_STAR_STARS_DIR}/${bl}" || return
     done
 }
 

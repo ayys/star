@@ -576,8 +576,7 @@ star()
 # complete -F _star_completion sah
 
 # remove broken symlinks directly when sourcing this file
-# TODO: put this verification in star-prune
-[[ -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]] && star-prune
+star-prune
 
 # set environment variables
 _star_set_variables
