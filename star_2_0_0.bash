@@ -59,15 +59,6 @@ export _STAR_COLOR_RESET
 # it is strongly recommended to set the number of columns in the 'column' command (--table-columns-limit) and to put the path in the last column, 
 # as a path can contain whitespaces (which is the character used by 'column' to split columns)
 
-# if there is no format provided, then use a default one with its custom column command
-# else if a format is provided but there is no column command then use a default one
-if [[ -z "$_STAR_DISPLAY_FORMAT" ]]; then
-    export _STAR_DISPLAY_FORMAT="<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
-    export _STAR_DISPLAY_COLUMN_COMMAND="command column --table --table-columns-limit 3"
-elif [[ -z "$_STAR_DISPLAY_COLUMN_COMMAND" ]]; then
-    export _STAR_DISPLAY_COLUMN_COMMAND="command column --table"
-fi
-
 _star_add_variable()
 {
     local star_name=$1
@@ -161,8 +152,6 @@ star()
     local COLOR_STAR="${_STAR_COLOR_STAR}"
     local COLOR_PATH="${_STAR_COLOR_PATH}"
     local COLOR_RESET="$_STAR_COLOR_RESET"
-    local DISPLAY_FORMAT="${_STAR_DISPLAY_FORMAT}"
-    local DISPLAY_COLUMN_COMMAND="${_STAR_DISPLAY_COLUMN_COMMAND}"
 
     # Parse the arguments
     star_to_store=""
@@ -208,7 +197,9 @@ star()
                 break
                 ;;
             "L"|"list" )
+                local star_list_parameters
                 mode=LIST
+                star_list_parameters=("$@")
                 # handle the "list" case immediately, no matter the other parameters
                 break
                 ;;
@@ -287,7 +278,7 @@ star()
             # do not star this directory if it is already starred (even under another name)
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
                 # Find the star name for this directory's path
-                existing_star=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --get-name="$src_dir")
+                existing_star=$(star-list --get-name="$src_dir")
                 existing_star_display="${existing_star//${_STAR_DIR_SEPARATOR}//}"
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
                 return 2
@@ -336,7 +327,7 @@ star()
                 dst_name_slash="${dst_name//${_STAR_DIR_SEPARATOR}//}"
                 if [[ -e ${_STAR_HOME}/${_STAR_STARS_DIR}/${dst_name} ]]; then
                     # Get the path associated with star name
-                    target_path=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --get-path="${dst_name//\//${_STAR_DIR_SEPARATOR}}")
+                    target_path=$(star-list --get-path="${dst_name//\//${_STAR_DIR_SEPARATOR}}")
 
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
                     return 2
@@ -372,7 +363,7 @@ star()
                 stars_list=()
                 while IFS= read -r line; do
                     stars_list+=("$line")
-                done < <(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --names) # TODO: pass sorting parameters to star-list
+                done < <(star-list --names) # TODO: pass sorting parameters to star-list
 
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
@@ -394,7 +385,7 @@ star()
                 if ! cd -P "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_to_load}"; then
                     # get path according to name
                     local star_to_load_path
-                    star_to_load_path=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --get-path="${star_to_load}")
+                    star_to_load_path=$(star-list --get-path="${star_to_load}")
 
                     if [[ ! -d "$star_to_load_path" ]]; then
                         echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\": associated directory \"${COLOR_PATH}${star_to_load_path}${COLOR_RESET}\" does not exist."
@@ -409,25 +400,7 @@ star()
             fi
             ;;
         LIST)
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]];then
-                return 0
-            else
-                local stars_list_str
-                # TODO: pass sorting parameters to star-list
-                stars_list_str=$(star-list "${_STAR_HOME}/${_STAR_STARS_DIR}" --format="$DISPLAY_FORMAT")
-
-                if test -n "$ZSH_VERSION"; then
-                    shell=zsh
-                elif test -n "$BASH_VERSION"; then
-                    shell=bash
-                fi
-
-                # do not overwrite the variable if it already exists
-                case $shell in
-                    zsh)    "${(z)_STAR_DISPLAY_COLUMN_COMMAND}" <<< "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" ;;
-                    bash)   echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | ${DISPLAY_COLUMN_COMMAND} ;;
-                esac
-            fi
+            star-list "${star_list_parameters[@]}"
             ;;
         RENAME)
             # remove the environment variable corresponding to the old name
@@ -603,7 +576,8 @@ star()
 # complete -F _star_completion sah
 
 # remove broken symlinks directly when sourcing this file
-[[ -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]] && star-prune "${_STAR_HOME}/${_STAR_STARS_DIR}"
+# TODO: put this verification in star-prune
+[[ -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]] && star-prune
 
 # set environment variables
 _star_set_variables

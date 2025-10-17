@@ -11,27 +11,6 @@ EOF
 }
 
 main() {
-    local value
-
-    value="$1"
-    if [[ ! -d "$value" ]]; then
-        echo -e "Invalid dir value: $value\n"
-        usage
-        exit 1
-    fi
-    DIR=$(realpath "$value")
-    shift
-
-    if [[ ! -n $DIR ]]; then
-        echo -e "Directory in which to search is unset. Set it with '--dir' option.\n"
-        usage
-        return 2
-    fi
-    if [[ ! -d $DIR ]]; then
-        echo -e "Directory in which to search does not exist: '$DIR'.\n"
-        return 2
-    fi
-
     local broken_stars_name bl line
 
     broken_stars_name=()
@@ -40,7 +19,7 @@ main() {
         # Extract just the star name from each line
         broken_stars_name+=("$line")
     # done < <(find "$DIR" -xtype l -printf "%f\n")
-    done < <(star-list "$DIR" --broken)
+    done < <(star-list --broken)
 
     # return if no broken link was found
     if [[ ${#broken_stars_name[@]} -le 0 ]]; then
@@ -51,7 +30,6 @@ main() {
     for bl in "${broken_stars_name[@]}"; do
         command rm "${DIR}/${bl}" || return
     done
-
 }
 
 main "$@"

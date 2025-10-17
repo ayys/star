@@ -5,30 +5,30 @@ load ../helpers/helper_setup
 setup() { setup_common; }
 teardown() { teardown_common; }
 
-@test "star list - _STAR_DISPLAY_FORMAT variable can be used to set the format" {
+@test "star list - _STAR_LIST_FORMAT variable can be used to set the format" {
   mkdir -p "$TEST_ROOT/dir"
   star add "$TEST_ROOT/dir" "name"
 
-  export _STAR_DISPLAY_FORMAT="%f %l"
+  export _STAR_LIST_FORMAT="%f %l"
   run star list
   [ "$status" -eq 0 ]
   # default command "column" produces a two whitespaces separation
   [[ "$output" == "name  $TEST_ROOT/dir" ]]
 
-  export _STAR_DISPLAY_FORMAT="%f - %l"
+  export _STAR_LIST_FORMAT="%f - %l"
   run star list
   [ "$status" -eq 0 ]
   [[ "$output" == "name  -  $TEST_ROOT/dir" ]]
 }
 
-@test "star list - _STAR_DISPLAY_FORMAT variable can contain an <INDEX> field" {
+@test "star list - _STAR_LIST_FORMAT variable can contain an <INDEX> field" {
   mkdir -p "$TEST_ROOT/dir1"
   mkdir -p "$TEST_ROOT/dir2"
 
   star add "$TEST_ROOT/dir1" "name1"
   star add "$TEST_ROOT/dir2" "name2"
 
-  export _STAR_DISPLAY_FORMAT="<INDEX>"
+  export _STAR_LIST_FORMAT="<INDEX>"
   run star list
   [ "$status" -eq 0 ]
   [[ "$(echo "$output" | head -n 1)" == "1" ]]

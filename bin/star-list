@@ -31,7 +31,7 @@ EOF
 
 MAX_DEPTH=1
 
-# Possible values for options
+### Possible values for options ###
 MODE_NAMES="names"
 MODE_PATHS="paths"
 MODE_CUSTOM_FORMAT="custom-format"
@@ -50,15 +50,30 @@ INDEX_DESC="desc"
 INDEX_ASC="asc"
 
 
-# Default values
-MODE=$MODE_NAMES
-FORMAT="\n"
+### Default values ###
+MODE=$MODE_CUSTOM_FORMAT
 
-SORT=$SORT_LOADED
-ORDER=$ORDER_DESC
-INDEX=$INDEX_ASC
+FORMAT=${_STAR_LIST_FORMAT:-"<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"}
 
-DIR=
+# if there is no format provided, then use a default one with its custom column command
+# else if a format is provided but there is no column command then use a default one
+if [[ -z "$_STAR_LIST_FORMAT" ]]; then
+    COLUMN_COMMAND="command column --table --table-columns-limit 3"
+elif [[ -z "$_STAR_LIST_COLUMN_COMMAND" ]]; then
+    COLUMN_COMMAND="command column --table"
+else
+    COLUMN_COMMAND="${_STAR_LIST_COLUMN_COMMAND}"
+fi
+SORT=${_STAR_LIST_SORT:-"$SORT_LOADED"}
+ORDER=${_STAR_LIST_ORDER:-"$ORDER_DESC"}
+INDEX=${_STAR_LIST_INDEX:-"$INDEX_ASC"}
+
+if [[ -z "${_STAR_HOME}" ]]; then
+    echo "[star-list] Error: _STAR_HOME is not set." 1>&2
+    exit 2
+fi
+
+DIR="${_STAR_HOME}/${_STAR_STARS_DIR}"
 
 # by default, search for non broken symlinks
 TYPE_TEST="-type l -not -xtype l"
@@ -144,14 +159,9 @@ get_item_path() {
 main() {
     local value
 
-    value="$1"
-    if [[ ! -d "$value" ]]; then
-        echo -e "Invalid dir value: $value\n"
-        usage
-        exit 1
+    if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
+        return 0
     fi
-    DIR=$(realpath "$value")
-    shift
 
     while [[ $# -gt 0 ]]; do
         opt="$1";
@@ -251,16 +261,6 @@ main() {
         esac
     done
 
-    if [[ ! -n $DIR ]]; then
-        echo -e "Directory in which to search is unset. Set it with '--dir' option.\n"
-        usage
-        return 2
-    fi
-    if [[ ! -d $DIR ]]; then
-        echo -e "Directory in which to search does not exist: '$DIR'.\n"
-        return 2
-    fi
-
     case "$MODE" in
         "$MODE_NAMES" )
             list_names
@@ -271,8 +271,11 @@ main() {
             exit $?
             ;;
         "$MODE_CUSTOM_FORMAT" )
-            list_custom_format
-            exit $?
+            local stars_list_str
+            if ! stars_list_str=$(list_custom_format); then
+                exit $?
+            fi
+            echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | ${COLUMN_COMMAND}
             ;;
         "$MODE_GET_NAME" )
             get_item_name
