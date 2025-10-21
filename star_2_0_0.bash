@@ -72,17 +72,9 @@ _star_add_variable()
 
     env_var_name="${_STAR_ENV_PREFIX}${star_name}"
 
-    if test -n "$ZSH_VERSION"; then
-        shell=zsh
-    elif test -n "$BASH_VERSION"; then
-        shell=bash
+    if env | grep "^${env_var_name}=" >& /dev/null; then
+        return
     fi
-
-    # do not overwrite the variable if it already exists
-    case $shell in
-        zsh)    [ -z "${(P)env_var_name+x}" ] && return ;;
-        bash)   [ -z "${!env_var_name+x}" ] && return ;;
-    esac
 
     export "$env_var_name"="$star_path"
 }
@@ -97,17 +89,16 @@ _star_set_variables()
         return
     fi
 
-    local stars_list star star_name star_path line env_var_name shell
+    local star_name_and_path env_var_name
 
     # list of stars with format: "name path", where path can contain spaces
     stars_list=()
-    while IFS= read -r line; do
-        # Extract just the star name from each line
-        stars_list+=("$line")
+    while IFS= read -r; do
+        stars_list+=("$REPLY")
     done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%f %l\n")
 
-    for star in "${stars_list[@]}"; do
-        _star_add_variable "${star%% *}" "${star##* }"
+    for star_name_and_path in "${stars_list[@]}"; do
+        _star_add_variable "${star_name_and_path%% *}" "${star_name_and_path##* }"
     done
 }
 
@@ -118,13 +109,13 @@ _star_unset_variables()
         return
     fi
 
-    local variables_list variable env_var_name line star_path
+    local variables_list variable env_var_name star_path
 
     # get all the environment variables starting with _STAR_ENV_PREFIX
     # format: <NAME>=<VALUE>
     variables_list=()
-    while IFS= read -r line; do
-        variables_list+=("$line")
+    while IFS= read -r; do
+        variables_list+=("$REPLY")
     done < <(env | grep "^${_STAR_ENV_PREFIX}")
 
     for variable in "${variables_list[@]}"; do
