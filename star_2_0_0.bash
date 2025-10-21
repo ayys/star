@@ -153,105 +153,122 @@ star()
     local COLOR_PATH="${_STAR_COLOR_PATH}"
     local COLOR_RESET="$_STAR_COLOR_RESET"
 
-    # Parse the arguments
-    star_to_store=""
-    stars_to_remove=()
-    force_reset=0
-    mode=HELP
+    if [[ $# -eq 0 ]]; then
+        star-help
+        return 0
+    fi
 
-    while [[ $# -gt 0 ]]; do
-        opt="$1"
-        shift
-
-        # remove multiple stars
-        if [[ ${mode} == REMOVE ]]; then
-            stars_to_remove+=("${opt//\//${_STAR_DIR_SEPARATOR}}")
-            continue
-        fi
-
-        case "$opt" in
-            "--" ) break 2;;
-            "-" ) break 2;;
-            "add" )
-                mode=STORE
-
-                # first argument has to be the relative path
-                if [[ $# -lt 1 ]]; then
-                    echo -e "star add: missing PATH argument.\n"
-                    star-help --mode=add
-                    return 1
-                fi
-                src_dir=$(realpath "$1")
-                shift
-                if [[ ! -d $src_dir ]]; then
-                    echo -e "Directory does not exist: '$src_dir'.\n"
-                    return 2
-                fi
-
-                # If there's another argument then use it as star name,
-                # else the star name will be created from the name of the directory
-                if [[ $# -gt 0 && ! "$1" =~ ^- ]]; then
-                    star_to_store="$1"
-                    shift
-                fi
-                break
-                ;;
-            "L"|"list" )
-                local star_list_parameters
-                mode=LIST
-                star_list_parameters=("$@")
-                # handle the "list" case immediately, no matter the other parameters
-                break
-                ;;
-            "l"|"load" )
-                # first argument should be the name or the index of the star to load
-                if [[ $# -lt 1 ]]; then
-                    echo -e "star load: missing STAR argument.\n"
-                    star-help --mode=load
-                    return 1
-                fi
-                star_to_load="${1//\//${_STAR_DIR_SEPARATOR}}"
-                mode=LOAD
-                shift
-                ;;
-            "rename" )
-                mode=RENAME
-                if [[ $# -lt 2 ]]; then
-                    echo -e "star rename: missing argument(s).\n"
-                    star-help --mode=rename
-                    return 1
-                fi
-                rename_src="${1//\//${_STAR_DIR_SEPARATOR}}"
-                rename_dst="${2//\//${_STAR_DIR_SEPARATOR}}"
-                break
-                ;;
-            "rm"|"remove" )
-                if [[ $# -lt 1 ]]; then
-                    echo -e "star remove: missing argument(s).\n"
-                    star-help --mode=remove
-                    return 1
-                fi
-                stars_to_remove+=("${1//\//${_STAR_DIR_SEPARATOR}}")
-                mode=REMOVE
-                shift
-                ;;
-            "reset" )
-                mode=RESET
-                if [[ "$1" == "-f" || "$1" == "--force" ]]; then
-                    force_reset=1
-                fi
-                break
-                ;;
-            "h"|"help"|"-h"|"--help" )
-                mode=HELP
-                break 2
-                ;;
-            *)
-                echo -e "Invalid mode: $opt\n"
+    # parse the mode
+    local mode
+    local arg_mode=$1
+    shift
+    case $arg_mode in
+        add)        mode=STORE  ;;
+        L|list)     mode=LIST   arg_mode=list   ;;
+        l|load)     mode=LOAD   arg_mode=load   ;;
+        rename)     mode=RENAME ;;
+        rm|remove)  mode=REMOVE arg_mode=remove ;;
+        reset)      mode=RESET  ;;
+        h|help|-h|--help)
+            if [[ $# -gt 0 ]]; then
+                star-help --mode="$1"
+            else
                 star-help
+            fi
+            return 0
+            ;;
+        *)
+            echo "star: invalid mode '$arg_mode'"
+            star-help
+            return 1
+            ;;
+    esac
+
+    # handle "star MODE --help" immediately
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        star-help --mode="$arg_mode"
+        return 0
+    fi
+
+    # Parse the arguments associated to the selected mode
+    case ${mode} in
+        STORE)
+            # first argument has to be the relative path
+            if [[ $# -lt 1 ]]; then
+                echo "star add: missing PATH argument."
+                star-help --mode=add
+                return 1
+            fi
+            src_dir=$(realpath "$1")
+            shift
+            if [[ ! -d $src_dir ]]; then
+                echo "Directory does not exist: '$src_dir'."
                 return 2
-                ;;
-       esac
+            fi
+
+            local star_to_store=""
+
+            # If there's another argument then use it as star name,
+            # else the star name will be created from the name of the directory
+            if [[ $# -gt 0 && ! "$1" =~ ^- ]]; then
+                star_to_store="$1"
+                shift
+            fi
+            ;;
+        LIST)
+            # handle the "list" case immediately
+            star-list "$@"
+            return $?
+            ;;
+        LOAD)
+            # first argument should be the name or the index of the star to load
+            if [[ $# -lt 1 ]]; then
+                echo "star load: missing argument."
+                star-help --mode=load
+                return 1
+            fi
+            local star_to_load="${1//\//${_STAR_DIR_SEPARATOR}}"
+            shift
+            ;;
+        RENAME)
+            if [[ $# -lt 2 ]]; then
+                echo "star rename: missing argument(s)."
+                star-help --mode=rename
+                return 1
+            fi
+            local rename_src rename_dst
+            rename_src="${1//\//${_STAR_DIR_SEPARATOR}}"
+            rename_dst="${2//\//${_STAR_DIR_SEPARATOR}}"
+            ;;
+        REMOVE)
+            if [[ $# -lt 1 ]]; then
+                echo "star remove: missing argument(s)."
+                star-help --mode=remove
+                return 1
+            fi
+            local stars_to_remove=()
+            # remove multiple stars
+            while [[ $# -gt 0 ]]; do
+                stars_to_remove+=("${1//\//${_STAR_DIR_SEPARATOR}}")
+                shift
+            done
+            ;;
+        RESET)
+            mode=RESET
+            local force_reset=0
+            if [[ "$1" == "-f" || "$1" == "--force" ]]; then
+                force_reset=1
+            fi
+            ;;
+    esac
+
+    # in case there are more arguments and it happens to be help option
+    while [[ $# -gt 0 ]]; do
+        if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+            star-help --mode="$arg_mode"
+            return 0
+        fi
+        shift
     done
 
     # process the selected mode
@@ -399,9 +416,6 @@ star()
                 touch -ah "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_to_load}"
             fi
             ;;
-        LIST)
-            star-list "${star_list_parameters[@]}"
-            ;;
         RENAME)
             # remove the environment variable corresponding to the old name
             # (easier to remove all environment variables)
@@ -493,12 +507,6 @@ star()
                         echo "Not a valid answer.";;
                 esac
             done
-            ;;
-        HELP)
-            star-help
-            return 0
-            ;;
-        *)
             ;;
     esac
 }
