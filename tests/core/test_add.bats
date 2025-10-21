@@ -28,11 +28,11 @@ teardown() { teardown_common; }
   [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/foo_current")" = "$TEST_ROOT/foo_current" ]
 }
 
-@test "star add - using a star name with slashes is allowed (slashes are replaced by \"${_STAR_DIR_SEPARATOR}\")" {
+@test "star add - using a star name with slashes is allowed (slashes are replaced by \"»\")" {
   mkdir "$TEST_ROOT/foo_slash"
   run star add "$TEST_ROOT/foo_slash" "slash/path"
   [ "$status" -eq 0 ]
-  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/slash${_STAR_DIR_SEPARATOR}path" ]]
+  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/slash»path" ]]
 }
 
 @test "star add - using a star name with spaces is allowed (spaces are replaced by \"-\")" {
@@ -113,11 +113,11 @@ teardown() { teardown_common; }
 
   run star add "$TEST_ROOT/bar/config"
   [ "$status" -eq 0 ]
-  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/bar${_STAR_DIR_SEPARATOR}config" ]]
+  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/bar»config" ]]
 
   mkdir -p "$TEST_ROOT/foo/config/bar/config"
   run star add "$TEST_ROOT/foo/config/bar/config"
   [ "$status" -eq 0 ]
-  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/config${_STAR_DIR_SEPARATOR}bar${_STAR_DIR_SEPARATOR}config" ]]
+  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/config»bar»config" ]]
 }
 

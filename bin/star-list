@@ -166,6 +166,8 @@ get_item_path() {
 
 main() {
     local value
+    # character used to replace slashes in the star names
+    local star_dir_separator="»"
 
     if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
         return 0
@@ -288,7 +290,7 @@ main() {
             if ! stars_list_str=$(list_custom_format); then
                 exit $?
             fi
-            echo "${stars_list_str//${_STAR_DIR_SEPARATOR}//}" | ${COLUMN_COMMAND}
+            echo "${stars_list_str//${star_dir_separator}//}" | ${COLUMN_COMMAND}
             ;;
         "$MODE_GET_NAME" )
             get_item_name
