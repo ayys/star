@@ -136,11 +136,19 @@ list_custom_format() {
             done
         else
             local index
-            [[ "$INDEX" == "$INDEX_ASC" ]] && index=1 || index="${#stars[@]}"
+            if [[ "$INDEX" == "$INDEX_ASC" ]]; then
+                index=1
+            else
+                index="${#stars[@]}"
+            fi
 
             for s in "${stars[@]}"; do
                 echo "${s//<INDEX>/$index}"
-                [[ "$INDEX" == "$INDEX_ASC" ]] || ((index--)) && ((index++))
+                if [[ "$INDEX" == "$INDEX_ASC" ]]; then
+                    ((index++))
+                else
+                    ((index--))
+                fi
             done
         fi
     else
