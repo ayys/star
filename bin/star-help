@@ -25,7 +25,10 @@ usage-list() {
 Usage: star list
        star L
 
-List all bookmarks, sorted according to last load (top ones are the last loaded bookmarks).
+List all bookmarks, by default sorted according to last load (top ones are the last loaded bookmarks).
+
+Listing can be customized either by setting environment variables or by using star-list options.
+Use 'star-list --help': its specification also applies to 'star list'.
 EOF
 }
 
@@ -121,7 +124,9 @@ Bookmarks are called "stars".
         remove  Remove a bookmark
         reset   Delete all bookmarks
 
-    Get more information for each mode using: star MODE --help
+    Get more information for each mode using:
+        star MODE --help
+        star help MODE
 EOF
 }
 
