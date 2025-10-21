@@ -27,9 +27,6 @@ fi
 # Enable (yes) or disable (no) environment variables
 export _STAR_EXPORT_ENV_VARIABLES="${_STAR_EXPORT_ENV_VARIABLES:-"yes"}"
 
-# The common prefix of the environment variables created according to the star names
-export _STAR_ENV_PREFIX="${_STAR_ENV_PREFIX:-"STAR_"}"
-
 if [ -t 1 ]; then
     # Check for truecolor support
     if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
@@ -62,13 +59,14 @@ _star_add_variable()
     local env_var_name
     # character used to replace slashes in the star names
     local star_dir_separator="»"
+    local star_env_var_prefix="STAR_"
 
     star_name="${star_name//${star_dir_separator}/_}"
 
     # convert name to a suitable environment variable name
     star_name=$(echo "$star_name" | tr ' +-.!?():,;=' '_' | tr --complement --delete "a-zA-Z0-9_" | tr '[:lower:]' '[:upper:]')
 
-    env_var_name="${_STAR_ENV_PREFIX}${star_name}"
+    env_var_name="${star_env_var_prefix}${star_name}"
 
     if env | grep "^${env_var_name}=" >& /dev/null; then
         return
@@ -108,13 +106,14 @@ _star_unset_variables()
     fi
 
     local variables_list variable env_var_name star_path
+    local star_env_var_prefix="STAR_"
 
-    # get all the environment variables starting with _STAR_ENV_PREFIX
+    # get all the environment variables starting with STAR_
     # format: <NAME>=<VALUE>
     variables_list=()
     while IFS= read -r; do
         variables_list+=("$REPLY")
-    done < <(env | grep "^${_STAR_ENV_PREFIX}")
+    done < <(env | grep "^${star_env_var_prefix}")
 
     for variable in "${variables_list[@]}"; do
         # unset the variable only if its value corresponds to an existing star path (absolute path of a starred directory)
