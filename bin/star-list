@@ -177,6 +177,10 @@ main() {
         case "$opt" in
             "--" ) break 2;;
             "-" ) break 2;;
+            "-h"|"--help")
+                usage
+                exit 0
+            ;;
             "-f"|"--format="* )
                 if [[ ${#opt} -eq 2 ]]; then
                     value="$1"
