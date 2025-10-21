@@ -132,10 +132,6 @@ _star_unset_variables()
 star()
 {
     # all variables are local to prevent environment pollution
-    local star_to_store stars_to_remove star_to_load mode rename_src rename_dst
-    local dst_name dst_name_slash dst_basename
-    local star stars_list stars_path src_dir opt user_input force_reset
-    local existing_star existing_star_display target_path line
     
     # Color codes for consistent styling
     # Cast global variables into locals to enable potential reformat without
@@ -190,6 +186,7 @@ star()
                 star-help --mode=add
                 return 1
             fi
+            local src_dir
             src_dir=$(realpath "$1")
             shift
             if [[ ! -d $src_dir ]]; then
@@ -265,6 +262,8 @@ star()
     # process the selected mode
     case ${mode} in
         STORE)
+            local dst_name dst_name_slash dst_basename existing_star existing_star_display
+
             if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
                 mkdir "${_STAR_HOME}/${_STAR_STARS_DIR}"
             fi
@@ -278,9 +277,9 @@ star()
             fi
 
             # get the paths of all starred directories
-            stars_path=()
-            while IFS= read -r line; do
-                stars_path+=("$line")
+            local stars_path=()
+            while IFS= read -r; do
+                stars_path+=("$REPLY")
             done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%l\n")
 
             # do not star this directory if it is already starred (even under another name)
@@ -335,6 +334,7 @@ star()
                 dst_name_slash="${dst_name//${_STAR_DIR_SEPARATOR}//}"
                 if [[ -e ${_STAR_HOME}/${_STAR_STARS_DIR}/${dst_name} ]]; then
                     # Get the path associated with star name
+                    local target_path
                     target_path=$(star-list --get-path="${dst_name//\//${_STAR_DIR_SEPARATOR}}")
 
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
@@ -368,9 +368,9 @@ star()
             # Check if argument is purely numeric
             if [[ "${star_to_load}" =~ ^[0-9]+$ ]]; then
                 # Get the list of star names
-                stars_list=()
-                while IFS= read -r line; do
-                    stars_list+=("$line")
+                local stars_list=()
+                while IFS= read -r; do
+                    stars_list+=("$REPLY")
                 done < <(star-list --names) # TODO: pass sorting parameters to star-list
 
                 # Check if the index is valid
@@ -433,6 +433,7 @@ star()
             _star_set_variables
             ;;
         REMOVE)
+            local star_name
             if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" || -z "$( ls -A "${_STAR_HOME}/${_STAR_STARS_DIR}" )" ]];then
                 echo "There are no starred directories to remove."
                 return 1
@@ -441,16 +442,16 @@ star()
             # remove all env variables while their paths are still known
             _star_unset_variables
 
-            for star in "${stars_to_remove[@]}"; do
-                if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${star}" ]]; then
-                    if ! command rm "${_STAR_HOME}/${_STAR_STARS_DIR}/${star}"; then
+            for star_name in "${stars_to_remove[@]}"; do
+                if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_name}" ]]; then
+                    if ! command rm "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_name}"; then
                         local res=$?
-                        echo -e "Failed to remove starred directory: ${COLOR_STAR}${star//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
+                        echo -e "Failed to remove starred directory: ${COLOR_STAR}${star_name//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
                         return $res
                     fi
-                    echo -e "Removed starred directory: ${COLOR_STAR}${star//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
+                    echo -e "Removed starred directory: ${COLOR_STAR}${star_name//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
                 else
-                    echo -e "Could not find any starred directory with the name: ${COLOR_STAR}${star//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
+                    echo -e "Could not find any starred directory with the name: ${COLOR_STAR}${star_name//${_STAR_DIR_SEPARATOR}//}${COLOR_RESET}."
                     return 1
                 fi
             done
@@ -473,6 +474,8 @@ star()
                 [[ "$ret" -eq 0 ]] && echo "All stars have been removed." || echo "Failed to remove all the stars."
                 return $ret
             fi
+
+            local user_input
 
             while true; do
                 echo -n "Remove all starred directories? [y/N] "
