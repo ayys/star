@@ -19,7 +19,7 @@ setup_common() {
   # export _STAR_LIST_FORMAT="${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
   # export _STAR_EXPORT_ENV_VARIABLES=no
 
-  source star_2_0_0.bash
+  source star.bash
 }
 
 teardown_common() {
