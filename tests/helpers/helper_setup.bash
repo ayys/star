@@ -1,6 +1,16 @@
 
 load ../helpers/helper_log
 
+detect_shell_type() {
+  if [ -n "$BASH_VERSION" ]; then
+    echo "bash"
+  elif [ -n "$ZSH_VERSION" ]; then
+    echo "zsh"
+  else
+    echo "unknown"
+  fi
+}
+
 setup_tmpdir() {
   export TEST_ROOT="$(realpath "$(mktemp -d)")"
 }
@@ -10,6 +20,14 @@ teardown_tmpdir() {
 }
 
 setup_common() {
+  local current_shell_type
+  current_shell_type="$(detect_shell_type)"
+
+  if [[ "$current_shell_type" == "unknown" ]]; then
+    echo "Error: could not determine shell type." >&2
+    return 1
+  fi
+
   # create tmp dir and set $TEST_ROOT
   setup_tmpdir
 
@@ -19,7 +37,10 @@ setup_common() {
   # export _STAR_LIST_FORMAT="${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
   # export _STAR_EXPORT_ENV_VARIABLES=no
 
-  source star.bash
+  export PATH="$PWD/bin:$PATH"
+
+
+  eval "$(command star init "${current_shell_type}")"
 }
 
 teardown_common() {
