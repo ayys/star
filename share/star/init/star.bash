@@ -5,20 +5,10 @@
 export _STAR_HOME="${_STAR_HOME:-$HOME/.star}"
 export _STAR_STARS_DIR="stars"
 
-if [ -n "${BASH_SOURCE:-}" ]; then
-    script_path="${BASH_SOURCE[0]}"
-elif [ -n "${ZSH_VERSION:-}" ]; then
-    script_path="${(%):-%N}"
+if [[ -z "${_STAR_INSTALL_HOME-x}" ]]; then
+    echo "Error: _STAR_INSTALL_HOME is not set. Please run 'eval \"\$(command star init bash)\"' to load star." >&2
+    return 1
 fi
-
-script_dir="$( cd -- "$( dirname -- "$script_path" )" && pwd )"
-
-if [[ $PATH != *$script_dir* ]]; then
-    PATH="$script_dir/bin:$PATH"
-    export PATH
-fi
-unset script_path
-unset script_dir
 
 if [[ ! -d "$_STAR_HOME" ]]; then
     mkdir -p "$_STAR_HOME"
@@ -141,7 +131,7 @@ star()
     local COLOR_RESET="$_STAR_COLOR_RESET"
 
     if [[ $# -eq 0 ]]; then
-        star-help
+        "${_STAR_INSTALL_HOME}/libexec/star/star-help"
         return 0
     fi
 
@@ -158,22 +148,22 @@ star()
         reset)      mode=RESET  ;;
         h|help|-h|--help)
             if [[ $# -gt 0 ]]; then
-                star-help --mode="$1"
+                "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode="$1"
             else
-                star-help
+                "${_STAR_INSTALL_HOME}/libexec/star/star-help"
             fi
             return 0
             ;;
         *)
             echo "star: invalid mode '$arg_mode'"
-            star-help
+            "${_STAR_INSTALL_HOME}/libexec/star/star-help"
             return 1
             ;;
     esac
 
     # handle "star MODE --help" immediately
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-        star-help --mode="$arg_mode"
+        "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode="$arg_mode"
         return 0
     fi
 
@@ -183,7 +173,7 @@ star()
             # first argument has to be the relative path
             if [[ $# -lt 1 ]]; then
                 echo "star add: missing PATH argument."
-                star-help --mode=add
+                "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode=add
                 return 1
             fi
             local src_dir
@@ -205,14 +195,14 @@ star()
             ;;
         LIST)
             # handle the "list" case immediately
-            star-list "$@"
+            "${_STAR_INSTALL_HOME}/libexec/star/star-list" "$@"
             return $?
             ;;
         LOAD)
             # first argument should be the name or the index of the star to load
             if [[ $# -lt 1 ]]; then
                 echo "star load: missing argument."
-                star-help --mode=load
+                "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode=load
                 return 1
             fi
             local star_to_load="${1//\//${star_dir_separator}}"
@@ -221,7 +211,7 @@ star()
         RENAME)
             if [[ $# -lt 2 ]]; then
                 echo "star rename: missing argument(s)."
-                star-help --mode=rename
+                "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode=rename
                 return 1
             fi
             local rename_src rename_dst
@@ -231,7 +221,7 @@ star()
         REMOVE)
             if [[ $# -lt 1 ]]; then
                 echo "star remove: missing argument(s)."
-                star-help --mode=remove
+                "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode=remove
                 return 1
             fi
             local stars_to_remove=()
@@ -253,7 +243,7 @@ star()
     # in case there are more arguments and it happens to be help option
     while [[ $# -gt 0 ]]; do
         if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-            star-help --mode="$arg_mode"
+            "${_STAR_INSTALL_HOME}/libexec/star/star-help" --mode="$arg_mode"
             return 0
         fi
         shift
@@ -285,7 +275,7 @@ star()
             # do not star this directory if it is already starred (even under another name)
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
                 # Find the star name for this directory's path
-                existing_star=$(star-list --get-name="$src_dir")
+                existing_star=$("${_STAR_INSTALL_HOME}/libexec/star/star-list" --get-name="$src_dir")
                 existing_star_display="${existing_star//${star_dir_separator}//}"
                 echo -e "Directory ${COLOR_PATH}${src_dir}${COLOR_RESET} is already starred as ${COLOR_STAR}${existing_star_display}${COLOR_RESET}."
                 return 2
@@ -335,7 +325,7 @@ star()
                 if [[ -e ${_STAR_HOME}/${_STAR_STARS_DIR}/${dst_name} ]]; then
                     # Get the path associated with star name
                     local target_path
-                    target_path=$(star-list --get-path="${dst_name//\//${star_dir_separator}}")
+                    target_path=$("${_STAR_INSTALL_HOME}/libexec/star/star-list" --get-path="${dst_name//\//${star_dir_separator}}")
 
                     echo -e "A directory is already starred with the name \"${dst_name_slash}\": ${COLOR_STAR}${dst_name_slash}${COLOR_RESET} -> ${COLOR_PATH}${target_path}${COLOR_RESET}."
                     return 2
@@ -371,7 +361,7 @@ star()
                 local stars_list=()
                 while IFS= read -r; do
                     stars_list+=("$REPLY")
-                done < <(star-list --names) # TODO: pass sorting parameters to star-list
+                done < <("${_STAR_INSTALL_HOME}/libexec/star/star-list" --names) # TODO: pass sorting parameters to star-list
 
                 # Check if the index is valid
                 if [[ "${star_to_load}" -lt 1 || "${star_to_load}" -gt "${#stars_list[@]}" ]]; then
@@ -393,7 +383,7 @@ star()
                 if ! cd -P "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_to_load}"; then
                     # get path according to name
                     local star_to_load_path
-                    star_to_load_path=$(star-list --get-path="${star_to_load}")
+                    star_to_load_path=$("${_STAR_INSTALL_HOME}/libexec/star/star-list" --get-path="${star_to_load}")
 
                     if [[ ! -d "$star_to_load_path" ]]; then
                         echo -e "Failed to load star with name \"${COLOR_STAR}${star_to_load}${COLOR_RESET}\": associated directory \"${COLOR_PATH}${star_to_load_path}${COLOR_RESET}\" does not exist."
@@ -580,7 +570,7 @@ star()
 # complete -F _star_completion sah
 
 # remove broken symlinks directly when sourcing this file
-star-prune
+"${_STAR_INSTALL_HOME}/libexec/star/star-prune"
 
 # set environment variables
 _star_set_variables

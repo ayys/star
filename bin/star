@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+
+script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+
+# star is expected to be located at: <installation_dir>/bin/star
+installation_dir="$(realpath "$script_dir/..")"
+
+if [[ "${installation_dir}/bin" != "$script_dir" ]]; then
+    err "star program is not located at the expected location."
+    return 1
+fi
+
+export _STAR_INSTALL_HOME="$installation_dir"
+
+usage_init() {
+    cat <<EOF
+Usage: star init SHELL_TYPE
+Initialize the star environment for the specified shell type.
+
+SHELL_TYPE:
+  bash      Bash shell
+  zsh       Zsh shell
+EOF
+}
+
+usage() {
+    cat <<EOF
+Usage: star MODE [ARGS...]
+
+This script is only used for initializing the star environment.
+After running 'eval "\$(command star init YOUR_SHELL)"', the 'star' function will be available in your shell, bringing full star functionality. See below for supported shells.
+
+MODE:
+  init <SHELL_TYPE>   Initialize the star environment for the specified shell. Supported shells are: bash, zsh.
+EOF
+}
+
+err() {
+    echo "Error: $*" >&2
+}
+
+err_star_unloaded() {
+    err "star is not loaded. Please run 'eval \"\$(command star init bash)\"' to load star."
+}
+
+check_installation() {
+    if [[ ! -d "${_STAR_INSTALL_HOME}/bin/" ]]; then
+        err "Required directory is missing: ${_STAR_INSTALL_HOME}/bin/"
+        return 4
+    else
+        if [[ ! -f "${_STAR_INSTALL_HOME}/bin/star" ]]; then
+            err "Required file is missing: ${_STAR_INSTALL_HOME}/bin/star"
+            return 4
+        fi
+    fi
+
+    if [[ ! -d "${_STAR_INSTALL_HOME}/libexec/star/" ]]; then
+        err "Required directory is missing: ${_STAR_INSTALL_HOME}/libexec/star/"
+        return 4
+    else
+        if [[ ! -f "${_STAR_INSTALL_HOME}/libexec/star/star-help" ]]; then
+            err "Required file is missing: ${_STAR_INSTALL_HOME}/libexec/star/star-help"
+            return 4
+        fi
+        if [[ ! -f "${_STAR_INSTALL_HOME}/libexec/star/star-list" ]]; then
+            err "Required file is missing: ${_STAR_INSTALL_HOME}/libexec/star/star-list"
+            return 4
+        fi
+        if [[ ! -f "${_STAR_INSTALL_HOME}/libexec/star/star-prune" ]]; then
+            err "Required file is missing: ${_STAR_INSTALL_HOME}/libexec/star/star-prune"
+            return 4
+        fi
+    fi
+
+    if [[ ! -d "${_STAR_INSTALL_HOME}/share/star/init/" ]]; then
+        err "Required directory is missing: ${_STAR_INSTALL_HOME}/share/star/init/"
+        return 4
+    else
+        if [[ ! -f "${_STAR_INSTALL_HOME}/share/star/init/star.bash" ]]; then
+            err "Required file is missing: ${_STAR_INSTALL_HOME}/share/star/init/star.bash"
+            return 4
+        fi
+    fi
+}
+
+init_star() {
+    local shell_type="$1"
+
+    # checking valid shell type
+    case $shell_type in
+        bash|zsh) ;;
+        *)
+            err "unknown SHELL_TYPE: $shell_type"
+            usage_init >&2
+            return 1
+            ;;
+    esac
+
+    case $shell_type in
+        bash|zsh)
+            echo "export _STAR_INSTALL_HOME=\"${_STAR_INSTALL_HOME}\""
+            cat "${_STAR_INSTALL_HOME}/share/star/init/star.bash"
+            ;;
+    esac
+}
+
+main() {
+    if [[ $# -lt 1 ]]; then
+        err "missing MODE argument."
+        usage >&2
+        return 1
+    fi
+
+    check_installation || return $?
+
+    # parse the mode
+    local mode="$1"
+    shift
+    case $mode in
+        init) mode=INIT  ;;
+        -h|--help)
+            usage
+            return 0
+            ;;
+        *)
+            err "invalid mode '$mode'"
+            usage >&2
+            return 1
+            ;;
+    esac
+
+    # manage each mode
+    case ${mode} in
+        INIT)
+            if [[ $# -lt 1 ]]; then
+                err "missing SHELL_TYPE argument."
+                usage_init >&2
+                return 1
+            fi
+            # initialize star environment
+            local shell_type="$1"
+            shift
+            init_star "$shell_type"
+            return $?
+            ;;
+        *)
+            err "Unknown mode: $mode"
+            return 1
+            ;;
+    esac
+}
+
+main "$@"
