@@ -78,7 +78,7 @@ _star_set_variables()
     local star_name_and_path env_var_name
 
     # list of stars with format: "name path", where path can contain spaces
-    stars_list=()
+    local stars_list=()
     while IFS= read -r; do
         stars_list+=("$REPLY")
     done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%f %l\n")
