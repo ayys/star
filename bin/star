@@ -12,6 +12,36 @@ fi
 
 export _STAR_INSTALL_HOME="$installation_dir"
 
+# Where to search for user-specific config files (in this case, starred directory)
+# By default, use _STAR_CONFIG_HOME if it is already set,
+# else try to use XDG_CONFIG_HOME, 
+# else search at $HOME/.config
+#
+# In each case, a sub-directory "star" is created
+if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
+    if [[ -n "${XDG_CONFIG_HOME}" ]]; then
+        export _STAR_CONFIG_HOME="${XDG_CONFIG_HOME}/star"
+    else
+        export _STAR_CONFIG_HOME="$HOME/.config/star"
+    fi
+fi
+
+# TODO: source config file here (only important for _STAR_DATA_HOME)
+
+# Where to search for user-specific data (in this case, starred directory)
+# By default, use _STAR_DATA_HOME if it is already set,
+# else try to use XDG_DATA_HOME, 
+# else search at $HOME/.local/share
+#
+# In each case, a sub-directory "star" is created
+if [[ -z "${_STAR_DATA_HOME}" ]]; then
+    if [[ -n "${XDG_DATA_HOME}" ]]; then
+        export _STAR_DATA_HOME="${XDG_DATA_HOME}/star"
+    else
+        export _STAR_DATA_HOME="$HOME/.local/share/star"
+    fi
+fi
+
 usage_init() {
     cat <<EOF
 Usage: star init SHELL_TYPE
@@ -96,9 +126,13 @@ init_star() {
             ;;
     esac
 
+    # for all shells, export the following environment variables
+    echo "export _STAR_INSTALL_HOME=\"${_STAR_INSTALL_HOME}\""
+    echo "export _STAR_DATA_HOME=\"${_STAR_DATA_HOME}\""
+    echo "export _STAR_CONFIG_HOME=\"${_STAR_CONFIG_HOME}\""
+
     case $shell_type in
         bash|zsh)
-            echo "export _STAR_INSTALL_HOME=\"${_STAR_INSTALL_HOME}\""
             cat "${_STAR_INSTALL_HOME}/share/star/init/star.bash"
             ;;
     esac

@@ -4,13 +4,13 @@ usage() {
     cat << EOF
 Usage: star-prune
 
-    Remove all broken symlinks in ${_STAR_HOME}/${_STAR_STARS_DIR}.
+    Remove all broken symlinks in ${_STAR_DATA_HOME}/stars.
     A broken symlink corresponds to a starred directory that does not exist anymore.
 EOF
 }
 
 main() {
-    if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
+    if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
         return 0
     fi
 
@@ -31,7 +31,7 @@ main() {
 
     # else remove each broken link
     for bl in "${broken_stars_name[@]}"; do
-        command rm "${_STAR_HOME}/${_STAR_STARS_DIR}/${bl}" || return
+        command rm "${_STAR_DATA_HOME}/stars/${bl}" || return
     done
 }
 

@@ -5,7 +5,7 @@ usage() {
 Usage: star-list [LIST_MODE] [OPTIONS]...
        star-list ITEM_MODE
 
-    List stars in ${_STAR_HOME}/${_STAR_STARS_DIR}.
+    List stars in ${_STAR_DATA_HOME}/stars.
 
     LIST_MODE: Display the starred directories. List modes are exclusives.
         -f, --format=FORMAT     Default mode, to print with a custom format.
@@ -68,12 +68,12 @@ SORT=${_STAR_LIST_SORT:-"$SORT_LOADED"}
 ORDER=${_STAR_LIST_ORDER:-"$ORDER_DESC"}
 INDEX=${_STAR_LIST_INDEX:-"$INDEX_ASC"}
 
-if [[ -z "${_STAR_HOME}" ]]; then
-    echo "[star-list] Error: _STAR_HOME is not set." 1>&2
+if [[ -z "${_STAR_DATA_HOME}" ]]; then
+    echo "[star-list] Error: _STAR_DATA_HOME is not set." 1>&2
     exit 2
 fi
 
-DIR="${_STAR_HOME}/${_STAR_STARS_DIR}"
+DIR="${_STAR_DATA_HOME}/stars"
 
 # by default, search for non broken symlinks
 TYPE_TEST="-type l -not -xtype l"
@@ -169,7 +169,7 @@ main() {
     # character used to replace slashes in the star names
     local star_dir_separator="»"
 
-    if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
+    if [[ ! -d "${DIR}" ]]; then
         return 0
     fi
 

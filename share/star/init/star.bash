@@ -5,14 +5,27 @@
 export _STAR_HOME="${_STAR_HOME:-$HOME/.star}"
 export _STAR_STARS_DIR="stars"
 
-if [[ -z "${_STAR_INSTALL_HOME-x}" ]]; then
+# Check that all required environment variables are set
+if [[ -z "${_STAR_INSTALL_HOME}" ]]; then
     echo "Error: _STAR_INSTALL_HOME is not set. Please run 'eval \"\$(command star init bash)\"' to load star." >&2
     return 1
 fi
 
-if [[ ! -d "$_STAR_HOME" ]]; then
-    mkdir -p "$_STAR_HOME"
+if [[ -z "${_STAR_DATA_HOME}" ]]; then
+    echo "Error: _STAR_DATA_HOME is not set. Please run 'eval \"\$(command star init bash)\"' to load star." >&2
+    return 1
 fi
+
+if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
+    echo "Error: _STAR_CONFIG_HOME is not set. Please run 'eval \"\$(command star init bash)\"' to load star." >&2
+    return 1
+fi
+
+if [[ ! -d "$_STAR_DATA_HOME" ]]; then
+    mkdir -p "$_STAR_DATA_HOME"
+fi
+
+# TODO: source config file here
 
 # Enable (yes) or disable (no) environment variables
 export _STAR_EXPORT_ENV_VARIABLES="${_STAR_EXPORT_ENV_VARIABLES:-"yes"}"
@@ -71,7 +84,7 @@ _star_set_variables()
         return
     fi
     # return if the star directory does not exist
-    if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]];then
+    if [[ ! -d "${_STAR_DATA_HOME}/stars" ]];then
         return
     fi
 
@@ -81,7 +94,7 @@ _star_set_variables()
     local stars_list=()
     while IFS= read -r; do
         stars_list+=("$REPLY")
-    done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%f %l\n")
+    done < <(find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%f %l\n")
 
     for star_name_and_path in "${stars_list[@]}"; do
         _star_add_variable "${star_name_and_path%% *}" "${star_name_and_path##* }"
@@ -91,7 +104,7 @@ _star_set_variables()
 _star_unset_variables()
 {
     # return if the star directory does not exist
-    if [[ ! -d ${_STAR_HOME}/${_STAR_STARS_DIR} ]]; then
+    if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
         return
     fi
 
@@ -108,7 +121,7 @@ _star_unset_variables()
     for variable in "${variables_list[@]}"; do
         # unset the variable only if its value corresponds to an existing star path (absolute path of a starred directory)
         star_path="$(echo "$variable" | cut -d"=" -f2)"
-        if ! find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
+        if ! find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%l\n" | grep "^${star_path}$" &> /dev/null ; then
             continue
         fi
         env_var_name="$(echo "$variable" | cut -d"=" -f1)"
@@ -254,8 +267,8 @@ star()
         STORE)
             local dst_name dst_name_slash dst_basename existing_star existing_star_display
 
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
-                mkdir "${_STAR_HOME}/${_STAR_STARS_DIR}"
+            if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
+                mkdir "${_STAR_DATA_HOME}/stars"
             fi
 
             if [[ ! "${star_to_store}" == "" ]]; then
@@ -270,7 +283,7 @@ star()
             local stars_path=()
             while IFS= read -r; do
                 stars_path+=("$REPLY")
-            done < <(find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -not -xtype l -printf "%l\n")
+            done < <(find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%l\n")
 
             # do not star this directory if it is already starred (even under another name)
             if [[ "${stars_path[*]}" =~ (^|[[:space:]])${src_dir}($|[[:space:]]) ]]; then
@@ -299,7 +312,7 @@ star()
                 local tmp_name
                 tmp_name=$(echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
 
-                while [[ -e ${_STAR_HOME}/${_STAR_STARS_DIR}/${tmp_name} ]]; do
+                while [[ -e "${_STAR_DATA_HOME}/stars/${tmp_name}" ]]; do
                     dst_name_slash="${dst_name//${star_dir_separator}//}"
                     dst_basename=$(basename "${src_dir%%"$dst_name_slash"}")
 
@@ -322,7 +335,7 @@ star()
                 dst_name=$( echo "${dst_name}" | tr --squeeze-repeats ' ' | tr ' ' '-')
 
                 dst_name_slash="${dst_name//${star_dir_separator}//}"
-                if [[ -e ${_STAR_HOME}/${_STAR_STARS_DIR}/${dst_name} ]]; then
+                if [[ -e "${_STAR_DATA_HOME}/stars/${dst_name}" ]]; then
                     # Get the path associated with star name
                     local target_path
                     target_path=$("${_STAR_INSTALL_HOME}/libexec/star/star-list" --get-path="${dst_name//\//${star_dir_separator}}")
@@ -337,7 +350,7 @@ star()
                 dst_name="dir-${dst_name}"
             fi
 
-            if ! ln -s "${src_dir}" "${_STAR_HOME}/${_STAR_STARS_DIR}/${dst_name}"; then
+            if ! ln -s "${src_dir}" "${_STAR_DATA_HOME}/stars/${dst_name}"; then
                 local res=$?
                 echo -e "Failed to add a new starred directory: ${COLOR_STAR}${dst_name//${star_dir_separator}//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
                 return $res
@@ -350,7 +363,7 @@ star()
             fi
             ;;
         LOAD)
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]]; then
+            if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
                 echo "No star can be loaded because there are no starred directories."
                 return 0
             fi
@@ -377,10 +390,10 @@ star()
                 fi
             fi
 
-            if [[ ! -e ${_STAR_HOME}/${_STAR_STARS_DIR}/${star_to_load} ]]; then
+            if [[ ! -e "${_STAR_DATA_HOME}/stars/${star_to_load}" ]]; then
                 echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
             else
-                if ! cd -P "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_to_load}"; then
+                if ! cd -P "${_STAR_DATA_HOME}/stars/${star_to_load}"; then
                     # get path according to name
                     local star_to_load_path
                     star_to_load_path=$("${_STAR_INSTALL_HOME}/libexec/star/star-list" --get-path="${star_to_load}")
@@ -394,7 +407,7 @@ star()
                     fi
                 fi
                 # update access time
-                touch -ah "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_to_load}"
+                touch -ah "${_STAR_DATA_HOME}/stars/${star_to_load}"
             fi
             ;;
         RENAME)
@@ -402,13 +415,13 @@ star()
             # (easier to remove all environment variables)
             _star_unset_variables
 
-            if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_src}" ]]; then
-                if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_dst}" ]]; then
+            if [[ -e "${_STAR_DATA_HOME}/stars/${rename_src}" ]]; then
+                if [[ -e "${_STAR_DATA_HOME}/stars/${rename_dst}" ]]; then
                     echo -e "There is already a star named ${COLOR_STAR}${rename_dst}${COLOR_RESET}."
                     return 2
                 fi
 
-                if ! mv "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_src}" "${_STAR_HOME}/${_STAR_STARS_DIR}/${rename_dst}"; then
+                if ! mv "${_STAR_DATA_HOME}/stars/${rename_src}" "${_STAR_DATA_HOME}/stars/${rename_dst}"; then
                     local res=$?
                     echo -e "Failed to rename star ${COLOR_STAR}${rename_src//${star_dir_separator}//}${COLOR_RESET} to ${COLOR_STAR}${rename_dst//${star_dir_separator}//}${COLOR_RESET}."
                     return $res
@@ -424,7 +437,7 @@ star()
             ;;
         REMOVE)
             local star_name
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" || -z "$( ls -A "${_STAR_HOME}/${_STAR_STARS_DIR}" )" ]];then
+            if [[ ! -d "${_STAR_DATA_HOME}/stars" || -z "$( ls -A "${_STAR_DATA_HOME}/stars" )" ]];then
                 echo "There are no starred directories to remove."
                 return 1
             fi
@@ -433,8 +446,8 @@ star()
             _star_unset_variables
 
             for star_name in "${stars_to_remove[@]}"; do
-                if [[ -e "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_name}" ]]; then
-                    if ! command rm "${_STAR_HOME}/${_STAR_STARS_DIR}/${star_name}"; then
+                if [[ -e "${_STAR_DATA_HOME}/stars/${star_name}" ]]; then
+                    if ! command rm "${_STAR_DATA_HOME}/stars/${star_name}"; then
                         local res=$?
                         echo -e "Failed to remove starred directory: ${COLOR_STAR}${star_name//${star_dir_separator}//}${COLOR_RESET}."
                         return $res
@@ -449,7 +462,7 @@ star()
             _star_set_variables
             ;;
         RESET)
-            if [[ ! -d "${_STAR_HOME}/${_STAR_STARS_DIR}" || -z "$( ls -A "${_STAR_HOME}/${_STAR_STARS_DIR}" )" ]];then
+            if [[ ! -d "${_STAR_DATA_HOME}/stars" || -z "$( ls -A "${_STAR_DATA_HOME}/stars" )" ]];then
                 echo "There are no starred directories to remove."
                 return 1
             fi
@@ -459,7 +472,7 @@ star()
                 _star_unset_variables
 
                 local ret
-                command rm -r "${_STAR_HOME}/${_STAR_STARS_DIR}"
+                command rm -r "${_STAR_DATA_HOME}/stars"
                 ret=$?
                 [[ "$ret" -eq 0 ]] && echo "All stars have been removed." || echo "Failed to remove all the stars."
                 return $ret
@@ -476,7 +489,7 @@ star()
                         _star_unset_variables
 
                         local ret
-                        command rm -r "${_STAR_HOME}/${_STAR_STARS_DIR}"
+                        command rm -r "${_STAR_DATA_HOME}/stars"
                         ret=$?
                         [[ "$ret" -eq 0 ]] && echo "All stars have been removed." || echo "Failed to remove all the stars."
                         return $ret
@@ -520,7 +533,7 @@ star()
 #     second_cw="${COMP_WORDS[COMP_CWORD-COMP_CWORD+1]}"
 
 #     # get list of stars only if their directory exists
-#     stars_list=$([[ -d "${_STAR_HOME}/${_STAR_STARS_DIR}" ]] && find "${_STAR_HOME}/${_STAR_STARS_DIR}" -type l -printf "%f ")
+#     stars_list=$([[ -d "${_STAR_DATA_HOME}/stars" ]] && find "${_STAR_DATA_HOME}/stars" -type l -printf "%f ")
 
 #     # in REMOVE mode: suggest all starred directories, even after selecting a first star to remove
 #     if [[ "${first_cw}" == "srm" \
