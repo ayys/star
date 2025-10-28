@@ -21,8 +21,8 @@ teardown() { teardown_common; }
 
   run star rename name1 name2
   [ "$status" -eq 0 ]
-  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/name2" ]]
-  [ "$(readlink -f "$_STAR_HOME/$_STAR_STARS_DIR/name2")" = "$TEST_ROOT/foo" ]
+  [[ -L "${CURRENT_TEST_DATA_DIR}/name2" ]]
+  [ "$(readlink -f "${CURRENT_TEST_DATA_DIR}/name2")" = "$TEST_ROOT/foo" ]
 }
 
 @test "star rename - rename fails if new name exists" {

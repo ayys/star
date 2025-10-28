@@ -31,8 +31,8 @@ teardown() { teardown_common; }
   [ "$status" -eq 0 ]
   [[ "$output" == *"Remove all starred directories"* ]]
   [[ "$output" == *"Aborting reset."* ]]
-  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/foo" ]]
-  [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/bar" ]]
+  [[ -L "${CURRENT_TEST_DATA_DIR}/foo" ]]
+  [[ -L "${CURRENT_TEST_DATA_DIR}/bar" ]]
 }
 
 @test "star reset - abort reset on negative answers (n/N/no)" {
@@ -50,8 +50,8 @@ teardown() { teardown_common; }
     [ "$status" -eq 0 ]
     [[ "$output" == *"Remove all starred directories"* ]]
     [[ "$output" == *"Aborting reset."* ]]
-    [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/foo" ]]
-    [[ -L "$_STAR_HOME/$_STAR_STARS_DIR/bar" ]]
+    [[ -L "${CURRENT_TEST_DATA_DIR}/foo" ]]
+    [[ -L "${CURRENT_TEST_DATA_DIR}/bar" ]]
   done
 }
 
@@ -70,8 +70,8 @@ teardown() { teardown_common; }
     [ "$status" -eq 0 ]
     [[ "$output" == *"Remove all starred directories"* ]]
     [[ "$output" == *"All stars have been removed."* ]]
-    [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/foo" ]]
-    [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/bar" ]]
+    [[ ! -L "${CURRENT_TEST_DATA_DIR}/foo" ]]
+    [[ ! -L "${CURRENT_TEST_DATA_DIR}/bar" ]]
   done
 }
 
@@ -98,6 +98,6 @@ teardown() { teardown_common; }
   run star reset -f
   [ "$status" -eq 0 ]
   [[ "$output" == *"All stars have been removed."* ]]
-  [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/foo" ]]
-  [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/bar" ]]
+  [[ ! -L "${CURRENT_TEST_DATA_DIR}/foo" ]]
+  [[ ! -L "${CURRENT_TEST_DATA_DIR}/bar" ]]
 }

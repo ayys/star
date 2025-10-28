@@ -16,7 +16,7 @@ teardown() { teardown_common; }
 
   run star remove bar
   [ "$status" -eq 0 ]
-  [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/bar" ]]
+  [[ ! -L "${CURRENT_TEST_DATA_DIR}/bar" ]]
 }
 
 @test "star remove - remove multiple bookmarks at once" {
@@ -30,9 +30,9 @@ teardown() { teardown_common; }
 
   run star remove foo foobar bar
   [ "$status" -eq 0 ]
-  [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/foo" ]]
-  [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/bar" ]]
-  [[ ! -L "$_STAR_HOME/$_STAR_STARS_DIR/foobar" ]]
+  [[ ! -L "${CURRENT_TEST_DATA_DIR}/foo" ]]
+  [[ ! -L "${CURRENT_TEST_DATA_DIR}/bar" ]]
+  [[ ! -L "${CURRENT_TEST_DATA_DIR}/foobar" ]]
 }
 
 @test "star remove - cannot remove a star that does not exist" {

@@ -31,15 +31,17 @@ setup_common() {
   # create tmp dir and set $TEST_ROOT
   setup_tmpdir
 
-  export _STAR_HOME="$TEST_ROOT/.star"
+  export PATH="$PWD/bin:$PATH"
+  export _STAR_DATA_HOME=$TEST_ROOT
+
   export _STAR_LIST_FORMAT="<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
   export _STAR_EXPORT_ENV_VARIABLES=yes
   # export _STAR_LIST_FORMAT="${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"
   # export _STAR_EXPORT_ENV_VARIABLES=no
 
-  export PATH="$PWD/bin:$PATH"
+  export CURRENT_TEST_DATA_DIR="${_STAR_DATA_HOME}/stars"
 
-
+  # load star function
   eval "$(command star init "${current_shell_type}")"
 }
 
@@ -55,7 +57,7 @@ teardown_common() {
     echo "----------"
     tree -a "$TEST_ROOT"
     echo "----------"
-    find "$_STAR_HOME/$_STAR_STARS_DIR" -type l -not -xtype l -printf "%As %f %l\n"
+    find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%As %f %l\n"
     echo "========================================"
     echo
   fi
