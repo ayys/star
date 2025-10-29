@@ -467,7 +467,11 @@ star()
                 local ret
                 command rm -r "${_STAR_DATA_HOME}/stars"
                 ret=$?
-                [[ "$ret" -eq 0 ]] && echo "All stars have been removed." || echo "Failed to remove all the stars."
+                if [[ "$ret" -eq 0 ]]; then
+                    echo "All stars have been removed."
+                else
+                    echo "Failed to remove all the stars."
+                fi
                 return $ret
             fi
 
@@ -484,7 +488,11 @@ star()
                         local ret
                         command rm -r "${_STAR_DATA_HOME}/stars"
                         ret=$?
-                        [[ "$ret" -eq 0 ]] && echo "All stars have been removed." || echo "Failed to remove all the stars."
+                        if [[ "$ret" -eq 0 ]]; then
+                            echo "All stars have been removed."
+                        else
+                            echo "Failed to remove all the stars."
+                        fi
                         return $ret
                         ;;
                     # case "" corresponds to pressing enter
