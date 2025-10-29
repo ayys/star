@@ -21,29 +21,29 @@ fi
 # TODO: source config file here
 
 # Enable (yes) or disable (no) environment variables
-export _STAR_EXPORT_ENV_VARIABLES="${_STAR_EXPORT_ENV_VARIABLES:-"yes"}"
+export __STAR_ENVVARS="${__STAR_ENVVARS:-"yes"}"
 
 if [ -t 1 ]; then
     # Check for truecolor support
     if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
-        _STAR_COLOR_STAR=${_STAR_COLOR_STAR:-"\033[38;2;255;131;0m"}
-        _STAR_COLOR_PATH=${_STAR_COLOR_PATH:-"\033[38;2;1;169;130m"}
-        _STAR_COLOR_RESET=${_STAR_COLOR_RESET:-"\033[0m"}
+        __STAR_COLOR_NAME=${__STAR_COLOR_NAME:-"\033[38;2;255;131;0m"}
+        __STAR_COLOR_PATH=${__STAR_COLOR_PATH:-"\033[38;2;1;169;130m"}
+        __STAR_COLOR_RESET=${__STAR_COLOR_RESET:-"\033[0m"}
     else
         # Use 256-color approximation
-        _STAR_COLOR_STAR=${_STAR_COLOR_STAR:-"\033[38;5;214m"}
-        _STAR_COLOR_PATH=${_STAR_COLOR_PATH:-"\033[38;5;36m"}
-        _STAR_COLOR_RESET=${_STAR_COLOR_RESET:-"\033[0m"}
+        __STAR_COLOR_NAME=${__STAR_COLOR_NAME:-"\033[38;5;214m"}
+        __STAR_COLOR_PATH=${__STAR_COLOR_PATH:-"\033[38;5;36m"}
+        __STAR_COLOR_RESET=${__STAR_COLOR_RESET:-"\033[0m"}
     fi
 else
     # No color for non-interactive sessions (not a TTY)
-    _STAR_COLOR_STAR=${_STAR_COLOR_STAR:-""}
-    _STAR_COLOR_PATH=${_STAR_COLOR_PATH:-""}
-    _STAR_COLOR_RESET=${_STAR_COLOR_RESET:-""}
+    __STAR_COLOR_NAME=${__STAR_COLOR_NAME:-""}
+    __STAR_COLOR_PATH=${__STAR_COLOR_PATH:-""}
+    __STAR_COLOR_RESET=${__STAR_COLOR_RESET:-""}
 fi
-export _STAR_COLOR_STAR
-export _STAR_COLOR_PATH
-export _STAR_COLOR_RESET
+export __STAR_COLOR_NAME
+export __STAR_COLOR_PATH
+export __STAR_COLOR_RESET
 
 # it is strongly recommended to set the number of columns in the 'column' command (--table-columns-limit) and to put the path in the last column, 
 # as a path can contain whitespaces (which is the character used by 'column' to split columns)
@@ -73,7 +73,7 @@ _star_add_variable()
 
 _star_set_variables()
 {
-    if [[ $_STAR_EXPORT_ENV_VARIABLES != "yes" ]]; then
+    if [[ $__STAR_ENVVARS != "yes" ]]; then
         return
     fi
     # return if the star directory does not exist
@@ -132,9 +132,9 @@ star()
     # Color codes for consistent styling
     # Cast global variables into locals to enable potential reformat without
     # having to rename all variables inside the function
-    local COLOR_STAR="${_STAR_COLOR_STAR}"
-    local COLOR_PATH="${_STAR_COLOR_PATH}"
-    local COLOR_RESET="$_STAR_COLOR_RESET"
+    local COLOR_STAR="${__STAR_COLOR_NAME}"
+    local COLOR_PATH="${__STAR_COLOR_PATH}"
+    local COLOR_RESET="$__STAR_COLOR_RESET"
 
     if [[ $# -eq 0 ]]; then
         "${_STAR_HOME}/libexec/star/star-help"
@@ -351,7 +351,7 @@ star()
             echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//${star_dir_separator}//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
 
             # update environment variables
-            if [[ "$_STAR_EXPORT_ENV_VARIABLES" == "yes" ]]; then
+            if [[ "$__STAR_ENVVARS" == "yes" ]]; then
                 _star_add_variable "${dst_name}" "${src_dir}"
             fi
             ;;

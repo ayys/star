@@ -53,20 +53,20 @@ INDEX_ASC="asc"
 ### Default values ###
 MODE=$MODE_CUSTOM_FORMAT
 
-FORMAT=${_STAR_LIST_FORMAT:-"<INDEX>: ${_STAR_COLOR_STAR}%f${_STAR_COLOR_RESET} -> ${_STAR_COLOR_PATH}%l${_STAR_COLOR_RESET}"}
+FORMAT=${__STAR_LIST_FORMAT:-"<INDEX>: ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} -> ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"}
 
 # if there is no format provided, then use a default one with its custom column command
 # else if a format is provided but there is no column command then use a default one
-if [[ -z "$_STAR_LIST_FORMAT" ]]; then
+if [[ -z "$__STAR_LIST_FORMAT" ]]; then
     COLUMN_COMMAND="command column --table --table-columns-limit 3"
-elif [[ -z "$_STAR_LIST_COLUMN_COMMAND" ]]; then
+elif [[ -z "$__STAR_LIST_COLUMN_COMMAND" ]]; then
     COLUMN_COMMAND="command column --table"
 else
-    COLUMN_COMMAND="${_STAR_LIST_COLUMN_COMMAND}"
+    COLUMN_COMMAND="${__STAR_LIST_COLUMN_COMMAND}"
 fi
-SORT=${_STAR_LIST_SORT:-"$SORT_LOADED"}
-ORDER=${_STAR_LIST_ORDER:-"$ORDER_DESC"}
-INDEX=${_STAR_LIST_INDEX:-"$INDEX_ASC"}
+SORT=${__STAR_LIST_SORT:-"$SORT_LOADED"}
+ORDER=${__STAR_LIST_ORDER:-"$ORDER_DESC"}
+INDEX=${__STAR_LIST_INDEX:-"$INDEX_ASC"}
 
 if [[ -z "${_STAR_DATA_HOME}" ]]; then
     echo "[star-list] Error: _STAR_DATA_HOME is not set." 1>&2
