@@ -23,27 +23,13 @@ fi
 # Enable (yes) or disable (no) environment variables
 export __STAR_ENVVARS="${__STAR_ENVVARS:-"yes"}"
 
-if [ -t 1 ]; then
-    # Check for truecolor support
-    if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
-        __STAR_COLOR_NAME=${__STAR_COLOR_NAME:-"\033[38;2;255;131;0m"}
-        __STAR_COLOR_PATH=${__STAR_COLOR_PATH:-"\033[38;2;1;169;130m"}
-        __STAR_COLOR_RESET=${__STAR_COLOR_RESET:-"\033[0m"}
-    else
-        # Use 256-color approximation
-        __STAR_COLOR_NAME=${__STAR_COLOR_NAME:-"\033[38;5;214m"}
-        __STAR_COLOR_PATH=${__STAR_COLOR_PATH:-"\033[38;5;36m"}
-        __STAR_COLOR_RESET=${__STAR_COLOR_RESET:-"\033[0m"}
-    fi
-else
-    # No color for non-interactive sessions (not a TTY)
-    __STAR_COLOR_NAME=${__STAR_COLOR_NAME:-""}
-    __STAR_COLOR_PATH=${__STAR_COLOR_PATH:-""}
-    __STAR_COLOR_RESET=${__STAR_COLOR_RESET:-""}
+# Check if stdout is a terminal (No color for non-interactive sessions -> not a TTY)
+# This has to be done in a sourced script and not in an executed script, to check if stdout is a terminal.
+if [ ! -t 1 ]; then
+    export __STAR_COLOR_NAME=""
+    export __STAR_COLOR_PATH=""
+    export __STAR_COLOR_RESET=""
 fi
-export __STAR_COLOR_NAME
-export __STAR_COLOR_PATH
-export __STAR_COLOR_RESET
 
 # it is strongly recommended to set the number of columns in the 'column' command (--table-columns-limit) and to put the path in the last column, 
 # as a path can contain whitespaces (which is the character used by 'column' to split columns)
