@@ -22,7 +22,7 @@ main() {
         # Extract just the star name from each line
         broken_stars_name+=("$line")
     # done < <(find "$DIR" -xtype l -printf "%f\n")
-    done < <("${_STAR_INSTALL_HOME}/libexec/star/star-list" --broken)
+    done < <("${_STAR_HOME}/libexec/star/star-list" --broken)
 
     # return if no broken link was found
     if [[ ${#broken_stars_name[@]} -le 0 ]]; then

@@ -10,7 +10,7 @@ if [[ "${installation_dir}/bin" != "$script_dir" ]]; then
     return 1
 fi
 
-export _STAR_INSTALL_HOME="$installation_dir"
+export _STAR_HOME="$installation_dir"
 
 # Where to search for user-specific config files (in this case, starred directory)
 # By default, use _STAR_CONFIG_HOME if it is already set,
@@ -74,40 +74,40 @@ err_star_unloaded() {
 }
 
 check_installation() {
-    if [[ ! -d "${_STAR_INSTALL_HOME}/bin/" ]]; then
-        err "Required directory is missing: ${_STAR_INSTALL_HOME}/bin/"
+    if [[ ! -d "${_STAR_HOME}/bin/" ]]; then
+        err "Required directory is missing: ${_STAR_HOME}/bin/"
         return 4
     else
-        if [[ ! -f "${_STAR_INSTALL_HOME}/bin/star" ]]; then
-            err "Required file is missing: ${_STAR_INSTALL_HOME}/bin/star"
+        if [[ ! -f "${_STAR_HOME}/bin/star" ]]; then
+            err "Required file is missing: ${_STAR_HOME}/bin/star"
             return 4
         fi
     fi
 
-    if [[ ! -d "${_STAR_INSTALL_HOME}/libexec/star/" ]]; then
-        err "Required directory is missing: ${_STAR_INSTALL_HOME}/libexec/star/"
+    if [[ ! -d "${_STAR_HOME}/libexec/star/" ]]; then
+        err "Required directory is missing: ${_STAR_HOME}/libexec/star/"
         return 4
     else
-        if [[ ! -f "${_STAR_INSTALL_HOME}/libexec/star/star-help" ]]; then
-            err "Required file is missing: ${_STAR_INSTALL_HOME}/libexec/star/star-help"
+        if [[ ! -f "${_STAR_HOME}/libexec/star/star-help" ]]; then
+            err "Required file is missing: ${_STAR_HOME}/libexec/star/star-help"
             return 4
         fi
-        if [[ ! -f "${_STAR_INSTALL_HOME}/libexec/star/star-list" ]]; then
-            err "Required file is missing: ${_STAR_INSTALL_HOME}/libexec/star/star-list"
+        if [[ ! -f "${_STAR_HOME}/libexec/star/star-list" ]]; then
+            err "Required file is missing: ${_STAR_HOME}/libexec/star/star-list"
             return 4
         fi
-        if [[ ! -f "${_STAR_INSTALL_HOME}/libexec/star/star-prune" ]]; then
-            err "Required file is missing: ${_STAR_INSTALL_HOME}/libexec/star/star-prune"
+        if [[ ! -f "${_STAR_HOME}/libexec/star/star-prune" ]]; then
+            err "Required file is missing: ${_STAR_HOME}/libexec/star/star-prune"
             return 4
         fi
     fi
 
-    if [[ ! -d "${_STAR_INSTALL_HOME}/share/star/init/" ]]; then
-        err "Required directory is missing: ${_STAR_INSTALL_HOME}/share/star/init/"
+    if [[ ! -d "${_STAR_HOME}/share/star/init/" ]]; then
+        err "Required directory is missing: ${_STAR_HOME}/share/star/init/"
         return 4
     else
-        if [[ ! -f "${_STAR_INSTALL_HOME}/share/star/init/star.bash" ]]; then
-            err "Required file is missing: ${_STAR_INSTALL_HOME}/share/star/init/star.bash"
+        if [[ ! -f "${_STAR_HOME}/share/star/init/star.bash" ]]; then
+            err "Required file is missing: ${_STAR_HOME}/share/star/init/star.bash"
             return 4
         fi
     fi
@@ -127,13 +127,13 @@ init_star() {
     esac
 
     # for all shells, export the following environment variables
-    echo "export _STAR_INSTALL_HOME=\"${_STAR_INSTALL_HOME}\""
+    echo "export _STAR_HOME=\"${_STAR_HOME}\""
     echo "export _STAR_DATA_HOME=\"${_STAR_DATA_HOME}\""
     echo "export _STAR_CONFIG_HOME=\"${_STAR_CONFIG_HOME}\""
 
     case $shell_type in
         bash|zsh)
-            cat "${_STAR_INSTALL_HOME}/share/star/init/star.bash"
+            cat "${_STAR_HOME}/share/star/init/star.bash"
             ;;
     esac
 }
