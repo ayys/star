@@ -26,7 +26,11 @@ if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
     fi
 fi
 
-# TODO: source config file here (only important for _STAR_DATA_HOME)
+# load configuration file, if it exists
+if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
+    # shellcheck source=/dev/null
+    . "${_STAR_CONFIG_HOME}/star_config.sh"
+fi
 
 # Where to search for user-specific data (in this case, starred directory)
 # By default, use _STAR_DATA_HOME if it is already set,
@@ -44,6 +48,7 @@ fi
 
 # Setting up colors depending on terminal capabilities. Default values can be overridden using the respective variable names.
 if [ "$COLORTERM" = "truecolor" ] || [ "$COLORTERM" = "24bit" ]; then
+    # Use true color (=24 bits colors)
     __STAR_COLOR_NAME=${__STAR_COLOR_NAME-"\033[38;2;255;131;0m"}
     __STAR_COLOR_PATH=${__STAR_COLOR_PATH-"\033[38;2;1;169;130m"}
     __STAR_COLOR_RESET=${__STAR_COLOR_RESET-"\033[0m"}

@@ -17,8 +17,11 @@ fi
 if [[ ! -d "$_STAR_DATA_HOME" ]]; then
     mkdir -p "$_STAR_DATA_HOME"
 fi
-
-# TODO: source config file here
+# load configuration file, if it exists
+if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
+    # shellcheck source=/dev/null
+    . "${_STAR_CONFIG_HOME}/star_config.sh"
+fi
 
 # Enable (yes) or disable (no) environment variables
 export __STAR_ENVVARS="${__STAR_ENVVARS:-"yes"}"
