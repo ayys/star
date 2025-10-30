@@ -14,9 +14,6 @@ if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
     return 1
 fi
 
-if [[ ! -d "$_STAR_DATA_HOME" ]]; then
-    mkdir -p "$_STAR_DATA_HOME"
-fi
 # load configuration file, if it exists
 if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
     # shellcheck source=/dev/null
@@ -33,9 +30,6 @@ if [ ! -t 1 ]; then
     export __STAR_COLOR_PATH=""
     export __STAR_COLOR_RESET=""
 fi
-
-# it is strongly recommended to set the number of columns in the 'column' command (--table-columns-limit) and to put the path in the last column, 
-# as a path can contain whitespaces (which is the character used by 'column' to split columns)
 
 _star_add_variable()
 {
@@ -449,51 +443,33 @@ star()
                 return 1
             fi
 
-            if [[ "${force_reset}" -eq 1 ]]; then
-                # remove all env variables while their paths are still known
-                _star_unset_variables
-
-                local ret
-                command rm -r "${_STAR_DATA_HOME}/stars"
-                ret=$?
-                if [[ "$ret" -eq 0 ]]; then
-                    echo "All stars have been removed."
-                else
-                    echo "Failed to remove all the stars."
-                fi
-                return $ret
+            # if not forcing the reset, ask user for confirmation
+            if [[ "${force_reset}" -ne 1 ]]; then
+                # case "" corresponds to pressing enter
+                # by default, pressing enter aborts the reset
+                while true; do
+                    echo -n "Remove all starred directories? [y/N] "
+                    read -r
+                    case $REPLY in
+                        [Yy]*|yes ) break ;;
+                        [Nn]*|no|"" ) echo "Aborting reset." && return 0 ;;
+                        * ) echo "Not a valid answer." ;;
+                    esac
+                done  
             fi
 
-            local user_input
+            # remove all env variables while their paths are still known
+            _star_unset_variables
 
-            while true; do
-                echo -n "Remove all starred directories? [y/N] "
-                read -r user_input
-                case $user_input in
-                    [Yy]*|yes )
-                        # remove all env variables while their paths are still known
-                        _star_unset_variables
-
-                        local ret
-                        command rm -r "${_STAR_DATA_HOME}/stars"
-                        ret=$?
-                        if [[ "$ret" -eq 0 ]]; then
-                            echo "All stars have been removed."
-                        else
-                            echo "Failed to remove all the stars."
-                        fi
-                        return $ret
-                        ;;
-                    # case "" corresponds to pressing enter
-                    # by default, pressing enter aborts the reset
-                    [Nn]*|no|"" )
-                        echo "Aborting reset." 
-                        return 0
-                        ;;
-                    * )
-                        echo "Not a valid answer.";;
-                esac
-            done
+            local ret
+            command rm -r "${_STAR_DATA_HOME}/stars"
+            ret=$?
+            if [[ "$ret" -eq 0 ]]; then
+                echo "All stars have been removed."
+            else
+                echo "Failed to remove all the stars."
+            fi
+            return $ret
             ;;
     esac
 }
