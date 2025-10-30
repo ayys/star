@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+STAR_VERSION="2.0.0"
+
+# verify installation and set necessary environment variables, before declaring any functions
+
 script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 # star is expected to be located at: <installation_dir>/bin/star
@@ -162,6 +166,10 @@ init_star() {
     esac
 }
 
+display_version() {
+    echo "${STAR_VERSION}"
+}
+
 main() {
     if [[ $# -lt 1 ]]; then
         err "missing MODE argument."
@@ -176,6 +184,10 @@ main() {
     shift
     case $mode in
         init) mode=INIT  ;;
+        -v|--version)
+            display_version
+            return 0
+            ;;
         -h|--help)
             usage
             return 0

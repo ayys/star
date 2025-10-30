@@ -144,6 +144,10 @@ star()
             fi
             return 0
             ;;
+        -v|--version)
+            command star "${arg_mode}" "$@"
+            return 0
+            ;;
         *)
             echo "star: invalid mode '$arg_mode'"
             "${_STAR_HOME}/libexec/star/star-help"
