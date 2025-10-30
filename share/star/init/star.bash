@@ -580,4 +580,8 @@ star()
 "${_STAR_HOME}/libexec/star/star-prune"
 
 # set environment variables
-_star_set_variables
+if [[ "$__STAR_ENVVARS" == "yes" ]]; then
+    _star_set_variables
+else
+    _star_unset_variables
+fi
