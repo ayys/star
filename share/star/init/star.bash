@@ -25,7 +25,7 @@ export __STAR_ENVVARS="${__STAR_ENVVARS:-"yes"}"
 
 # Check if stdout is a terminal (No color for non-interactive sessions -> not a TTY)
 # This has to be done in a sourced script and not in an executed script, to check if stdout is a terminal.
-if [ ! -t 1 ]; then
+if [[ ! -t 1 ]]; then
     export __STAR_COLOR_NAME=""
     export __STAR_COLOR_PATH=""
     export __STAR_COLOR_RESET=""
@@ -549,7 +549,7 @@ star()
 #         star)
 #             # only suggest options when star is the first comp word
 #             # to prevent suggesting options in case a starred directory is named "star"
-#             [ "${COMP_CWORD}" -eq 1 ] && COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+#             [[ "${COMP_CWORD}" -eq 1 ]] && COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 #             return 0
 #             ;;
 #         reset)
