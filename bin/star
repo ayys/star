@@ -151,6 +151,10 @@ init_star() {
     echo "export __STAR_COLOR_PATH=\"${__STAR_COLOR_PATH}\""
     echo "export __STAR_COLOR_RESET=\"${__STAR_COLOR_RESET}\""
 
+    # shell that was used to initialize star, 
+    # that will be used by "star config" to reload the configuration
+    echo "export __STAR_SHELL=\"${shell_type}\""
+
     case $shell_type in
         bash|zsh)
             cat "${_STAR_HOME}/share/star/init/star.bash"

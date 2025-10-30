@@ -135,6 +135,7 @@ star()
         rename)     mode=RENAME ;;
         rm|remove)  mode=REMOVE arg_mode=remove ;;
         reset)      mode=RESET  ;;
+        config)     mode=CONFIG ;;
         h|help|-h|--help)
             if [[ $# -gt 0 ]]; then
                 "${_STAR_HOME}/libexec/star/star-help" --mode="$1"
@@ -470,6 +471,33 @@ star()
                 echo "Failed to remove all the stars."
             fi
             return $ret
+            ;;
+        CONFIG)
+            local editor
+            if [[ -n "${EDITOR}" ]]; then
+                editor="${EDITOR}"
+            elif command -v nano >/dev/null 2>&1; then
+                editor="nano"    
+            elif command -v vi >/dev/null 2>&1; then
+                editor="vi"
+            else
+                echo "No suitable text editor found (tried: nano, vi)."
+                echo "Try setting the EDITOR environment variable to your preferred terminal text editor."
+                return 3
+            fi
+
+            if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
+                "${editor}" "${_STAR_CONFIG_HOME}/star_config.sh"
+            else
+                echo "No configuration file found. Should be located at: ${_STAR_CONFIG_HOME}/star_config.sh"
+                if [[ -e "${_STAR_HOME}/share/star/config/star_config.sh.template" ]]; then
+                    echo
+                    echo "You can create a new configuration file with the following command (copies a provided template):"
+                    echo "  cp \"${_STAR_HOME}/share/star/config/star_config.sh.template\" \"${_STAR_CONFIG_HOME}/star_config.sh\""
+                fi
+            fi
+            eval "$(command star init "${__STAR_SHELL}")"
+            return $?
             ;;
     esac
 }

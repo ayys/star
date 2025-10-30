@@ -85,29 +85,55 @@ EOF
 
 usage-config() {
     cat << EOF
-Usage: star config [OPTION]
+Usage: star config
 
-Display or edit the "star" configuration.
+Open the star configuration file in a terminal text editor then apply the updated configuration.
 
-    (d) default config
+Configuration file:
+    If the configuration file does not exist, star will suggest a command to create one from a provided template.
 
-    OPTION
-        list.sort
-            name (d)    Sort according to bookmark's name.
-            loaded      Sort according to bookmark's most recent load (cd)
-        list.order
-            desc (d)    Descending order
-            asc         Ascending order
-        list.index
-            none        No index
-            desc        Descending numeric index
-            asc (d)     Ascending numeric index
+    Location:
+        ${_STAR_CONFIG_HOME}/star_config.sh    
+    Template location:
+        ${_STAR_HOME}/share/star/config/star_config.sh.template
 
-        variables       Whether to enable (yes) or disable (no) the environment variables
-            yes (d)
-            no
+Editor:
+    - use the one defined in the environment variable EDITOR
+    - else use "nano" if available
+    - else use "vi" if available
 EOF
 }
+
+# the following function could be another implementation of "star config",
+# where it does not open the file in an editor, but:
+# - without option displays the current configuration
+# - else edits the configuration file according to the provided option
+
+# usage-config() {
+#     cat << EOF
+# Usage: star config [OPTION]
+
+# Display or edit the "star" configuration.
+
+#     (d) default config
+
+#     OPTION
+#         list.sort
+#             name (d)    Sort according to bookmark's name.
+#             loaded      Sort according to bookmark's most recent load (cd)
+#         list.order
+#             desc (d)    Descending order
+#             asc         Ascending order
+#         list.index
+#             none        No index
+#             desc        Descending numeric index
+#             asc (d)     Ascending numeric index
+
+#         variables       Whether to enable (yes) or disable (no) the environment variables
+#             yes (d)
+#             no
+# EOF
+# }
 
 usage-default() {
     cat << EOF
