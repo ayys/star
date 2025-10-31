@@ -14,22 +14,19 @@ if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
     return 1
 fi
 
-# load configuration file, if it exists
+# load configuration file if it exists
 if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
     # shellcheck source=/dev/null
     . "${_STAR_CONFIG_HOME}/star_config.sh"
+else
+    # Adjust colors depending on terminal capabilities.
+    # This is usually done in the configuration file, but if the file does not exist then do it here.
+    # shellcheck source=/dev/null
+    . "${_STAR_HOME}/libexec/star/star-setcolors.sh"
 fi
 
 # Enable (yes) or disable (no) environment variables
 export __STAR_ENVVARS="${__STAR_ENVVARS:-"yes"}"
-
-# Check if stdout is a terminal (No color for non-interactive sessions -> not a TTY)
-# This has to be done in a sourced script and not in an executed script, to check if stdout is a terminal.
-if [[ ! -t 1 ]]; then
-    export __STAR_COLOR_NAME=""
-    export __STAR_COLOR_PATH=""
-    export __STAR_COLOR_RESET=""
-fi
 
 _star_add_variable()
 {

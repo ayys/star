@@ -41,6 +41,10 @@ export __STAR_COLOR256_PATH="\033[38;5;36m"
 # default: \033[0m
 export __STAR_COLOR256_RESET="\033[0m"
 
+### Adjust colors depending on terminal capabilities. DO NOT REMOVE OR MODIFY THIS LINE.
+# shellcheck source=/dev/null
+. "${_STAR_HOME}/libexec/star/star-setcolors.sh"
+
 
 ### LIST OPTIONS ###
 ### Format:

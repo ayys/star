@@ -50,19 +50,6 @@ if [[ -z "${_STAR_DATA_HOME}" ]]; then
     fi
 fi
 
-# Setting up colors depending on terminal capabilities. Default values can be overridden using the respective variable names.
-if [[ "$COLORTERM" = "truecolor" ]] || [[ "$COLORTERM" = "24bit" ]]; then
-    # Use true color (=24 bits colors)
-    __STAR_COLOR_NAME=${__STAR_COLOR_NAME-"\033[38;2;255;131;0m"}
-    __STAR_COLOR_PATH=${__STAR_COLOR_PATH-"\033[38;2;1;169;130m"}
-    __STAR_COLOR_RESET=${__STAR_COLOR_RESET-"\033[0m"}
-else
-    # Use 256-color approximation
-    __STAR_COLOR_NAME=${__STAR_COLOR256_NAME-"\033[38;5;214m"}
-    __STAR_COLOR_PATH=${__STAR_COLOR256_PATH-"\033[38;5;36m"}
-    __STAR_COLOR_RESET=${__STAR_COLOR256_RESET-"\033[0m"}
-fi
-
 usage_init() {
     cat <<EOF
 Usage: star init SHELL_TYPE
@@ -109,6 +96,10 @@ check_installation() {
         err "Required directory is missing: ${_STAR_HOME}/libexec/star/"
         return 4
     else
+        if [[ ! -f "${_STAR_HOME}/libexec/star/star-setcolors.sh" ]]; then
+            err "Required file is missing: ${_STAR_HOME}/libexec/star/star-setcolors.sh"
+            return 4
+        fi
         if [[ ! -f "${_STAR_HOME}/libexec/star/star-help" ]]; then
             err "Required file is missing: ${_STAR_HOME}/libexec/star/star-help"
             return 4
@@ -151,9 +142,6 @@ init_star() {
     echo "export _STAR_HOME=\"${_STAR_HOME}\""
     echo "export _STAR_DATA_HOME=\"${_STAR_DATA_HOME}\""
     echo "export _STAR_CONFIG_HOME=\"${_STAR_CONFIG_HOME}\""
-    echo "export __STAR_COLOR_NAME=\"${__STAR_COLOR_NAME}\""
-    echo "export __STAR_COLOR_PATH=\"${__STAR_COLOR_PATH}\""
-    echo "export __STAR_COLOR_RESET=\"${__STAR_COLOR_RESET}\""
 
     # shell that was used to initialize star, 
     # that will be used by "star config" to reload the configuration
