@@ -22,13 +22,17 @@ EOF
 
 usage-list() {
     cat << EOF
-Usage: star list
-       star L
+Usage: star list [OPTIONS]
+       star L [OPTIONS]
 
 List all stars, by default sorted according to last load (top ones are the last loaded stars).
 
-Listing can be customized either by setting environment variables or by using star-list options.
-Use 'star-list --help': its specification also applies to 'star list'.
+Listing can be customized either by:
+- editing the environment variables in the configuration file (see 'star config' for more information)
+- using options supported by the 'star-list' helper script
+
+Get the 'star-list' usage and options by running: 
+ "\${_STAR_HOME}/libexec/star/star-list" --help
 EOF
 }
 
@@ -93,9 +97,9 @@ Configuration file:
     If the configuration file does not exist, star will suggest a command to create one from a provided template.
 
     Location:
-        ${_STAR_CONFIG_HOME}/star_config.sh    
+        \${_STAR_CONFIG_HOME}/star_config.sh    
     Template location:
-        ${_STAR_HOME}/share/star/config/star_config.sh.template
+        \${_STAR_HOME}/share/star/config/star_config.sh.template
 
 Editor:
     - use the one defined in the environment variable EDITOR

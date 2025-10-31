@@ -5,7 +5,7 @@ usage() {
 Usage: star-list [LIST_MODE] [OPTIONS]...
        star-list ITEM_MODE
 
-    List stars in ${_STAR_DATA_HOME}/stars.
+    List stars in \${_STAR_DATA_HOME}/stars.
 
     LIST_MODE: Display the starred directories. List modes are exclusives.
         -f, --format=FORMAT     Default mode, to print with a custom format.
