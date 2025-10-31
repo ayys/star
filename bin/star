@@ -162,6 +162,8 @@ init_star() {
     case $shell_type in
         bash|zsh)
             cat "${_STAR_HOME}/share/star/init/star.bash"
+            echo ""
+            cat "${_STAR_HOME}/share/star/completion/star.bash"
             ;;
     esac
 }
