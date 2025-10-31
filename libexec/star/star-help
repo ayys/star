@@ -5,15 +5,15 @@ usage-add() {
 Usage: star add PATH [NAME]
        star a PATH [NAME]
 
-Add a new bookmark.
+Add a new star.
 
     PATH
-        Relative path to the directory to bookmark.
-        e.g. "star add ." will bookmark the current directory
+        Relative path to the directory to star.
+        e.g. "star add ." will star the current directory
 
     NAME
-        The name of the new bookmark if provided, otherwise it will use the name of the current directory.
-        - Must be unique (among all bookmarks)
+        The name of the new star if provided, otherwise it will use the name of the current directory.
+        - Must be unique (among all stars)
         - Can contain slashes: "/"
         - Whitespaces will be replaced by a dash: "-"
         - Names with only numeric characters will by prefixed by "dir-"
@@ -25,7 +25,7 @@ usage-list() {
 Usage: star list
        star L
 
-List all bookmarks, by default sorted according to last load (top ones are the last loaded bookmarks).
+List all stars, by default sorted according to last load (top ones are the last loaded stars).
 
 Listing can be customized either by setting environment variables or by using star-list options.
 Use 'star-list --help': its specification also applies to 'star list'.
@@ -37,10 +37,10 @@ usage-load() {
 Usage: star load STAR
        star l STAR
 
-Navigate (cd) into the bookmarked directory.
+Navigate (cd) into the starred directory.
 
     STAR
-        Should be the name or index of a bookmarked directory (one that is listed using "star list").
+        Should be the name or index of a starred directory (one that is listed using "star list").
 EOF
 }
 
@@ -48,14 +48,14 @@ usage-rename() {
     cat << EOF
 Usage: star rename <STAR> <NEW_STAR_NAME>
 
-Rename an existing bookmark.
+Rename an existing star.
 
     STAR
-        Should be the name of a bookmarked directory.
+        Should be the name of a starred directory.
 
     NEW_STAR_NAME
-        The new name of the bookmark.
-        - Must be unique (among all bookmarks)
+        The new name of the star.
+        - Must be unique (among all stars)
         - Can contain slashes /
 EOF
 }
@@ -65,10 +65,10 @@ usage-remove() {
 Usage: star remove <STAR> [STAR]...
        star rm <STAR> [STAR]...
 
-Remove one or more bookmarks.
+Remove one or more stars.
 
     STAR
-        Should be the name of a bookmarked directory.
+        Should be the name of a starred directory.
 EOF
 }
 
@@ -76,7 +76,7 @@ usage-reset() {
     cat << EOF
 Usage: star reset [-f|--force]
 
-Remove all bookmarks and the ".star" directory.
+Remove all stars and the ".star" directory.
 
     --force, -f
         Force reset without prompting the user.
@@ -119,8 +119,8 @@ EOF
 
 #     OPTION
 #         list.sort
-#             name (d)    Sort according to bookmark's name.
-#             loaded      Sort according to bookmark's most recent load (cd)
+#             name (d)    Sort according to star's name.
+#             loaded      Sort according to star's most recent load (cd)
 #         list.order
 #             desc (d)    Descending order
 #             asc         Ascending order
@@ -143,13 +143,13 @@ Usage: star [MODE]
 Dynamically bookmark and cd into directories.
 Bookmarks are called "stars".
 
-    MODE (related to bookmarks management)
-        add     Add a new bookmark
-        list    List all bookmarks
-        load    cd into a bookmarked directory
-        rename  Change the name of a bookmark
-        remove  Remove a bookmark
-        reset   Delete all bookmarks
+    MODE (related to stars management)
+        add     Add a new star
+        list    List all stars
+        load    cd into a starred directory
+        rename  Change the name of a star
+        remove  Remove a star
+        reset   Delete all stars
 
     MODE (miscellaneous)
         config  Edit configuration file and apply changes
