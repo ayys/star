@@ -2,64 +2,12 @@
 
 STAR_VERSION="2.0.0"
 
-# verify installation and set necessary environment variables, before declaring any functions
+# this variable can be edited in place by the installation script,
+# if it is set the _STAR_HOME detection will be skipped, and this value will be used instead
+STAR_HOME=
 
-script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
-# star is expected to be located at: <installation_dir>/bin/star
-installation_dir="$(realpath "$script_dir/..")"
-
-if [[ "${installation_dir}/bin" != "$script_dir" ]]; then
-    err "star program is not located at the expected location."
-    return 1
-fi
-
-export _STAR_HOME="$installation_dir"
-
-# Where to search for user-specific config files (in this case, starred directory)
-# By default, use _STAR_CONFIG_HOME if it is already set,
-# else try to use XDG_CONFIG_HOME, 
-# else search at $HOME/.config
-#
-# In each case, a sub-directory "star" is created
-if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
-    if [[ -n "${XDG_CONFIG_HOME}" ]]; then
-        export _STAR_CONFIG_HOME="${XDG_CONFIG_HOME}/star"
-    else
-        export _STAR_CONFIG_HOME="$HOME/.config/star"
-    fi
-fi
-
-# load configuration file, if it exists
-if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
-    # shellcheck source=/dev/null
-    . "${_STAR_CONFIG_HOME}/star_config.sh"
-fi
-
-# Where to search for user-specific data (in this case, starred directory)
-# By default, use _STAR_DATA_HOME if it is already set,
-# else try to use XDG_DATA_HOME, 
-# else search at $HOME/.local/share
-#
-# In each case, a sub-directory "star" is created
-if [[ -z "${_STAR_DATA_HOME}" ]]; then
-    if [[ -n "${XDG_DATA_HOME}" ]]; then
-        export _STAR_DATA_HOME="${XDG_DATA_HOME}/star"
-    else
-        export _STAR_DATA_HOME="$HOME/.local/share/star"
-    fi
-fi
-
-usage_init() {
-    cat <<EOF
-Usage: star init SHELL_TYPE
-Initialize the star environment for the specified shell type.
-
-SHELL_TYPE:
-  bash      Bash shell
-  zsh       Zsh shell
-EOF
-}
+### Usage ###
 
 usage() {
     cat <<EOF
@@ -73,12 +21,167 @@ MODE:
 EOF
 }
 
-err() {
-    echo "Error: $*" >&2
+usage_init() {
+    cat <<EOF
+Usage: star init SHELL_TYPE
+Initialize the star environment for the specified shell type.
+
+SHELL_TYPE:
+  bash      Bash shell
+  zsh       Zsh shell
+EOF
 }
 
-err_star_unloaded() {
-    err "star is not loaded. Please run 'eval \"\$(command star init bash)\"' to load star."
+### Main function ###
+
+main() {
+    if [[ $# -lt 1 ]]; then
+        err "missing MODE argument."
+        usage >&2
+        return 1
+    fi
+
+    # set necessary environment variables
+    set_star_home
+    set_star_config_home
+    set_star_data_home
+
+    check_installation || return $?
+
+    # parse the mode
+    local mode="$1"
+    shift
+    case $mode in
+        init) mode=INIT  ;;
+        -v|--version)
+            display_version
+            return 0
+            ;;
+        -h|--help)
+            usage
+            return 0
+            ;;
+        *)
+            err "invalid mode '$mode'"
+            usage >&2
+            return 1
+            ;;
+    esac
+
+    # manage each mode
+    case ${mode} in
+        INIT)
+            if [[ $# -lt 1 ]]; then
+                err "missing SHELL_TYPE argument."
+                usage_init >&2
+                return 1
+            fi
+            # initialize star environment
+            local shell_type="$1"
+            shift
+            init_star "$shell_type"
+            return $?
+            ;;
+        *)
+            err "Unknown mode: $mode"
+            return 1
+            ;;
+    esac
+}
+
+### Core logic functions ###
+
+init_star() {
+    local shell_type="$1"
+
+    # checking valid shell type
+    case $shell_type in
+        bash|zsh) ;;
+        *)
+            err "unknown SHELL_TYPE: $shell_type"
+            usage_init >&2
+            return 1
+            ;;
+    esac
+
+    # for all shells, export the following environment variables
+    echo "export _STAR_HOME=\"${_STAR_HOME}\""
+    echo "export _STAR_DATA_HOME=\"${_STAR_DATA_HOME}\""
+    echo "export _STAR_CONFIG_HOME=\"${_STAR_CONFIG_HOME}\""
+
+    # shell that was used to initialize star, 
+    # that will be used by "star config" to reload the configuration
+    echo "export __STAR_SHELL=\"${shell_type}\""
+
+    case $shell_type in
+        bash|zsh)
+            cat "${_STAR_HOME}/share/star/init/star.bash"
+            echo ""
+            cat "${_STAR_HOME}/share/star/completion/star.bash"
+            ;;
+    esac
+}
+
+
+### Specific util functions ###
+
+display_version() {
+    echo "${STAR_VERSION}"
+}
+
+set_star_home() {
+    if [[ -n "${STAR_HOME}" ]]; then
+        export _STAR_HOME="${STAR_HOME}"
+        return 0
+    fi
+    script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+
+    # star is expected to be located at: <installation_dir>/bin/star
+    installation_dir="$(realpath "$script_dir/..")"
+    if [[ "${installation_dir}/bin" != "$script_dir" ]]; then
+        err "star program should be located in a \"bin\" directory."
+        return 1
+    fi
+
+    export _STAR_HOME="$installation_dir"
+}
+
+set_star_config_home() {
+    # Where to search for user-specific config files (in this case, starred directory)
+    # By default, use _STAR_CONFIG_HOME if it is already set,
+    # else try to use XDG_CONFIG_HOME, 
+    # else search at $HOME/.config
+    #
+    # In each case, a sub-directory "star" is created
+    if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
+        if [[ -n "${XDG_CONFIG_HOME}" ]]; then
+            export _STAR_CONFIG_HOME="${XDG_CONFIG_HOME}/star"
+        else
+            export _STAR_CONFIG_HOME="$HOME/.config/star"
+        fi
+    fi
+}
+
+set_star_data_home() {
+    # load configuration file, if it exists
+    if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
+        # shellcheck source=/dev/null
+        . "${_STAR_CONFIG_HOME}/star_config.sh"
+    fi
+
+    # Where to search for user-specific data (in this case, starred directory)
+    # By default, use _STAR_DATA_HOME if it is already set,
+    # else try to use XDG_DATA_HOME, 
+    # else search at $HOME/.local/share
+    #
+    # In each case, a sub-directory "star" is created
+    if [[ -z "${_STAR_DATA_HOME}" ]]; then
+        if [[ -n "${XDG_DATA_HOME}" ]]; then
+            export _STAR_DATA_HOME="${XDG_DATA_HOME}/star"
+        else
+            export _STAR_DATA_HOME="$HOME/.local/share/star"
+        fi
+    fi
 }
 
 check_installation() {
@@ -125,89 +228,15 @@ check_installation() {
     fi
 }
 
-init_star() {
-    local shell_type="$1"
+### Generic util functions ###
 
-    # checking valid shell type
-    case $shell_type in
-        bash|zsh) ;;
-        *)
-            err "unknown SHELL_TYPE: $shell_type"
-            usage_init >&2
-            return 1
-            ;;
-    esac
-
-    # for all shells, export the following environment variables
-    echo "export _STAR_HOME=\"${_STAR_HOME}\""
-    echo "export _STAR_DATA_HOME=\"${_STAR_DATA_HOME}\""
-    echo "export _STAR_CONFIG_HOME=\"${_STAR_CONFIG_HOME}\""
-
-    # shell that was used to initialize star, 
-    # that will be used by "star config" to reload the configuration
-    echo "export __STAR_SHELL=\"${shell_type}\""
-
-    case $shell_type in
-        bash|zsh)
-            cat "${_STAR_HOME}/share/star/init/star.bash"
-            echo ""
-            cat "${_STAR_HOME}/share/star/completion/star.bash"
-            ;;
-    esac
+err() {
+    echo "Error: $*" >&2
 }
 
-display_version() {
-    echo "${STAR_VERSION}"
+err_star_unloaded() {
+    err "star is not loaded. Please run 'eval \"\$(command star init bash)\"' to load star."
 }
 
-main() {
-    if [[ $# -lt 1 ]]; then
-        err "missing MODE argument."
-        usage >&2
-        return 1
-    fi
-
-    check_installation || return $?
-
-    # parse the mode
-    local mode="$1"
-    shift
-    case $mode in
-        init) mode=INIT  ;;
-        -v|--version)
-            display_version
-            return 0
-            ;;
-        -h|--help)
-            usage
-            return 0
-            ;;
-        *)
-            err "invalid mode '$mode'"
-            usage >&2
-            return 1
-            ;;
-    esac
-
-    # manage each mode
-    case ${mode} in
-        INIT)
-            if [[ $# -lt 1 ]]; then
-                err "missing SHELL_TYPE argument."
-                usage_init >&2
-                return 1
-            fi
-            # initialize star environment
-            local shell_type="$1"
-            shift
-            init_star "$shell_type"
-            return $?
-            ;;
-        *)
-            err "Unknown mode: $mode"
-            return 1
-            ;;
-    esac
-}
 
 main "$@"
