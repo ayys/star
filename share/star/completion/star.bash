@@ -69,14 +69,14 @@ _complete_star()
         starmodes)
             # select all star modes
             local starmodes_opts="add load rename remove list reset config help"
-            while IFS='' read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "${starmodes_opts}" -- "${cur}")
+            while IFS='' command read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "${starmodes_opts}" -- "${cur}")
             return 0
             ;;
         starnames)
             # select all star names
             local star_names
-            star_names=$([[ -d "${_STAR_DATA_HOME}/stars" ]] && find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%f ")
-            while IFS='' read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "${star_names//${star_dir_separator}/\/}" -- "${cur}")
+            star_names=$([[ -d "${_STAR_DATA_HOME}/stars" ]] && command find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%f ")
+            while IFS='' command read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "${star_names//${star_dir_separator}/\/}" -- "${cur}")
             return 0
             ;;
         starnamesfiltered)
@@ -85,7 +85,7 @@ _complete_star()
             # select all star names
             local star_names=()
             if [[ -d "${_STAR_DATA_HOME}/stars" ]]; then
-                while IFS= read -r; do star_names+=("$REPLY"); done < <(find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%f\n")
+                while IFS= command read -r; do star_names+=("$REPLY"); done < <(command find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%f\n")
             fi
 
             # Only keep the star names that are not yet used in the command line. 
@@ -100,12 +100,12 @@ _complete_star()
 
             local print_final_star_names="${final_star_names[*]}"
 
-            while IFS='' read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "${print_final_star_names//${star_dir_separator}/\/}" -- "${cur}")
+            while IFS='' command read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "${print_final_star_names//${star_dir_separator}/\/}" -- "${cur}")
             return 0
             ;;
         currentdirs)
             # suggest directories at the location of the current directory, or directory being typed
-            while IFS='' read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -d -- "${cur}")
+            while IFS='' command read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -d -- "${cur}")
             return 0
             ;;
         default)
