@@ -14,6 +14,13 @@ if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
     return 1
 fi
 
+# check that all required dependencies are installed
+"${_STAR_HOME}"/libexec/star/star-deps || {
+    err "Dependency check failed, cannot run star."
+    err "See above messages for more details, or visit https://github.com/Fruchix/star for installation instructions."
+    return 1
+}
+
 # load configuration file if it exists
 if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
     # shellcheck source=/dev/null
