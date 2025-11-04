@@ -78,8 +78,6 @@ DIR="${_STAR_DATA_HOME}/stars"
 # by default, search for non broken symlinks
 TYPE_TEST="-type l -not -xtype l"
 
-# TODO: source config file with environment variables
-
 list_stars() {
     if [[ $# -lt 1 ]]; then
         return 1
