@@ -5,11 +5,12 @@
 # Note that for all options, if the variable is unset, star will use its default value
 # For some options, it will also use the default value if the variable is set but empty.
 
-# Path to where star data (the starred directories) is stored.
-# The directory will be created if it does not exist.
-#
-# Default: $XDG_DATA_HOME if set and not empty, else $HOME/.local/share/star
-#export _STAR_DATA_HOME=
+# Do not set variables regarding the installation of star itself, such as:
+# _STAR_HOME
+# _STAR_CONFIG_HOME
+# _STAR_CONFIG_FILE
+# _STAR_DATA_HOME
+# This configuration file is only for run-time configuration, and should be able to be quickly reloaded without breaking the installation. 
 
 # When set to "yes", star will export environment variables named after the starred directories.
 # For example, if a star is named "project", an environment variable $STAR_PROJECT will be exported,

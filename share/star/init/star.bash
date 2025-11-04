@@ -9,8 +9,8 @@ if [[ -z "${_STAR_DATA_HOME}" ]]; then
     return 1
 fi
 
-if [[ -z "${_STAR_CONFIG_HOME}" ]]; then
-    command echo "Error: _STAR_CONFIG_HOME is not set. Please run 'eval \"\$(command star init bash)\"' to load star." >&2
+if [[ -z "${_STAR_CONFIG_FILE}" ]]; then
+    command echo "Error: _STAR_CONFIG_FILE is not set. Please run 'eval \"\$(command star init bash)\"' to load star." >&2
     return 1
 fi
 
@@ -22,9 +22,9 @@ fi
 }
 
 # load configuration file if it exists
-if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
+if [[ -f "${_STAR_CONFIG_FILE}" ]]; then
     # shellcheck source=/dev/null
-    . "${_STAR_CONFIG_HOME}/star_config.sh"
+    . "${_STAR_CONFIG_FILE}"
 else
     # Adjust colors depending on terminal capabilities.
     # This is usually done in the configuration file, but if the file does not exist then do it here.
@@ -496,15 +496,17 @@ star()
                 return 3
             fi
 
-            if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
-                "${editor}" "${_STAR_CONFIG_HOME}/star_config.sh"
+            if [[ -f "${_STAR_CONFIG_FILE}" ]]; then
+                "${editor}" "${_STAR_CONFIG_FILE}"
             else
-                command echo "No configuration file found. Should be located at: ${_STAR_CONFIG_HOME}/star_config.sh"
+                command echo "No configuration file found. Should be located at: ${_STAR_CONFIG_FILE}"
                 if [[ -e "${_STAR_HOME}/share/star/config/star_config.sh.template" ]]; then
                     command echo
                     command echo "You can create a new configuration file with the following command (copies a provided template):"
-                    command echo "  cp \"${_STAR_HOME}/share/star/config/star_config.sh.template\" \"${_STAR_CONFIG_HOME}/star_config.sh\""
+                    command echo "  cp \"${_STAR_HOME}/share/star/config/star_config.sh.template\" \"${_STAR_CONFIG_FILE}\""
                 fi
+                command echo
+                command echo "Note that configuration can also be done by setting environment variables, without the need of a configuration file."
             fi
             eval "$(command star init "${__STAR_SHELL}")"
             return $?

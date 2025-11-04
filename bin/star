@@ -64,6 +64,7 @@ main() {
     # set necessary environment variables
     set_star_home
     set_star_config_home
+    set_star_config_file
     set_star_data_home
 
     "${_STAR_HOME}"/libexec/star/star-deps || {
@@ -114,7 +115,7 @@ init_star() {
     # for all shells, export the following environment variables
     echo "export _STAR_HOME=\"${_STAR_HOME}\""
     echo "export _STAR_DATA_HOME=\"${_STAR_DATA_HOME}\""
-    echo "export _STAR_CONFIG_HOME=\"${_STAR_CONFIG_HOME}\""
+    echo "export _STAR_CONFIG_FILE=\"${_STAR_CONFIG_FILE}\""
 
     # shell that was used to initialize star, 
     # that will be used by "star config" to reload the configuration
@@ -169,13 +170,14 @@ set_star_config_home() {
     fi
 }
 
-set_star_data_home() {
-    # load configuration file, if it exists
-    if [[ -f "${_STAR_CONFIG_HOME}/star_config.sh" ]]; then
-        # shellcheck source=/dev/null
-        . "${_STAR_CONFIG_HOME}/star_config.sh"
-    fi
+set_star_config_file() {
+    # Path to the star configuration file
+    # By default, use _STAR_CONFIG_FILE if it is already set,
+    # else use "${_STAR_CONFIG_HOME}/star_config.sh"
+    export _STAR_CONFIG_FILE=${_STAR_CONFIG_FILE:-"${_STAR_CONFIG_HOME?}/star_config.sh"}
+}
 
+set_star_data_home() {
     # Where to search for user-specific data (in this case, starred directory)
     # By default, use _STAR_DATA_HOME if it is already set,
     # else try to use XDG_DATA_HOME, 

@@ -94,15 +94,21 @@ Usage: star config
 Open the star configuration file in a terminal text editor then apply the updated configuration.
 
 Configuration file:
+    The configuration file is located at \$_STAR_CONFIG_FILE, which is by default "\$_STAR_CONFIG_HOME/star_config.sh".
+    Customizing \$_STAR_CONFIG_FILE will allow you to use any file for star configuration. Keep in mind that this file will get sourced after each "star config".
+
+    Customizing \$_STAR_CONFIG_HOME will allow you to change the directory where the default configuration file is stored (star_config.sh).
+    By default, this corresponds to:
+        - "\$XDG_CONFIG_HOME/star" if XDG_CONFIG_HOME is defined
+        - else "\$HOME/.config/star"
+
     If the configuration file does not exist, star will suggest a command to create one from a provided template.
 
-    Location:
-        \${_STAR_CONFIG_HOME}/star_config.sh    
     Template location:
-        \${_STAR_HOME}/share/star/config/star_config.sh.template
+        \$_STAR_HOME/share/star/config/star_config.sh.template
 
 Editor:
-    - use the one defined in the environment variable EDITOR
+    - use the one defined in the environment variable \$EDITOR
     - else use "nano" if available
     - else use "vi" if available
 EOF
