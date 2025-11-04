@@ -72,7 +72,7 @@ _star_set_variables()
 
     # list of stars with format: "name path", where path can contain spaces
     local stars_list=()
-    while IFS= command read -r; do
+    while IFS= read -r; do
         stars_list+=("$REPLY")
     done < <(command find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%f %l\n")
 
@@ -94,7 +94,7 @@ _star_unset_variables()
     # get all the environment variables starting with STAR_
     # format: <NAME>=<VALUE>
     variables_list=()
-    while IFS= command read -r; do
+    while IFS= read -r; do
         variables_list+=("$REPLY")
     done < <(command env | command grep "^${star_env_var_prefix}")
 
@@ -266,7 +266,7 @@ star()
 
             # get the paths of all starred directories
             local stars_path=()
-            while IFS= command read -r; do
+            while IFS= read -r; do
                 stars_path+=("$REPLY")
             done < <(command find "${_STAR_DATA_HOME}/stars" -type l -not -xtype l -printf "%l\n")
 
@@ -357,7 +357,7 @@ star()
             if [[ "${star_to_load}" =~ ^[0-9]+$ ]]; then
                 # Get the list of star names
                 local stars_list=()
-                while IFS= command read -r; do
+                while IFS= read -r; do
                     stars_list+=("$REPLY")
                 done < <("${_STAR_HOME}/libexec/star/star-list" --names) # TODO: pass sorting parameters to star-list
 
@@ -460,7 +460,7 @@ star()
                 # by default, pressing enter aborts the reset
                 while true; do
                     command echo -n "Remove all starred directories? [y/N] "
-                    command read -r
+                    read -r
                     case $REPLY in
                         [Yy]*|yes ) break ;;
                         [Nn]*|no|"" ) command echo "Aborting reset." && return 0 ;;
