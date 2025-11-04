@@ -41,13 +41,6 @@ main() {
         return 1
     fi
 
-    # set necessary environment variables
-    set_star_home
-    set_star_config_home
-    set_star_data_home
-
-    check_installation || return $?
-
     # parse the mode
     local mode="$1"
     shift
@@ -67,6 +60,20 @@ main() {
             return 1
             ;;
     esac
+
+    # set necessary environment variables
+    set_star_home
+    set_star_config_home
+    set_star_data_home
+
+    "${_STAR_HOME}"/libexec/star/star-deps || {
+        local ret=$?
+        err "Dependency check failed, cannot run star."
+        err "See above messages for more details, or visit https://github.com/Fruchix/star for installation instructions."
+        exit $ret
+    }
+
+    check_installation || return $?
 
     # manage each mode
     case ${mode} in
