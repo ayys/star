@@ -26,7 +26,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ "$mode" == "release" ]]; then
-	DESTDIR="$PWD/release/star-$VERSION"
+	DESTDIR="release/star-$VERSION"
 	echo "Creating release package in $DESTDIR"
 fi
 
@@ -43,15 +43,23 @@ find "$script_dir/libexec/star/" -type f ! -name "*.sh" -exec install -m 755 {} 
 install -m 644 "$script_dir/libexec/star/"*.sh "$LIBEXECDIR/" 2>/dev/null || true
 install -m 644 "$script_dir/share/star/"* "$SHAREDIR/" 2>/dev/null || true
 
+# add more files when in release mode
+if [[ "$mode" == "release" ]]; then
+	mkdir -p "$DESTDIR"
+	install -m 755 "$script_dir/configure" "$DESTDIR/configure"
+	install -m 755 "$script_dir/install.sh" "$DESTDIR/install.sh"
+	install -m 644 "$script_dir/LICENSE" "$DESTDIR/LICENSE"
+	install -m 644 "$script_dir/README.md" "$DESTDIR/README.md"
+fi
+
 # Generate manifest
 manifest="$SHAREDIR/manifest.txt"
 find "$DESTDIR$PREFIX" -type f | sed "s|$DESTDIR$PREFIX||" | sort > "$manifest"
 
 if [[ "$mode" == "release" ]]; then
 	(
-		cd "$(dirname "$DESTDIR$PREFIX")"
 		tar --sort=name --owner=0 --group=0 --numeric-owner \
-			-czf "star-$VERSION.tar.gz" "star-$VERSION"
+			-czf "star-$VERSION.tar.gz" -C "$DESTDIR/.." "star-$VERSION"
 		echo "Release created: $(pwd)/star-$VERSION.tar.gz"
 	)
 else
