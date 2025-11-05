@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-STAR_VERSION="2.0.0"
-
 # this variable can be edited in place by the installation script,
 # if it is set the _STAR_HOME detection will be skipped, and this value will be used instead
 STAR_HOME=
@@ -134,7 +132,9 @@ init_star() {
 ### Specific util functions ###
 
 display_version() {
-    echo "${STAR_VERSION}"
+    local version
+    version="$(cat "${_STAR_HOME}/share/star/VERSION" 2>/dev/null || echo "unknown")"
+    echo "${version}"
 }
 
 set_star_home() {
