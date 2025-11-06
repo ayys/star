@@ -34,27 +34,40 @@ BINDIR="$DESTDIR$BINDIR"
 LIBEXECDIR="$DESTDIR$LIBEXECDIR"
 SHAREDIR="$DESTDIR$SHAREDIR"
 
-# Create directories
-mkdir -p "$BINDIR" "$LIBEXECDIR" "$SHAREDIR"
+mkdir -p "$SHAREDIR"
+manifest="$SHAREDIR/manifest.txt"
 
-# Install files
-install -m 755 "$script_dir/bin/star" "$BINDIR/star"
-find "$script_dir/libexec/star/" -type f ! -name "*.sh" -exec install -m 755 {} "$LIBEXECDIR/" \; 2>/dev/null || true
-install -m 644 "$script_dir/libexec/star/"*.sh "$LIBEXECDIR/" 2>/dev/null || true
-install -m 644 "$script_dir/share/star/"* "$SHAREDIR/" 2>/dev/null || true
+if [[ -f "$manifest" ]]; then
+	rm "$manifest"
+fi
+
+install_file() {
+    local mode="$1" src="$2" dest_dir="$3" dest_file="$4"
+	local dest="$dest_dir/$dest_file"
+    install -Dm"$mode" "$src" "$dest"
+    echo "$dest_file" >> "$manifest"
+}
+
+install_file 755 "$script_dir/bin/star" "$BINDIR" "bin/star"
+
+install_file 755 "$script_dir/libexec/star/star-deps" "$LIBEXECDIR" "libexec/star/star-deps"
+install_file 755 "$script_dir/libexec/star/star-help" "$LIBEXECDIR" "libexec/star/star-help"
+install_file 755 "$script_dir/libexec/star/star-list" "$LIBEXECDIR" "libexec/star/star-list"
+install_file 755 "$script_dir/libexec/star/star-prune" "$LIBEXECDIR" "libexec/star/star-prune"
+install_file 644 "$script_dir/libexec/star/star-setcolors.sh" "$LIBEXECDIR" "libexec/star/star-setcolors.sh"
+
+install_file 644 "$script_dir/share/star/VERSION" "$SHAREDIR" "share/star/VERSION"
+install_file 644 "$script_dir/share/star/completion/star.bash" "$SHAREDIR" "share/star/completion/star.bash"
+install_file 644 "$script_dir/share/star/config/star_config.sh.template" "$SHAREDIR" "share/star/config/star_config.sh.template"
+install_file 644 "$script_dir/share/star/init/star.bash" "$SHAREDIR" "share/star/init/star.bash"
 
 # add more files when in release mode
 if [[ "$mode" == "release" ]]; then
-	mkdir -p "$DESTDIR"
-	install -m 755 "$script_dir/configure" "$DESTDIR/configure"
-	install -m 755 "$script_dir/install.sh" "$DESTDIR/install.sh"
-	install -m 644 "$script_dir/LICENSE" "$DESTDIR/LICENSE"
-	install -m 644 "$script_dir/README.md" "$DESTDIR/README.md"
+	install_file 755 "$script_dir/configure" "$DESTDIR" "configure"
+	install_file 755 "$script_dir/install.sh" "$DESTDIR" "install.sh"
+	install_file 644 "$script_dir/LICENSE" "$DESTDIR" "LICENSE"
+	install_file 644 "$script_dir/README.md" "$DESTDIR" "README.md"
 fi
-
-# Generate manifest
-manifest="$SHAREDIR/manifest.txt"
-find "$DESTDIR$PREFIX" -type f | sed "s|$DESTDIR$PREFIX||" | sort > "$manifest"
 
 if [[ "$mode" == "release" ]]; then
 	(
