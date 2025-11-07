@@ -41,8 +41,10 @@ setup_common() {
 
   export CURRENT_TEST_DATA_DIR="${_STAR_DATA_HOME}/stars"
 
+  export TEST_STAR="${TEST_STAR:-star}"
+
   # load star function
-  eval "$(command star init "${current_shell_type}")"
+  eval "$(command $TEST_STAR init "${current_shell_type}")"
 }
 
 teardown_common() {
