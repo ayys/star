@@ -1,81 +1,212 @@
 #!/usr/bin/env bash
 # install.sh — install or package star
 
-set -euo pipefail
+SOURCEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+usage() {
+	cat << EOF
+Usage: install.sh [OPTIONS]
+Install or package star. 
 
-# Load configuration if available
-if [[ -f config.sh ]]; then
-	. ./config.sh
-else
-	echo "Warning: config.sh not found, run configure program first." >&2
-	exit 1
-fi
+By default, creates a configuration file (config.sh) which summarizes the installation
+and can be used to reproduce the exact same installation later.
 
-mode="install"
-DESTDIR="${DESTDIR:-}"
-while [[ $# -gt 0 ]]; do
-	case "$1" in
-		--release) mode="release" ;;
-		--destdir=*) DESTDIR="${1#*=}" ;;
-		--destdir) shift; DESTDIR="$1" ;;
-		*) echo "Unknown option: $1" >&2; exit 1 ;;
-	esac
-	shift
-done
+OPTIONS
+	-h, --help				Show this help message and exit.
 
-if [[ "$mode" == "release" ]]; then
-	DESTDIR="release/star-$VERSION"
-	echo "Creating release package in $DESTDIR"
-fi
+	--prefix=PREFIX			Installation prefix (default: /usr/local).
+							Where to install star: e.g. if PREFIX=/usr/local,
+							then star will be installed in:
+							- /usr/local/bin
+							- /usr/local/libexec/star
+							- /usr/local/share/star
+							etc.
 
-BINDIR="$DESTDIR$BINDIR"
-LIBEXECDIR="$DESTDIR$LIBEXECDIR"
-SHAREDIR="$DESTDIR$SHAREDIR"
+	--release				Create a release package instead of installing.
+							The release package will be created by installing files into release/star-VERSION,
+							and then creating a tarball from that directory.
+							The tarball will contain all files from bin, libexec, share, as well as install.sh, LICENSE, and README.md at the top level.
 
-mkdir -p "$SHAREDIR"
-manifest="$SHAREDIR/manifest.txt"
+	--destdir=DESTDIR		Temporary staging directory for installation (default: empty)
 
-if [[ -f "$manifest" ]]; then
-	rm "$manifest"
-fi
-
-install_file() {
-    local mode="$1" src="$2" dest_dir="$3" dest_file="$4"
-	local dest="$dest_dir/$dest_file"
-    install -Dm"$mode" "$src" "$dest"
-    echo "$dest_file" >> "$manifest"
+	-i, --input=FILE		Use an existing configuration file to set installation parameters (default: none).
+							With this option, no new config.sh file will be created.
+EOF
 }
 
-install_file 755 "$script_dir/bin/star" "$BINDIR" "bin/star"
+main() {
+	# parse arguments
+	local mode="install"
 
-install_file 755 "$script_dir/libexec/star/star-deps" "$LIBEXECDIR" "libexec/star/star-deps"
-install_file 755 "$script_dir/libexec/star/star-help" "$LIBEXECDIR" "libexec/star/star-help"
-install_file 755 "$script_dir/libexec/star/star-list" "$LIBEXECDIR" "libexec/star/star-list"
-install_file 755 "$script_dir/libexec/star/star-prune" "$LIBEXECDIR" "libexec/star/star-prune"
-install_file 644 "$script_dir/libexec/star/star-setcolors.sh" "$LIBEXECDIR" "libexec/star/star-setcolors.sh"
+	DESTDIR="${DESTDIR:-}"
+	PREFIX="${PREFIX:-/usr/local}"
+	CONFIG_INPUT=""
 
-install_file 644 "$script_dir/share/star/VERSION" "$SHAREDIR" "share/star/VERSION"
-install_file 644 "$script_dir/share/star/completion/star.bash" "$SHAREDIR" "share/star/completion/star.bash"
-install_file 644 "$script_dir/share/star/config/star_config.sh.template" "$SHAREDIR" "share/star/config/star_config.sh.template"
-install_file 644 "$script_dir/share/star/init/star.bash" "$SHAREDIR" "share/star/init/star.bash"
+	local opt
 
-# add more files when in release mode
-if [[ "$mode" == "release" ]]; then
-	install_file 755 "$script_dir/configure" "$DESTDIR" "configure"
-	install_file 755 "$script_dir/install.sh" "$DESTDIR" "install.sh"
-	install_file 644 "$script_dir/LICENSE" "$DESTDIR" "LICENSE"
-	install_file 644 "$script_dir/README.md" "$DESTDIR" "README.md"
-fi
+	while [[ $# -gt 0 ]]; do
+		opt="$1"
+		shift
+		case "$opt" in
+			-h|--help)
+				usage
+				exit 0
+				;;
+			--release) mode="release" ;;
+			--prefix|--prefix=*)
+				local value
+				if [[ ${#opt} -eq 2 ]]; then
+					value="$1"
+					shift
+				else
+					value="${opt#*=}"
+				fi
+				PREFIX=$value
+				;;
+			--destdir|--destdir=*)
+				local value
+				if [[ ${#opt} -eq 2 ]]; then
+					value="$1"
+					shift
+				else
+					value="${opt#*=}"
+				fi
+				DESTDIR=$value
+				;;
+			-i|--input|--input=*)
+				local value
+				if [[ ${#opt} -eq 2 ]]; then
+					value="$1"
+					shift
+				else
+					value="${opt#*=}"
+				fi
+				CONFIG_INPUT=$value
+				;;
+			*)
+				echo "Invalid option: $opt" >&2
+				exit 1
+				;;
+		esac
+	done
+	# ensure trailing slash
+	[[ -n $PREFIX ]] && PREFIX="${PREFIX%/}/"
 
-if [[ "$mode" == "release" ]]; then
-	(
-		tar --sort=name --owner=0 --group=0 --numeric-owner \
-			-czf "star-$VERSION.tar.gz" -C "$DESTDIR/.." "star-$VERSION"
-		echo "Release created: $(pwd)/star-$VERSION.tar.gz"
-	)
-else
-	echo "Installed star $VERSION into $DESTDIR$PREFIX"
-	echo "Manifest written to: $manifest"
-fi
+	if [[ -n $CONFIG_INPUT && -f $CONFIG_INPUT ]]; then
+		. "$CONFIG_INPUT"
+	else
+		set_version
+		set_install_dirs
+
+		create_config_file
+	fi
+
+	if [[ "$mode" == "release" ]]; then
+		DESTDIR="release/star-$VERSION"
+		rm -rf "$DESTDIR"
+		mkdir -p "$DESTDIR"
+		echo "Creating release package in $DESTDIR"
+	fi
+
+	# ensure trailing slash
+	[[ -n $DESTDIR ]] && DESTDIR="${DESTDIR%/}/"
+
+	init_manifest
+	install_files
+	echo "Installation completed at ${DESTDIR}${PREFIX}."
+	echo "Installed files are listed in: ${MANIFEST}"
+
+	if [[ "$mode" == "release" ]]; then
+		install_additional_release_files
+		create_release_tarball
+	fi
+}
+
+### Specific util functions ###
+set_version() {
+	VERSION="$(cat "${SOURCEDIR}/share/star/VERSION" 2>/dev/null || echo "unknown")"
+}
+
+set_install_dirs() {
+	BINDIR="${PREFIX}bin"
+	LIBEXECDIR="${PREFIX}libexec/star"
+	SHAREDIR="${PREFIX}share/star"
+}
+
+create_config_file() {
+	local config_file="config.sh"
+	cat > "$config_file" <<EOF
+# Auto-generated by install.sh
+PREFIX="$PREFIX"
+BINDIR="$BINDIR"
+LIBEXECDIR="$LIBEXECDIR"
+SHAREDIR="$SHAREDIR"
+VERSION="$VERSION"
+EOF
+}
+
+init_manifest() {
+	local dest
+	# if creating a release, manifest is stored at the root of the release,
+	# else stored in the share directory
+	if [[ "$mode" == "release" ]]; then
+		dest="${DESTDIR}${PREFIX}"
+	else
+		dest="${DESTDIR}${SHAREDIR}"
+	fi
+
+	dest="${dest%%/}/"
+
+	mkdir -p "$dest"
+	MANIFEST="${dest}manifest.txt"
+	if [[ -f "$MANIFEST" ]]; then
+		rm "$MANIFEST"
+	fi
+	touch "$MANIFEST"
+}
+
+install_files() {
+	install_file 755 "$SOURCEDIR/bin/star" "$BINDIR" "star"
+
+	install_file 755 "$SOURCEDIR/libexec/star/star-deps" "$LIBEXECDIR" "star-deps"
+	install_file 755 "$SOURCEDIR/libexec/star/star-help" "$LIBEXECDIR" "star-help"
+	install_file 755 "$SOURCEDIR/libexec/star/star-list" "$LIBEXECDIR" "star-list"
+	install_file 755 "$SOURCEDIR/libexec/star/star-prune" "$LIBEXECDIR" "star-prune"
+	install_file 644 "$SOURCEDIR/libexec/star/star-setcolors.sh" "$LIBEXECDIR" "star-setcolors.sh"
+
+	install_file 644 "$SOURCEDIR/share/star/VERSION" "$SHAREDIR" "VERSION"
+	install_file 644 "$SOURCEDIR/share/star/completion/star.bash" "$SHAREDIR" "completion/star.bash"
+	install_file 644 "$SOURCEDIR/share/star/config/star_config.sh.template" "$SHAREDIR" "config/star_config.sh.template"
+	install_file 644 "$SOURCEDIR/share/star/init/star.bash" "$SHAREDIR" "init/star.bash"
+}
+
+install_additional_release_files() {
+	install_file 755 "$SOURCEDIR/install.sh" "$PREFIX" "install.sh"
+	install_file 644 "$SOURCEDIR/LICENSE" "$PREFIX" "LICENSE"
+	install_file 644 "$SOURCEDIR/README.md" "$PREFIX" "README.md"
+}
+
+install_file() {
+	local mode="$1"
+	local src="$2"
+	local dest_dir="$3"
+	local dest_file="$4"
+
+	local dest="${DESTDIR}${dest_dir}/$dest_file"
+	install -Dm"$mode" "$src" "$dest"
+
+	local dest_file_relative_path
+	dest_file_relative_path="$(realpath --relative-to="${DESTDIR}${PREFIX}" "$dest")"
+	echo "$dest_file_relative_path" >> "$MANIFEST"
+}
+
+create_release_tarball() {
+	local tarball="star-$VERSION.tar.gz"
+	local tarball_relative_path
+	tarball_relative_path="$(realpath --relative-to="${PWD}" "$tarball")"
+	echo "Creating tarball: $tarball_relative_path"
+	tar --sort=name --owner=0 --group=0 --numeric-owner -czf "$tarball" -C "$SOURCEDIR/release" "star-$VERSION"
+	echo "Finished creating release tarball: $tarball_relative_path"
+}
+
+main "$@"
