@@ -82,7 +82,9 @@ LIBEXECDIR="$LIBEXECDIR"
 SHAREDIR="$SHAREDIR"
 VERSION="$VERSION"
 EOF
-	echo "Created configuration file: $(realpath --relative-to="$PWD" "$config_file")"
+	echo "Created configuration file '$(realpath --relative-to="$PWD" "$config_file")':"
+	echo ""
+	cat "$config_file"
 }
 
 main "$@"
