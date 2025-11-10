@@ -95,6 +95,17 @@ main() {
 	echo "Installation completed at ${DESTDIR}${PREFIX}."
 	echo "Installed files are listed in: ${MANIFEST}"
 
+	# when installing, check that the bin directory is in PATH
+	if [[ "$mode" == "install" ]] && ! echo ":$PATH:" | grep -q ":${BINDIR}:" ; then
+		echo "" >&2
+		echo "Warning: The installation directory '$BINDIR' is not in your PATH." >&2
+		echo "You may want to add the following line to your shell configuration file (e.g., ~/.bashrc or ~/.zshrc):" >&2
+		echo "" >&2
+		echo "    export PATH=\"${BINDIR}:\$PATH\"" >&2
+		echo "" >&2
+		echo "After adding it, do not forget to source your shell configuration file again." >&2
+	fi
+
 	if [[ "$mode" == "release" ]]; then
 		install_additional_release_files
 		create_release_tarball
@@ -139,6 +150,7 @@ install_files() {
 }
 
 install_additional_release_files() {
+	install_file 755 "$SOURCEDIR/configure" "$PREFIX" "configure"
 	install_file 755 "$SOURCEDIR/install.sh" "$PREFIX" "install.sh"
 	install_file 644 "$SOURCEDIR/LICENSE" "$PREFIX" "LICENSE"
 	install_file 644 "$SOURCEDIR/README.md" "$PREFIX" "README.md"

@@ -83,8 +83,10 @@ SHAREDIR="$SHAREDIR"
 VERSION="$VERSION"
 EOF
 	echo "Created configuration file '$(realpath --relative-to="$PWD" "$config_file")':"
-	echo ""
 	cat "$config_file"
+	echo ""
+	echo "You can now run the following command to install star:"
+	echo "    $(realpath --relative-to="$PWD" "$SOURCEDIR/install.sh")"
 }
 
 main "$@"
