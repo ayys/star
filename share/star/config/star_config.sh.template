@@ -25,22 +25,22 @@ export __STAR_ENVVARS=yes
 # By default, star will try to use true color codes if the terminal supports it,
 # else it will fallback to 256-color codes.
 #
-# Value: ANSI escape codes for colors
+# Value: ANSI escape codes for colors. Format: $'\033[...m'
 # 
-# default: \033[38;2;255;131;0m
-export __STAR_COLOR_NAME="\033[38;2;255;131;0m"
-# default: \033[38;2;1;169;130m
-export __STAR_COLOR_PATH="\033[38;2;1;169;130m"
-# default: \033[0m
-export __STAR_COLOR_RESET="\033[0m"
+# default: $'\033[38;2;255;131;0m'
+export __STAR_COLOR_NAME=$'\033[38;2;255;131;0m'
+# default: $'\033[38;2;1;169;130m'
+export __STAR_COLOR_PATH=$'\033[38;2;1;169;130m'
+# default: $'\033[0m'
+export __STAR_COLOR_RESET=$'\033[0m'
 
 ### Fallback to 256-color codes, if true color is not supported
-# default: \033[38;5;214m
-export __STAR_COLOR256_NAME="\033[38;5;214m"
-# default: \033[38;5;36m
-export __STAR_COLOR256_PATH="\033[38;5;36m"
-# default: \033[0m
-export __STAR_COLOR256_RESET="\033[0m"
+# default: $'\033[38;5;214m'
+export __STAR_COLOR256_NAME=$'\033[38;5;214m'
+# default: $'\033[38;5;36m'
+export __STAR_COLOR256_PATH=$'\033[38;5;36m'
+# default: $'\033[0m'
+export __STAR_COLOR256_RESET=$'\033[0m'
 
 ### Adjust colors depending on terminal capabilities. DO NOT REMOVE OR MODIFY THIS LINE.
 # shellcheck source=/dev/null
