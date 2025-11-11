@@ -170,8 +170,9 @@ Bookmarks are called "stars".
         star help MODE
 
     OPTION
-        -h, --help        Show this help message
-        -v, --version     Show star version
+        -h, --help          Show this help message
+        -v, --version       Show star version
+        -I, --information   Show more information about the star installation
 EOF
 }
 

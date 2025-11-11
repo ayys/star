@@ -148,7 +148,7 @@ star()
             fi
             return 0
             ;;
-        -v|--version)
+        -v|--version|-I|--info)
             command star "${arg_mode}" "$@"
             return 0
             ;;
