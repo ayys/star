@@ -367,6 +367,12 @@ star()
                     return 2
                 fi
 
+                # revert the indexes on descending index
+                # (the end of the list corresponds to index 1)
+                if [[ "$__STAR_LIST_INDEX" == "desc" ]]; then
+                    star_to_load=$(( ${#stars_list[@]} - star_to_load + 1 ))
+                fi
+
                 # Use shell detection to handle both bash and zsh
                 if [[ -n "${ZSH_VERSION}" ]]; then
                     star_to_load="${stars_list[$star_to_load]}"
