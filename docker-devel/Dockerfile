@@ -39,7 +39,7 @@ RUN cd /home/fruchix/Documents/projects/star && \
     ./install.sh
 
 # setup bashrc
-RUN echo "export PS1='\n\[\033[01;32m\]fruchix@debian\[\033[01;34m\] \w \$\[\033[00m\] '" >> /home/fruchix/.bashrc
+RUN echo "export PS1='\n\[\033[01;34m\] \w \$\[\033[00m\] '" >> /home/fruchix/.bashrc
 RUN echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/fruchix/.bashrc
 RUN echo 'eval "$(star init bash)"' >> /home/fruchix/.bashrc
 
