@@ -217,3 +217,83 @@ When working with functions that will be put in the user's environment, all vari
 ```bash
 local variable_example
 ```
+
+
+# Writing the README.md
+
+## Images
+
+We use the Breeze color scheme, which is the default Konsole theme. On Iterm2: https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/master/schemes/Breeze.itermcolors
+
+Then, we use a docker container to run the commands (to have a proper environment each time)
+
+```sh
+./docker-devel/build.sh
+./docker-devel/run.sh
+```
+
+Dynamically add and manage bookmarks (called "stars")
+```sh
+star reset -f
+tree -L 3
+star add Documents/projects/dotfiles
+star add Documents/work/LibFabric libfabric
+star add /tmp/mounts/google-drive
+star list
+```
+
+Instantly navigate to those stars
+```sh
+star load libfabric
+star list
+# order is changed according to last accessed element (can be configured)
+star load 2
+star list
+```
+
+Autocompletion is your friend
+```sh
+star lo<TAB> <TAB>
+star lo<TAB> d<TAB>
+```
+
+Use the generated environment variables to interract with your directories
+```sh
+echo $STAR_GOOGLE_DRIVE
+cat $STAR_GOOGLE_DRIVE/project.md
+cp $STAR_GOOGLE_DRIVE/project.md $STAR_DOTFILES/
+ls -l
+```
+
+Manage your stars
+```sh
+star remove libfabric
+star rename google-drive gdrive
+star list
+echo $STAR_GDRIVE
+star reset
+star list
+env | grep "^STAR_"
+```
+
+Customize colors, listing and more
+```sh
+# setup
+mkdir -p "$HOME/custom/"{lorem,ipsum,dolor,sit,amet}
+tree "$HOME/custom"
+star add "$HOME/custom/lorem"
+star add "$HOME/custom/ipsum"
+star add "$HOME/custom/dolor"
+star add "$HOME/custom/sit"
+star add "$HOME/custom/amet"
+
+cd
+export __STAR_LIST_FORMAT="<INDEX> ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"
+star list
+export __STAR_COLOR_NAME=$'\033[95m'
+export __STAR_COLOR_PATH=$'\033[90m'
+export __STAR_LIST_FORMAT="\033[33m<INDEX> ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"
+star add custom/amet newname
+star list
+__STAR_LIST_SORT=name star list
+```
