@@ -44,8 +44,6 @@ It is written in pure Bash, but can be used with Zsh as long as there is an avai
 
 https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
-
-
   </div>
 </details>
 
@@ -74,7 +72,62 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
 ### Requirements
 
+To install `star`, ensure your system meets the requirements:
+- `GNU coreutils`
+- `GNU findutils`
+- `util-linux` (with `column`)
+
+Note that `column` should be part of `util-linux`, but on some systems (e.g., older Ubuntu versions), it may be in `bsdmainutils`. `star` verifies `column`'s version output to confirm it belongs to `util-linux`.
+
+<details>
+  <summary>Install requirements using apt</summary>
+
+```sh
+# install GNU coreutils
+apt install coreutils
+
+# install GNU findutils
+apt install findutils
+
+# install util-linux
+# On some versions of util-linux, column is not included, BUT the util-linux version of column is included in some bsdmainutils versions.
+# star will run 'column --version' and check if the output contains "util-linux"
+# Ubuntu 22.04, 24.04:
+apt install bsdmainutils
+
+apt install util-linux
+```
+
+</details>
+
+<details>
+  <summary>Install requirements using brew</summary>
+
+When installing GNU softwares with brew, they are prefixed with a `g` to highlight the difference with the default softwares. For example: `gfind`. To solve this, we add a special directory called `gnubin` to the PATH, which contains the default names without the `g`.
+
+```sh
+# install GNU coreutils
+brew install coreutils
+# add the following line to your shell configuration file to enable non g-prefixed softwares
+export PATH="$(brew --prefix)/opt/coreutils/libexec/gnubin:$PATH"
+
+# install GNU findutils
+brew install findutils
+# add the following line to your shell configuration file to enable non g-prefixed softwares
+export PATH="$(brew --prefix)/opt/findutils/libexec/gnubin:$PATH"
+
+# install util-linux
+brew install util-linux
+# add the following line to your shell configuration file
+export PATH="$(brew --prefix)/opt/util-linux/bin:$PATH"
+```
+
+</details>
+
+
 ### Installing
+
+Installation involves two steps: running `./configure` to set the installation prefix and `./install.sh` to install the tool. For example, to install from source: `./configure --prefix=$HOME/.local && ./install.sh`. Alternatively, download a release tarball, extract it, and follow the same steps.
 
 ### Uninstalling
 
