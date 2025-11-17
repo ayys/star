@@ -44,6 +44,8 @@ It is written in pure Bash, but can be used with Zsh as long as there is an avai
 
 https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
+
+
   </div>
 </details>
 
