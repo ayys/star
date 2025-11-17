@@ -228,8 +228,8 @@ We use the Breeze color scheme, which is the default Konsole theme. On Iterm2: h
 Then, we use a docker container to run the commands (to have a proper environment each time)
 
 ```sh
-./docker-devel/build.sh
-./docker-devel/run.sh
+./docs/docker-devel/build.sh
+./docs/docker-devel/run.sh
 ```
 
 Dynamically add and manage bookmarks (called "stars")
