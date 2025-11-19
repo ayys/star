@@ -10,6 +10,8 @@ It is written in pure Bash, but can be used with Zsh as long as there is an avai
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Installing](#installing)
+    - [Recommended local installation (from source)](#recommended-local-installation-from-source)
+    - [System installation (from source)](#system-installation-from-source)
   - [Uninstalling](#uninstalling)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
@@ -72,7 +74,7 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
 ### Requirements
 
-To install `star`, ensure your system meets the requirements:
+To enable `star` to work properly, ensure your system meets the requirements:
 - `GNU coreutils`
 - `GNU findutils`
 - `util-linux` (with `column`)
@@ -127,7 +129,38 @@ export PATH="$(brew --prefix)/opt/util-linux/bin:$PATH"
 
 ### Installing
 
-Installation involves two steps: running `./configure` to set the installation prefix and `./install.sh` to install the tool. For example, to install from source: `./configure --prefix=$HOME/.local && ./install.sh`. Alternatively, download a release tarball, extract it, and follow the same steps.
+Installation can be done from source or from a release tarball. There are currently not real differences between the two, appart that the release is a bit more lightweight as it does not include documentation and tests. Either method involves two steps: running `./configure` to configure star's installation and then `./install.sh` to install the tool. Currently, `configure` can only be used to set where star will be installed.
+
+Installation steps are the following:
+- running `configure` then `install.sh`
+- add the `bin` directory (where star is installed) to the PATH (the command to execute will be shown after installation)
+- initialize star using `eval "$(command star init YOUR_SHELL_TYPE)"` (see `command star --help`)
+
+#### Recommended local installation (from source)
+
+```sh
+git clone https://github.com/Fruchix/star.git
+cd star
+./configure --prefix=$HOME/.local
+./install.sh
+
+# Automatically add bin and initialize star
+[[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"
+eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
+```
+
+#### System installation (from source)
+
+```sh
+git clone https://github.com/Fruchix/star.git
+cd star
+./configure         # by default, prefix is set to: /usr/local
+sudo ./install.sh
+
+# Automatically add bin and initialize star
+[[ ":${PATH}:" =~ ":/usr/local/bin:" ]] || export PATH="/usr/local/bin:$PATH"
+eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
+```
 
 ### Uninstalling
 
