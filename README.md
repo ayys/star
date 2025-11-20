@@ -2,7 +2,7 @@
 
 star is a Unix CLI tool that allows you to bookmark your favorite folders and instantly navigate to them.
 
-It is written in pure Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2).
+It is written in Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2).
 
 ## Table of contents <!-- omit from toc -->
 
@@ -12,6 +12,8 @@ It is written in pure Bash, but can be used with Zsh as long as there is an avai
   - [Installing](#installing)
   - [Uninstalling](#uninstalling)
 - [Configuration](#configuration)
+  - [Files configuration](#files-configuration)
+  - [Runtime configuration](#runtime-configuration)
 - [Troubleshooting](#troubleshooting)
 - [Contributions and development](#contributions-and-development)
   - [Future work](#future-work)
@@ -76,6 +78,7 @@ To enable `star` to work properly, ensure your system meets the requirements:
 - `GNU coreutils`
 - `GNU findutils`
 - `util-linux` (with `column`)
+- `bash >= 3.2` (star uses Bash's autocompletion features, even for Zsh)
 
 Note that `column` should be part of `util-linux`, but on some systems (e.g., older Ubuntu versions), it may be in `bsdmainutils`. `star` verifies `column`'s version output to confirm it belongs to `util-linux`.
 
@@ -162,7 +165,64 @@ eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 
 ### Uninstalling
 
+There is currently no automatic uninstallation process.
+
+All stars can be removed at once using `star reset --force` (this does not remove the installed files).
+
+At installation, a `manifest.txt` file is created in `$_STAR_HOME/share/star/`. It contains a list of all installed files relative to `$_STAR_HOME`. You can use this file to manually remove all installed files. In the future, an `uninstall.sh` script will be provided to automate this process.
+
 ## Configuration
+
+### Files configuration
+
+star respects the [XDG base directory specification](https://specifications.freedesktop.org/basedir/latest/). By default, star's configuration file is stored in `${XDG_CONFIG_HOME}/star/`, and its data files (the stars) are stored in `${XDG_DATA_HOME}/star/`.
+
+You can override these locations by setting the following environment variables before initializing star:
+- `_STAR_CONFIG_HOME`: path to star's configuration file directory (the configuration file is named `config.sh`)
+- `_STAR_CONFIG_FILE`: path to star's configuration file (overrides `_STAR_CONFIG_HOME`) (for example to use a custom named configuration file)
+- `_STAR_DATA_HOME`: path to star's data files (the stars)
+
+### Runtime configuration
+
+The behaviour of star can be customized with environment variables. Those variables are prefixed with `__STAR_`. They can be exported anywhere, preferably before initializing star (e.g., in your shell configuration file).
+
+However, the recommended way is to run `star config`:
+- it opens the configuration file in an editor (as defined by the `EDITOR` environment variable, else in `nano`/`vi`)
+- when closing the editor, star is re-initialized to apply the new configuration
+- if the configuration file does not exist, star displays the command to create from a [template](./share/star/config/star_config.sh.template)
+
+When creating the configuration file from a [template](./share/star/config/star_config.sh.template), all variables are well documented with their possible values, default value and description.
+
+#### Enabling/disabling features <!-- omit from toc -->
+
+| Variable | Value | Default | Description |
+|----------|-------|---------|-------------|
+| `__STAR_ENVVARS` | `yes` / `no` | `yes` | Whether to dynamically set environment variables named after the bookmarks (see [Features](#features)) |
+
+#### Configure the colors <!-- omit from toc -->
+
+Some terminals support 24-bits colors (aka true color), some do not and only support 256 different colors. Star will try to use 24-bits colors by default, and fallback to 256 colors.
+
+| Variable | Value | Default | Description |
+|----------|-------|---------|-------------|
+| `__STAR_COLOR_NAME` | 24-bits color with format `$'\033[...m'` | `$'\033[38;2;255;131;0m'` | Color for the name of a bookmark |
+| `__STAR_COLOR_PATH` | 24-bits color with format `$'\033[...m'` | `$'\033[38;2;1;169;130m'` | Color for the path of a bookmark |
+| `__STAR_COLOR_RESET` | 24-bits color with format `$'\033[...m'` | `$'\033[0m'` | The default color to use |
+| `__STAR_COLOR256_NAME` | 256 color `$'\033[...m'` | `$'\033[38;5;214m'` | Fallback color for the name of a bookmark |
+| `__STAR_COLOR256_PATH` | 256 color `$'\033[...m'` | `$'\033[38;5;36m'` | Fallback color for the path of a bookmark |
+| `__STAR_COLOR256_RESET` | 256 color `$'\033[...m'` | `$'\033[0m'` | Fallback default color |
+
+#### Configure the listing <!-- omit from toc -->
+
+| Variable | Value | Default | Description |
+|----------|-------|---------|-------------|
+| `__STAR_LIST_FORMAT` | string | `<INDEX>: ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} -> ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}` | The format of each line when listing bookmarks. Note that the `<INDEX>` placeholder is replaced by the bookmark index. |
+| `__STAR_LIST_COLUMN_COMMAND` | command stored as a string | `command column --table --table-columns-limit 3` | The command into which the bookmark listing is piped, used to align columns |
+| `__STAR_LIST_SORT` | `loaded` / `name` / `none` | `loaded` | How to sort the bookmarks. |
+| `__STAR_LIST_ORDER` | `asc` / `desc` | `desc` | The order in which to display bookmarks |
+| `__STAR_LIST_INDEX` | `asc` / `desc` | `asc` | The order of the index |
+
+See the [configuration file template](./share/star/config/star_config.sh.template) to know how to properly customize `__STAR_LIST_FORMAT` and `__STAR_LIST_COLUMN_COMMAND`.
 
 ## Troubleshooting
 
@@ -171,7 +231,23 @@ eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 
 ### Future work
 
-<!-- TODO: checklist -->
+#### Features  <!-- omit from toc -->
+- [ ] Add setting for `star-purge`: automatically remove stars (auto), ask for user confirmation (ask), never remove stars (never)
+  - [ ] Add a way to ignore some directories from being purged (e.g., using a `.starignore` file)
+
+#### Improvements  <!-- omit from toc -->
+- [ ] Replace echo -e with printf for better portability
+- [ ] Output all errors into stderr instead of stdout
+
+#### Tests  <!-- omit from toc -->
+- [ ] Complete the tests for `star list` to test all options and combinations
+- [ ] Add a "no pollution test" that ensures that all local variables are declared as local, and no unwanted global variables are created
+- [ ] Add tests for environment variable generation
+- [ ] Add shellcheck testing in CI
+
+#### Dependencies removal  <!-- omit from toc -->
+- [ ] Remove dependency on `column` (util-linux) by implementing a lightweight column formatter in Bash
+- [ ] Remove dependency on `bash >= 3.2` for Zsh by translating the bash autocompletion system in pure Zsh
 
 ### Pull requests
 
