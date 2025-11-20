@@ -1,17 +1,15 @@
-<h1>star</h1>
+# star <!-- omit from toc -->
 
 star is a Unix CLI tool that allows you to bookmark your favorite folders and instantly navigate to them.
 
 It is written in pure Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2).
 
-<h2>Table of contents</h2>
+## Table of contents <!-- omit from toc -->
 
 - [Features](#features)
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Installing](#installing)
-    - [Recommended local installation (from source)](#recommended-local-installation-from-source)
-    - [System installation (from source)](#system-installation-from-source)
   - [Uninstalling](#uninstalling)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
@@ -136,7 +134,7 @@ Installation steps are the following:
 - add the `bin` directory (where star is installed) to the PATH (the command to execute will be shown after installation)
 - initialize star using `eval "$(command star init YOUR_SHELL_TYPE)"` (see `command star --help`)
 
-#### Recommended local installation (from source)
+#### Recommended local installation (from source) <!-- omit from toc -->
 
 ```sh
 git clone https://github.com/Fruchix/star.git
@@ -149,7 +147,7 @@ cd star
 eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 ```
 
-#### System installation (from source)
+#### System installation (from source) <!-- omit from toc -->
 
 ```sh
 git clone https://github.com/Fruchix/star.git
