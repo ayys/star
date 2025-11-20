@@ -382,7 +382,7 @@ star()
             fi
 
             if [[ ! -e "${_STAR_DATA_HOME}/stars/${star_to_load}" ]]; then
-                command echo -e "Star ${COLOR_STAR}${star_to_load}${COLOR_RESET} does not exist."
+                command echo -e "Star ${COLOR_STAR}${star_to_load//${star_dir_separator}//}${COLOR_RESET} does not exist."
             else
                 # not using "command" before cd in case user has customized its cd,
                 # and has shadowed the original cd command
