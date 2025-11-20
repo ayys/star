@@ -11,15 +11,15 @@ Configure star installation by creating a config.sh file.
 This file can then be sourced by install.sh to perform the installation.
 
 OPTIONS
-	-h, --help				Show this help message and exit.
+    -h, --help.             Show this help message and exit.
 
-	--prefix=PREFIX			Installation prefix (default: /usr/local).
-							Where to install star: e.g. if PREFIX=/usr/local,
-							then star will be installed in:
-							- /usr/local/bin
-							- /usr/local/libexec/star
-							- /usr/local/share/star
-							etc.
+    --prefix=PREFIX         Installation prefix (default: /usr/local).
+                            Where to install star: e.g. if PREFIX=/usr/local,
+                            then star will be installed in:
+                            - /usr/local/bin
+                            - /usr/local/libexec/star
+                            - /usr/local/share/star
+                            etc.
 EOF
 }
 

@@ -10,16 +10,16 @@ By default, creates a configuration file (config.sh) which summarizes the instal
 and can be used to reproduce the exact same installation later.
 
 OPTIONS
-	-h, --help				Show this help message and exit.
+    -h, --help              Show this help message and exit.
 
-	--release				Create a release package instead of installing.
-							The release package will be created by installing files into release/star-VERSION,
-							and then creating a tarball from that directory.
-							The tarball will contain all files from bin, libexec, share, as well as install.sh, LICENSE, and README.md at the top level.
+    --release               Create a release package instead of installing.
+                            The release package will be created by installing files into release/star-VERSION,
+                            and then creating a tarball from that directory.
+                            The tarball will contain all files from bin, libexec, share, as well as install.sh, LICENSE, and README.md at the top level.
 
-	--destdir=DESTDIR		Temporary staging directory for installation (default: empty)
+    --destdir=DESTDIR       Temporary staging directory for installation (default: empty)
 
-	-i, --input=FILE		Use an existing configuration file to set installation parameters (default: config.sh).
+    -i, --input=FILE        Use an existing configuration file to set installation parameters (default: config.sh).
 EOF
 }
 
