@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 RUN yes | unminimize
 
@@ -6,13 +6,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
 RUN apt-get install -y \
-    util-linux \
-    bsdmainutils \
     wget \
     bash-completion \
     vim \
     git \
     tree
+
+RUN apt-get install -y \
+    bsdmainutils
+    # util-linux \
 
 # User setup
 RUN useradd -ms /bin/bash fruchix
