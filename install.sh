@@ -92,8 +92,20 @@ main() {
 
 	init_manifest
 	install_files
+
+	if [[ "$mode" == "release" ]]; then
+		install_additional_release_files
+	fi
+
+	install -Dm644 "$MANIFEST" "$DESTMANIFEST"
+
+	if [[ "$mode" == "release" ]]; then
+		create_release_tarball
+	fi
+
+	echo ""
 	echo "Installation completed at ${DESTDIR}${PREFIX}."
-	echo "Installed files are listed in: ${MANIFEST}"
+	echo "Installed files are listed in: ${DESTMANIFEST}"
 
 	# when installing, check that the bin directory is in PATH
 	if [[ "$mode" == "install" ]] && ! echo ":$PATH:" | grep -q ":${BINDIR}:" ; then
@@ -105,15 +117,12 @@ main() {
 		echo "" >&2
 		echo "After adding it, do not forget to source your shell configuration file again." >&2
 	fi
-
-	if [[ "$mode" == "release" ]]; then
-		install_additional_release_files
-		create_release_tarball
-	fi
 }
 
 ### Specific util functions ###
 init_manifest() {
+	MANIFEST="manifest.txt"
+
 	local dest
 	# if creating a release, manifest is stored at the root of the release,
 	# else stored in the share directory
@@ -126,9 +135,28 @@ init_manifest() {
 	# ensure trailing slash
 	[[ -n $dest ]] && dest="${dest%%/}/"
 
-	mkdir -p "$dest"
-	MANIFEST="${dest}manifest.txt"
-	if [[ -f "$MANIFEST" ]]; then
+	DESTMANIFEST="${dest}manifest.txt"
+	if [[ -f "$DESTMANIFEST" ]]; then
+		echo "A manifest already exists at '$DESTMANIFEST'. Content:"
+		cat "$DESTMANIFEST"
+		echo ""
+		echo "Continuing will overwrite this manifest, and may overwrite existing installed files."
+		echo "If a star installation already exists at '${DESTDIR}${PREFIX}', you may want to delete it first."
+		echo ""
+		while true; do
+			echo -n "Continue installation? [y/N] "
+			read -r
+			case $REPLY in
+				[Yy]|[Yy][Ee][Ss])
+					break
+					;;
+				[Nn]|[Nn][Oo]|"")
+					echo "Aborting installation."
+					exit 0
+					;;
+				*) echo "Not a valid answer.";;
+			esac
+		done
 		rm "$MANIFEST"
 	fi
 	touch "$MANIFEST"
@@ -163,6 +191,7 @@ install_file() {
 	local dest_file="$4"
 
 	local dest="${DESTDIR}${dest_dir}/$dest_file"
+	echo "Running: install -Dm$mode $src $dest"
 	install -Dm"$mode" "$src" "$dest"
 
 	local dest_file_relative_path
@@ -174,6 +203,7 @@ create_release_tarball() {
 	local tarball="star-$VERSION.tar.gz"
 	local tarball_relative_path
 	tarball_relative_path="$(realpath --relative-to="${PWD}" "$tarball")"
+	echo ""
 	echo "Creating tarball: $tarball_relative_path"
 	tar --sort=name --owner=0 --group=0 --numeric-owner -czf "$tarball" -C "$SOURCEDIR/release" "star-$VERSION"
 	echo "Finished creating release tarball: $tarball_relative_path"

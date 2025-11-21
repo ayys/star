@@ -86,7 +86,7 @@ EOF
 	cat "$config_file"
 	echo ""
 	echo "You can now run the following command to install star:"
-	echo "    $(realpath --relative-to="$PWD" "$SOURCEDIR/install.sh")"
+	echo "    ./$(realpath --relative-to="$PWD" "$SOURCEDIR/install.sh")"
 }
 
 main "$@"
