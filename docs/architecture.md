@@ -285,11 +285,17 @@ Customize colors, listing and more
 # setup
 mkdir -p "$HOME/custom/"{lorem,ipsum,dolor,sit,amet}
 tree "$HOME/custom"
-star add "$HOME/custom/lorem"
-star add "$HOME/custom/ipsum"
-star add "$HOME/custom/dolor"
-star add "$HOME/custom/sit"
 star add "$HOME/custom/amet"
+sleep 0.5
+star add "$HOME/custom/sit"
+sleep 0.5
+star add "$HOME/custom/dolor"
+sleep 0.5
+star add "$HOME/custom/ipsum"
+sleep 0.5
+star add "$HOME/custom/lorem"
+sleep 0.5
+export COLORTERM="truecolor"
 cd
 
 star list
