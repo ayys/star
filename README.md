@@ -1,6 +1,6 @@
 # star <!-- omit from toc -->
 
-star is an (over-engineered) Unix command line bookmark manager. Dynamically star your favorite folders and instantly navigate to them.
+star is an (over-engineered) Unix command line bookmark manager. Dynamically star your favorite folders and instantly navigate (cd) to them.
 
 It is written in Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2) (the autocompletion uses bash features even for Zsh).
 
@@ -71,7 +71,7 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 </details>
 
 More documentation:
-> Use `star --help` to get more information on the different modes and options.
+> Use `star --help` to get more information on the different modes and options.  
 > Use `star MODE_NAME --help` to get more information on a specific mode (e.g. `star config --help`)
 
 ## Installation
@@ -129,14 +129,14 @@ export PATH="$(brew --prefix)/opt/util-linux/bin:$PATH"
 
 ### Installing
 
-Installation can be done from source or from a release tarball. There are currently not real differences between the two, appart that the release is a bit more lightweight as it does not include documentation and tests. Either method involves two steps: running `./configure` to configure star's installation and then `./install.sh` to install the tool. Currently, `configure` can only be used to set where star will be installed.
+Installation can be done from source or from a release tarball. There are currently no real differences between the two, appart that the release is a bit more lightweight as it does not include documentation and tests. Either method involves two steps: running `./configure` to configure star's installation and then `./install.sh` to install the tool. Currently, `configure` is only used to set where star will be installed (but in the future, it may enable/disable features).
 
 Installation steps are the following:
 - running `configure` then `install.sh`
-- add the `bin` directory (where star is installed) to the PATH (the command to execute will be shown after installation)
+- add the `bin` directory (where star is installed) to the PATH if it is not alredy in it (the command to execute will be shown after installation)
 - initialize star using `eval "$(command star init YOUR_SHELL_TYPE)"` (see `command star --help`)
 
-#### Recommended local installation (from source) <!-- omit from toc -->
+#### Recommended user installation (from source) <!-- omit from toc -->
 
 ```sh
 git clone https://github.com/Fruchix/star.git
@@ -147,9 +147,11 @@ cd star
 # Automatically add bin and initialize star
 [[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"
 eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
+
+# Do not forget to also add those commands to your ~/.bashrc or ~/.zshrc
 ```
 
-#### System installation (from source) <!-- omit from toc -->
+#### Recommended system installation (from source) <!-- omit from toc -->
 
 ```sh
 git clone https://github.com/Fruchix/star.git
@@ -160,6 +162,8 @@ sudo ./install.sh
 # Automatically add bin and initialize star
 [[ ":${PATH}:" =~ ":/usr/local/bin:" ]] || export PATH="/usr/local/bin:$PATH"
 eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
+
+# Any user that would want to use star would have to add those commands to their ~/.bashrc or ~/.zshrc
 ```
 
 ### Uninstalling
@@ -188,11 +192,15 @@ The behaviour of star can be customized with environment variables. Those variab
 However, the recommended way is to run `star config`:
 - it opens the configuration file in an editor (as defined by the `EDITOR` environment variable, else in `nano`/`vi`)
 - when closing the editor, star is re-initialized to apply the new configuration
-- if the configuration file does not exist, star displays the command to create from a [template](./share/star/config/star_config.sh.template)
+- if the configuration file does not exist, star displays the command to create one from a [template](./share/star/config/star_config.sh.template)
 
 When creating the configuration file from a [template](./share/star/config/star_config.sh.template), all variables are well documented with their possible values, default value and description.
 
+Below is the list of the different environment variables that can be used to customize star.
+
 #### Enabling/disabling features <!-- omit from toc -->
+
+There is currently only one feature that can be enabled or disabled manually. When updating the environment variable, the change will only be effective at the next invocation of star.
 
 | Variable | Value | Default | Description |
 |----------|-------|---------|-------------|
