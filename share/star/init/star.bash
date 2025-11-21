@@ -33,7 +33,7 @@ else
 fi
 
 # Enable (yes) or disable (no) environment variables
-export __STAR_ENVVARS="${__STAR_ENVVARS:-"yes"}"
+export __STAR_ENABLE_ENVVARS="${__STAR_ENABLE_ENVVARS:-"yes"}"
 
 _star_add_variable()
 {
@@ -60,7 +60,8 @@ _star_add_variable()
 
 _star_set_variables()
 {
-    if [[ $__STAR_ENVVARS != "yes" ]]; then
+    export ___STAR_ENABLE_ENVVARS_CURRENT_STATUS="$__STAR_ENABLE_ENVVARS"
+    if [[ $__STAR_ENABLE_ENVVARS != "yes" ]]; then
         return
     fi
     # return if the star directory does not exist
@@ -83,6 +84,7 @@ _star_set_variables()
 
 _star_unset_variables()
 {
+    export ___STAR_ENABLE_ENVVARS_CURRENT_STATUS="$__STAR_ENABLE_ENVVARS"
     # return if the star directory does not exist
     if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
         return
@@ -122,6 +124,15 @@ star()
     local COLOR_STAR="${__STAR_COLOR_NAME}"
     local COLOR_PATH="${__STAR_COLOR_PATH}"
     local COLOR_RESET="$__STAR_COLOR_RESET"
+
+    # set environment variables if the status has changed
+    if [[ "$__STAR_ENABLE_ENVVARS" != "$___STAR_ENABLE_ENVVARS_CURRENT_STATUS" ]]; then
+        if [[ "$__STAR_ENABLE_ENVVARS" == "yes" ]]; then
+            _star_set_variables
+        else
+            _star_unset_variables
+        fi
+    fi
 
     if [[ $# -eq 0 ]]; then
         "${_STAR_HOME}/libexec/star/star-help"
@@ -343,7 +354,7 @@ star()
             command echo -e "Added new starred directory: ${COLOR_STAR}${dst_name//${star_dir_separator}//}${COLOR_RESET} -> ${COLOR_PATH}${src_dir}${COLOR_RESET}."
 
             # update environment variables
-            if [[ "$__STAR_ENVVARS" == "yes" ]]; then
+            if [[ "$__STAR_ENABLE_ENVVARS" == "yes" ]]; then
                 _star_add_variable "${dst_name}" "${src_dir}"
             fi
             ;;
@@ -524,7 +535,7 @@ star()
 "${_STAR_HOME}/libexec/star/star-prune"
 
 # set environment variables
-if [[ "$__STAR_ENVVARS" == "yes" ]]; then
+if [[ "$__STAR_ENABLE_ENVVARS" == "yes" ]]; then
     _star_set_variables
 else
     _star_unset_variables

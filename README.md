@@ -196,7 +196,7 @@ When creating the configuration file from a [template](./share/star/config/star_
 
 | Variable | Value | Default | Description |
 |----------|-------|---------|-------------|
-| `__STAR_ENVVARS` | `yes` / `no` | `yes` | Whether to dynamically set environment variables named after the bookmarks (see [Features](#features)) |
+| `__STAR_ENABLE_ENVVARS` | `yes` / `no` | `yes` | Whether to dynamically set environment variables named after the bookmarks (see [Features](#features)) |
 
 #### Configure the colors <!-- omit from toc -->
 

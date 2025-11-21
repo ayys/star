@@ -94,7 +94,8 @@ Those variables are prefixed by `_STAR_` (single underscore at the beginning).
 Those variables are prefixed by `__STAR_` (double underscore at the beginning). A complete explanation of those variables and their allowed values is available in the config file template [share/star/config/star_config.sh.template](../share/star/config/star_config.sh.template).
 
 Variables to toggle features:
-- `__STAR_ENVVARS`: whether to dynamicaly set environment variables named after the bookmarks
+- `__STAR_ENABLE_ENVVARS`: whether to dynamicaly set environment variables named after the bookmarks.  
+  Note that the environment variable `___STAR_ENABLE_ENVVARS_CURRENT_STATUS` (triple underscore) is used internally to track the current status of this feature. If the two variables are not the same (it means the configuration was updated), then the environment variables are set or unset accordingly (and current status variable is updated).
 
 Variables to configure the colors:
 - `__STAR_COLOR_NAME`: 24-bits color for the name of a bookmark

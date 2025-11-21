@@ -17,7 +17,7 @@
 # containing the absolute path to the starred directory.
 #
 # Value: yes, no (default: yes)
-export __STAR_ENVVARS=yes
+export __STAR_ENABLE_ENVVARS=yes
 
 
 ### COLOR OPTIONS ###
