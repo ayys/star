@@ -159,10 +159,10 @@ display_info() {
 
     echo ""
     echo "Environment variables (installation):"
-    echo "    _STAR_HOME:           ${_STAR_HOME}"
-    echo "    _STAR_DATA_HOME:      ${_STAR_DATA_HOME}"
-    echo "    _STAR_CONFIG_HOME:    ${_STAR_CONFIG_HOME}"
-    echo "    _STAR_CONFIG_FILE:    ${_STAR_CONFIG_FILE}"
+    echo "    _STAR_HOME=${_STAR_HOME}"
+    echo "    _STAR_DATA_HOME=${_STAR_DATA_HOME}"
+    echo "    _STAR_CONFIG_HOME=${_STAR_CONFIG_HOME}"
+    echo "    _STAR_CONFIG_FILE=${_STAR_CONFIG_FILE}"
 
     echo ""
     echo "Environment variables (configuration):"
@@ -287,7 +287,7 @@ check_installation() {
 }
 
 get_star_environment_variables_configuration() {
-    env | grep '^__STAR_'
+    env | sed -e 's/\x1b/\\033/g' | grep '^__STAR_'
 }
 
 ### Generic util functions ###
