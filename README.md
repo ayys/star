@@ -66,7 +66,7 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 <details>
   <summary>Customize colors, listing and more</summary>
   <div align="left">
-    <img width="593" height="718" alt="06-customization" src="https://github.com/user-attachments/assets/b513b556-74d4-4147-8f77-8bfeb89f4abf" />
+    <img width="593" height="718" alt="06-customization" src="https://github.com/user-attachments/assets/05a6030c-bb90-420a-ae33-09f6fda6226a" />
   </div>
 </details>
 
