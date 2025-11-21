@@ -1,8 +1,8 @@
 # star <!-- omit from toc -->
 
-star is a Unix CLI tool that allows you to bookmark your favorite folders and instantly navigate to them.
+star is an (over-engineered) Unix command line bookmark manager. Dynamically star your favorite folders and instantly navigate to them.
 
-It is written in Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2).
+It is written in Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2) (the autocompletion uses bash features even for Zsh).
 
 ## Table of contents <!-- omit from toc -->
 
@@ -69,6 +69,10 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
     <img width="593" height="718" alt="06-customization" src="https://github.com/user-attachments/assets/05a6030c-bb90-420a-ae33-09f6fda6226a" />
   </div>
 </details>
+
+More documentation:
+> Use `star --help` to get more information on the different modes and options.
+> Use `star MODE_NAME --help` to get more information on a specific mode (e.g. `star config --help`)
 
 ## Installation
 
