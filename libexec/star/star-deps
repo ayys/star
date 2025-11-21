@@ -9,30 +9,28 @@ check_package() {
     local package_name="$1"
     shift
     local dependencies=("$@")
-    
+
     # Determine the grep pattern based on package name
     local grep_pattern
     if [[ "$package_name" == "coreutils" ]]; then
         grep_pattern="GNU coreutils"
     elif [[ "$package_name" == "findutils" ]]; then
         grep_pattern="GNU findutils"
-    elif [[ "$package_name" == "util-linux" ]]; then
-        grep_pattern="util-linux"
     else
         echo "Error: unsupported package name '$package_name' in check_package" >&2
         return 1
     fi
-    
+
     local missing_deps=()
     local g_prefixed_deps=()
     local non_gnu_deps=()
-    
+
     # Check each dependency
     for dep_name in "${dependencies[@]}"; do
         local FOUND_GTOOL=0
         local IS_GNU=0
         local BIN=""
-        
+
         # Detect if command is available
         # When installing GNU commands via Homebrew (often on macOS), they are prefixed with 'g' by default
         if command -v "${dep_name}" >/dev/null 2>&1; then
@@ -57,7 +55,7 @@ check_package() {
             non_gnu_deps+=("$dep_name")
         fi
     done
-    
+
     # Report errors grouped by issue type
     local has_errors=0
     
@@ -67,7 +65,7 @@ check_package() {
         echo "" >&2
         has_errors=1
     fi
-    
+
     if [[ ${#non_gnu_deps[@]} -gt 0 ]]; then
         echo "Error: The package '$package_name' appears to be missing or non-GNU versions are installed." >&2
         echo "The following commands are not GNU versions: ${non_gnu_deps[*]}" >&2
@@ -75,7 +73,7 @@ check_package() {
         echo "" >&2
         has_errors=1
     fi
-    
+
     if [[ ${#g_prefixed_deps[@]} -gt 0 ]]; then
         echo "Error: The package '$package_name' is installed, but some of its programs are prefixed with 'g':" >&2
         echo "  ${g_prefixed_deps[*]}" >&2
@@ -86,23 +84,63 @@ check_package() {
             echo "    export PATH=\"\$(brew --prefix)/opt/coreutils/libexec/gnubin:\$PATH\"" >&2
         elif [[ "$package_name" == "findutils" ]]; then
             echo "    export PATH=\"\$(brew --prefix)/opt/findutils/libexec/gnubin:\$PATH\"" >&2
-        elif [[ "$package_name" == "util-linux" ]]; then
-            echo "    export PATH=\"\$(brew --prefix)/opt/util-linux/bin:\$PATH\"" >&2
         fi
         echo "" >&2
         echo "Do not forget to source your shell configuration file again." >&2
         echo "" >&2
         has_errors=1
     fi
-    
+
     return $has_errors
+}
+
+check_column_command() {
+    local BIN=""
+    local FOUND_GTOOL=0
+    
+    # Detect if command is available
+    if command -v "column" >/dev/null 2>&1; then
+        BIN=$(command -v "column")
+    elif command -v "gcolumn" >/dev/null 2>&1; then
+        BIN=$(command -v "gcolumn")
+        FOUND_GTOOL=1
+    else
+        echo "Error: The 'column' command is not installed." >&2
+        echo "It is required to properly format the 'star list' output." >&2
+        echo "Please install it." >&2
+        return 1
+    fi
+
+    # g-prefixed binary is not good, need unprefixed version
+    if [[ "$FOUND_GTOOL" -eq 1 ]]; then
+        echo "Error: The 'column' command is installed, but it is prefixed with 'g'." >&2
+        echo "If it was installed using Homebrew, you can add the following to your shell configuration file to fix the issue:" >&2
+        echo "" >&2
+        echo "    export PATH=\"\$(brew --prefix)/opt/util-linux/bin:\$PATH\"" >&2
+        echo "" >&2
+        echo "Do not forget to source your shell configuration file again." >&2
+        return 1
+    fi
+
+    # check if it supports the -s and -t options
+    # - option -t displays output in table format
+    # - option -s specifies the column separator
+    # Both of those options are used by the default column command.
+    # Normally, default column versions on GNU and MacOS support those options.
+    if ! "$BIN" -s $'\t' -t <<< $'col1\tcol2' >/dev/null 2>&1; then
+        echo "Error: The 'column' command does not support the required options '-s' and '-t'." >&2
+        echo "Please install a version of 'column' that supports those options." >&2
+        return 1
+    fi
+
+    return 0
 }
 
 # Track overall errors
 overall_errors=0
 
 # Check each package with its dependencies
-if ! check_package "util-linux" "column"; then
+if ! check_column_command; then
     overall_errors=$((overall_errors + 1))
 fi
 
@@ -117,6 +155,6 @@ fi
 
 # Exit with error if any package check failed
 if [[ $overall_errors -gt 0 ]]; then
-    echo "Error: One or more required packages are missing or misconfigured." >&2
+    echo "Error: One or more required packages/commands are missing or misconfigured." >&2
     exit 1
 fi

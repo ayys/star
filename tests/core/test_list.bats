@@ -9,19 +9,19 @@ teardown() { teardown_common; }
   mkdir -p "$TEST_ROOT/dir"
   star add "$TEST_ROOT/dir" "name"
 
-  export __STAR_LIST_FORMAT="%f %l"
+  export __STAR_LIST_FORMAT="%f<BR>%l"
   run star list
   [ "$status" -eq 0 ]
   # default command "column" produces a two whitespaces separation
   [[ "$output" == "name  $TEST_ROOT/dir" ]]
 
-  export __STAR_LIST_FORMAT="%f - %l"
+  export __STAR_LIST_FORMAT="%f<BR>-<BR>%l"
   run star list
   [ "$status" -eq 0 ]
   [[ "$output" == "name  -  $TEST_ROOT/dir" ]]
 }
 
-@test "star list - __STAR_LIST_FORMAT variable can contain an <INDEX> field" {
+@test "star list - __STAR_LIST_FORMAT variable can contain an <INDEX> placeholder" {
   mkdir -p "$TEST_ROOT/dir1"
   mkdir -p "$TEST_ROOT/dir2"
 

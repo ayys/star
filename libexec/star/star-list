@@ -12,16 +12,22 @@ Usage: star-list [LIST_MODE] [OPTIONS]...
         -n, --names             Only print the star's names.
         -p, --paths             Only print the star's paths.
 
-        FORMAT:
-        The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used.
-        This script also provides the following formatting:
-            <INDEX>     will be replaced by an index
-
         OPTIONS: Changes how the stars are listed.
             -s, --sort={name|loaded|none}   Default: loaded.
             -o, --order={desc|asc}          Default: desc.
             -i, --index={none|desc|asc}     Only with "--format". Default: asc.
             -b, --broken                    Only search for broken symlinks.
+
+        FORMAT:
+        The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used, e.g.:
+            %f  file's name
+            %l  file's symlink target (i.e. absolute path of the star)
+        This script also provides the following placeholders that can be used in the format string:
+            <INDEX>     will be replaced by an index
+            <BR>        column separator (it is effectively replaced by a tab character, that the default "column" command uses as separator)
+            <COLNAME>   color for star names (replaced by value of \$__STAR_COLOR_NAME)
+            <COLPATH>   color for star paths (replaced by value of \$__STAR_COLOR_PATH)
+            <COLRESET>  default color (replaced by value of \$__STAR_COLOR_RESET)
     
     ITEM_MODE: To retrieve a single bit of information.
         -P, --get-path=NAME     Get the path of a star according to its name. Slashes should have been replaced by the separator.
@@ -53,15 +59,27 @@ INDEX_ASC="asc"
 ### Default values ###
 MODE=$MODE_CUSTOM_FORMAT
 
-FORMAT=${__STAR_LIST_FORMAT:-"<INDEX>: ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} -> ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"}
+. "${_STAR_HOME}/libexec/star/star-setcolors.sh"
 
-# if there is no format provided, then use a default one with its custom column command
-# else if a format is provided but there is no column command then use a default one
-if [[ -z "$__STAR_LIST_FORMAT" ]]; then
-    COLUMN_COMMAND="command column --table --table-columns-limit 3"
-elif [[ -z "$__STAR_LIST_COLUMN_COMMAND" ]]; then
-    COLUMN_COMMAND="command column --table"
+FORMAT=${__STAR_LIST_FORMAT:-"<INDEX>:<BR><COLNAME>%f<COLRESET><BR>-><BR><COLPATH>%l<COLRESET>"}
+
+# <BR> placeholder represents a separator between columns
+# We effectively replace it by a tab character, because it will not appear in file names,
+# whereas splitting by spaces could lead to issues with file names containing spaces
+FORMAT=${FORMAT//<BR>/$'\t'}
+
+# Replace color placeholders
+FORMAT=${FORMAT//<COLNAME>/"${__STAR_COLOR_NAME}"}
+FORMAT=${FORMAT//<COLPATH>/"${__STAR_COLOR_PATH}"}
+FORMAT=${FORMAT//<COLRESET>/"${__STAR_COLOR_RESET}"}
+
+# determined which column command to use
+if [[ -z "$__STAR_LIST_FORMAT" ]] || [[ -z "$__STAR_LIST_COLUMN_COMMAND" ]]; then
+    # if default format is used OR custom format is used but no column command provided,
+    # then use default column command
+    COLUMN_COMMAND="command column -t -s $'\t'"
 else
+    # custom format and custom column command are used
     COLUMN_COMMAND="${__STAR_LIST_COLUMN_COMMAND}"
 fi
 SORT=${__STAR_LIST_SORT:-"$SORT_LOADED"}
@@ -286,7 +304,7 @@ main() {
             if ! stars_list_str=$(list_custom_format); then
                 exit $?
             fi
-            echo "${stars_list_str//${star_dir_separator}//}" | ${COLUMN_COMMAND}
+            echo "${stars_list_str//${star_dir_separator}//}" | eval "${COLUMN_COMMAND}"
             ;;
         "$MODE_GET_NAME" )
             get_item_name

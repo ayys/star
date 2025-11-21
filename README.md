@@ -75,12 +75,12 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 ### Requirements
 
 To enable `star` to work properly, ensure your system meets the requirements:
-- `GNU coreutils`
-- `GNU findutils`
-- `util-linux` (with `column`)
+- package `GNU coreutils` (for `realpath`, `printf`, `mkdir`, `rm`, `mv`, `cp`, `echo`, etc.)
+- package `GNU findutils` (for `find`)
+- command `column` (uses portable options `-t` and `-s` to format the listing, so any version should work)
 - `bash >= 3.2` (star uses Bash's autocompletion features, even for Zsh)
 
-Note that `column` should be part of `util-linux`, but on some systems (e.g., older Ubuntu versions), it may be in `bsdmainutils`. `star` verifies `column`'s version output to confirm it belongs to `util-linux`.
+On MacOS, the default utils for `find`, `printf`, `echo`, etc. are not GNU versions. You can install the GNU versions using Homebrew (see below). However, MacOS comes with `bash` version 3.2 by default, and has a `column` implementation that has `-t` and `-s` options.
 
 <details>
   <summary>Install requirements using apt</summary>
@@ -92,13 +92,8 @@ apt install coreutils
 # install GNU findutils
 apt install findutils
 
-# install util-linux
-# On some versions of util-linux, column is not included, BUT the util-linux version of column is included in some bsdmainutils versions.
-# star will run 'column --version' and check if the output contains "util-linux"
-# Ubuntu 22.04, 24.04:
+# install column (util-linux version)
 apt install bsdmainutils
-
-apt install util-linux
 ```
 
 </details>
@@ -119,7 +114,7 @@ brew install findutils
 # add the following line to your shell configuration file to enable non g-prefixed softwares
 export PATH="$(brew --prefix)/opt/findutils/libexec/gnubin:$PATH"
 
-# install util-linux
+# install column (util-linux version)
 brew install util-linux
 # add the following line to your shell configuration file
 export PATH="$(brew --prefix)/opt/util-linux/bin:$PATH"
@@ -216,13 +211,13 @@ Some terminals support 24-bits colors (aka true color), some do not and only sup
 
 | Variable | Value | Default | Description |
 |----------|-------|---------|-------------|
-| `__STAR_LIST_FORMAT` | string | `<INDEX>: ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} -> ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}` | The format of each line when listing bookmarks. Note that the `<INDEX>` placeholder is replaced by the bookmark index. |
-| `__STAR_LIST_COLUMN_COMMAND` | command stored as a string | `command column --table --table-columns-limit 3` | The command into which the bookmark listing is piped, used to align columns |
+| `__STAR_LIST_FORMAT` | string | `<INDEX>:<BR><COLNAME>%f<COLRESET><BR>-><BR><COLPATH>%l<COLRESET>` | The format of each line when listing bookmarks. Check the formatting in the [configuration file template](./share/star/config/star_config.sh.template). |
+| `__STAR_LIST_COLUMN_COMMAND` | command stored as a string | `command column -t -s $'\t'` | The command into which the bookmark listing is piped, used to align columns. Note the usage of the tab character as the column separator: the <BR> placeholder is replaced by a tab. |
 | `__STAR_LIST_SORT` | `loaded` / `name` / `none` | `loaded` | How to sort the bookmarks. |
 | `__STAR_LIST_ORDER` | `asc` / `desc` | `desc` | The order in which to display bookmarks |
 | `__STAR_LIST_INDEX` | `asc` / `desc` | `asc` | The order of the index |
 
-See the [configuration file template](./share/star/config/star_config.sh.template) to know how to properly customize `__STAR_LIST_FORMAT` and `__STAR_LIST_COLUMN_COMMAND`.
+See the [configuration file template](./share/star/config/star_config.sh.template) to know how to properly customize `__STAR_LIST_FORMAT` and `__STAR_LIST_COLUMN_COMMAND` (and the other variables).
 
 ## Troubleshooting
 
@@ -246,7 +241,6 @@ See the [configuration file template](./share/star/config/star_config.sh.templat
 - [ ] Add shellcheck testing in CI
 
 #### Dependencies removal  <!-- omit from toc -->
-- [ ] Remove dependency on `column` (util-linux) by implementing a lightweight column formatter in Bash
 - [ ] Remove dependency on `bash >= 3.2` for Zsh by translating the bash autocompletion system in pure Zsh
 
 ### Pull requests

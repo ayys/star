@@ -42,31 +42,34 @@ export __STAR_COLOR256_PATH=$'\033[38;5;36m'
 # default: $'\033[0m'
 export __STAR_COLOR256_RESET=$'\033[0m'
 
-### Adjust colors depending on terminal capabilities. DO NOT REMOVE OR MODIFY THIS LINE.
-# shellcheck source=/dev/null
-. "${_STAR_HOME}/libexec/star/star-setcolors.sh"
-
-
 ### LIST OPTIONS ###
 ### Format:
-# - this string is passed to GNU find, so any formatting for the "-print" option can be used:
+# - This string is passed to GNU find, so any formatting for the "-print" option can be used:
 #   - e.g: %f for name of starred directory
 #   - e.g: %l for its absolute path
-# - the string "<INDEX>" is used to add an index to each starred directory
-#   - can be put anywhere in the string
-#   - useful to navigate using the index of the star instead of its name
-# - this string will be piped into the "column" command (see below for more)
-#   - it is strongly recommended to put the path (%l) in the last column when separating
-#     the vertical columns with whitespaces, as a path can contain whitespaces
-export __STAR_LIST_FORMAT="<INDEX>: ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} -> ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"
+# - Placeholders:
+#   - "<INDEX>": used to display an index on each line of star list
+#       - can be put anywhere in the string
+#       - useful to navigate using the index of the star instead of its name
+#   - "<BR>": column separator (it is effectively replaced by a tab character, that the default "column" command uses as separator)
+#   - "<COLNAME>": assigned color for star names (effectively replaced by the value of $__STAR_COLOR_NAME)
+#   - "<COLPATH>": assigned color for star paths (effectively replaced by the value of $__STAR_COLOR_PATH)
+#   - "<COLRESET>": assigned default color (effectively replaced by the value of $__STAR_COLOR_RESET)
+#
+# Note that this string will be piped into the "column" command (see below for more).
+#
+# default: "<INDEX>:<BR><COLNAME>%f<COLRESET><BR>-><BR><COLPATH>%l<COLRESET>"
+export __STAR_LIST_FORMAT="<INDEX>:<BR><COLNAME>%f<COLRESET><BR>-><BR><COLPATH>%l<COLRESET>"
 
 ### Column command:
 # To display the stars in vertically aligned columns, the "find" listing is piped into the column command
-# - the listing has one result per line, each column is separated according to __STAR_LIST_FORMAT: by default we put spaces
-# - by default, the GNU "column" command is used
-#   - the default separator used is the whitespace character
-#   - it is strongly recommended to set the number of columns (--table-columns-limit) according to the wanted number of columns
-export __STAR_LIST_COLUMN_COMMAND="command column --table --table-columns-limit 3"
+# - the listing has one result per line, each column is separated according to $__STAR_LIST_FORMAT
+# - each "<BR>" placeholder in $__STAR_LIST_FORMAT is replaced by a tab character (at runtime), 
+#    then the default "column" command uses this tab character as separator
+# - be aware that the $__STAR_LIST_COLUMN_COMMAND string is evaled when listing
+#
+# default: "command column -t -s $'\t'"
+export __STAR_LIST_COLUMN_COMMAND="command column -t -s $'\t'"
 
 ### Sorting and ordering options ###
 # Options to sort and order the starred directories when using "star list"

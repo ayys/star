@@ -293,12 +293,11 @@ star add "$HOME/custom/amet"
 cd
 
 star list
-export __STAR_LIST_FORMAT="<INDEX> ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"
+export __STAR_LIST_FORMAT="\033[33m<INDEX><BR><COLNAME>%f<COLRESET><BR><COLPATH>%l<COLRESET>"
 star list
 export __STAR_COLOR_NAME=$'\033[95m'
 export __STAR_COLOR_PATH=$'\033[90m'
-export __STAR_LIST_FORMAT="\033[33m<INDEX> ${__STAR_COLOR_NAME}%f${__STAR_COLOR_RESET} ${__STAR_COLOR_PATH}%l${__STAR_COLOR_RESET}"
-star list
 star add custom/amet newname
+star list
 __STAR_LIST_SORT=name star list
 ```
