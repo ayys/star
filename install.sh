@@ -124,6 +124,13 @@ main() {
 		create_release_tarball
 	fi
 
+	# when installing, offer to migrate stars from 1.x to 2.x
+	if [[ "$mode" == "install" ]]; then
+		echo ""
+		echo "### MIGRATION FROM 1.x TO 2.x"
+		migration_1x_to_2x
+	fi
+
 	# when installing, check that the bin directory is in PATH
 	if [[ "$mode" == "install" ]] && ! echo ":$PATH:" | grep -q ":${BINDIR}:" ; then
 		echo "" >&2
@@ -224,6 +231,91 @@ create_release_tarball() {
 	echo "Creating tarball: $tarball_relative_path"
 	tar --sort=name --owner=0 --group=0 --numeric-owner -czf "$tarball" -C "$SOURCEDIR/release" "star-$VERSION"
 	echo "Finished creating release tarball: $tarball_relative_path"
+}
+
+# Migrate from star 1.x to 2.x
+#
+# in 1.x, stars were stored in ~/.star/
+# in 2.x, stars are stored in ${_STAR_DATA_HOME}/stars/
+migration_1x_to_2x() {
+	if [[ ! -d "$HOME/.star" ]]; then
+		echo "Skipping migration from 1.x to 2.x: no stars found in '$HOME/.star'."
+		return 0
+	fi
+
+	# echo ""
+	# echo "### MIGRATION FROM 1.x TO 2.x"
+	echo "Detected stars from an older star version, stored in '$HOME/.star':"
+	if command -v column >/dev/null 2>&1; then
+		find "$HOME/.star" -maxdepth 1 -type l -printf "- %f -> %l\n" | column -t
+	else
+		find "$HOME/.star" -maxdepth 1 -type l -printf "- %f -> %l\n"
+	fi
+
+	# detect where the new data home should be
+	local data_home
+	data_home="$(eval "$("$SOURCEDIR/bin/star" init bash)" ; env | grep "^_STAR_DATA_HOME=" | cut -d'=' -f2- )"
+
+	if [[ $? != 0 || -z "$data_home" || ! -d "$data_home" ]]; then
+		return 0
+	fi
+
+	echo ""
+	echo "The new star version will store stars in '${data_home}/stars/'."
+	echo ""
+
+	local migrate_stars=no
+	while true; do
+		echo -n "Do you want to move/copy the stars to the new location? (move/copy/no) [m/C/n] "
+		read -r
+		case $REPLY in
+			[Mm])
+				migrate_stars=move
+				break
+				;;
+			[Cc]|"")
+				migrate_stars=copy
+				break
+				;;
+			[Nn]|[Nn][Oo])
+				migrate_stars=no
+				break
+				;;
+			*) echo "Not a valid answer.";;
+		esac
+	done
+
+	if [[ "$migrate_stars" == "no" ]]; then
+		echo "Skipping migration of stars."
+		return 0
+	fi
+
+	mkdir -p "${data_home}/stars/"
+	if [[ "$migrate_stars" == "move" ]]; then
+		mv "$HOME/.star/"* "${data_home}/stars/"
+		echo "Moved stars from $HOME/.star/ to ${data_home}/stars/"
+	elif [[ "$migrate_stars" == "copy" ]]; then
+		cp -r "$HOME/.star/"* "${data_home}/stars/"
+		echo "Copied stars from $HOME/.star/ to ${data_home}/stars/"
+	fi
+
+	echo ""
+	while true; do
+		echo -n "Delete the old stars directory '$HOME/.star/'? [y/n] "
+		read -r
+		case $REPLY in
+			[Yy]|[Yy][Ee][Ss])
+				rm -rf "$HOME/.star/"
+				echo "Deleted old stars directory '$HOME/.star/'."
+				break
+				;;
+			[Nn]|[Nn][Oo])
+				echo "Keeping old stars directory '$HOME/.star/'."
+				break
+				;;
+			*) echo "Not a valid answer.";;
+		esac
+	done
 }
 
 main "$@"
