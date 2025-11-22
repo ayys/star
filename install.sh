@@ -81,31 +81,48 @@ main() {
 	fi
 
 	if [[ "$mode" == "release" ]]; then
-		DESTDIR="release/star-$VERSION"
+		DESTDIR="$(realpath --canonicalize-missing "release/star-$VERSION")"
 		rm -rf "$DESTDIR"
 		mkdir -p "$DESTDIR"
 		echo "Creating release package in $DESTDIR"
+		echo ""
 	fi
 
 	# ensure trailing slash
 	[[ -n $DESTDIR ]] && DESTDIR="${DESTDIR%/}/"
 
+	echo "### INITIALIZING MANIFEST"
 	init_manifest
+	echo "Local manifest: $MANIFEST"
+	echo "Final manifest will be stored at: $DESTMANIFEST"
+
+	echo ""
+	echo "### INSTALLATION"
 	install_files
+	echo "Finished installing files."
 
 	if [[ "$mode" == "release" ]]; then
+		echo ""
+		echo "### INSTALLING ADDITIONAL RELEASE FILES"
 		install_additional_release_files
-	fi
-
-	install -Dm644 "$MANIFEST" "$DESTMANIFEST"
-
-	if [[ "$mode" == "release" ]]; then
-		create_release_tarball
+		echo "Finished installing additional release files."
 	fi
 
 	echo ""
-	echo "Installation completed at ${DESTDIR}${PREFIX}."
+	echo "### FINALIZING MANIFEST"
+	install -Dm644 "$MANIFEST" "$DESTMANIFEST"
+	echo "Final manifest stored at: $DESTMANIFEST"
+
+	echo ""
+	echo "### SUMMARY"
+	echo "Installation completed at $(realpath "${DESTDIR}${PREFIX}")."
 	echo "Installed files are listed in: ${DESTMANIFEST}"
+
+	if [[ "$mode" == "release" ]]; then
+		echo ""
+		echo "### CREATING RELEASE TARBALL"
+		create_release_tarball
+	fi
 
 	# when installing, check that the bin directory is in PATH
 	if [[ "$mode" == "install" ]] && ! echo ":$PATH:" | grep -q ":${BINDIR}:" ; then
@@ -135,7 +152,7 @@ init_manifest() {
 	# ensure trailing slash
 	[[ -n $dest ]] && dest="${dest%%/}/"
 
-	DESTMANIFEST="${dest}manifest.txt"
+	DESTMANIFEST="$(realpath "${dest}manifest.txt")"
 	if [[ -f "$DESTMANIFEST" ]]; then
 		echo "A manifest already exists at '$DESTMANIFEST'. Content:"
 		cat "$DESTMANIFEST"
@@ -190,7 +207,8 @@ install_file() {
 	local dest_dir="$3"
 	local dest_file="$4"
 
-	local dest="${DESTDIR}${dest_dir}/$dest_file"
+	local dest
+	dest="$(realpath --canonicalize-missing "${DESTDIR}${dest_dir}/$dest_file")"
 	echo "Running: install -Dm$mode $src $dest"
 	install -Dm"$mode" "$src" "$dest"
 
@@ -203,7 +221,6 @@ create_release_tarball() {
 	local tarball="star-$VERSION.tar.gz"
 	local tarball_relative_path
 	tarball_relative_path="$(realpath --relative-to="${PWD}" "$tarball")"
-	echo ""
 	echo "Creating tarball: $tarball_relative_path"
 	tar --sort=name --owner=0 --group=0 --numeric-owner -czf "$tarball" -C "$SOURCEDIR/release" "star-$VERSION"
 	echo "Finished creating release tarball: $tarball_relative_path"
