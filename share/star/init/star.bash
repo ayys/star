@@ -496,8 +496,11 @@ star()
                 command echo "All stars have been removed."
             else
                 command echo "Failed to remove all the stars."
+                return $ret
             fi
-            return $ret
+
+            # remove the entire star data directory if empty
+            rmdir "${_STAR_DATA_HOME}" 2>/dev/null || true
             ;;
         CONFIG)
             local editor
