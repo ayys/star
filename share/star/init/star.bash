@@ -525,7 +525,8 @@ star()
                 command echo "No configuration file found. Should be located at: ${_STAR_CONFIG_FILE}"
                 if [[ -e "${_STAR_HOME}/share/star/config/star_config.sh.template" ]]; then
                     command echo
-                    command echo "You can create a new configuration file with the following command (copies a provided template):"
+                    command echo "You can create a new configuration file with the following commands (copies a provided template):"
+                    command echo "  mkdir -p \"$(command dirname "${_STAR_CONFIG_FILE}")\""
                     command echo "  cp \"${_STAR_HOME}/share/star/config/star_config.sh.template\" \"${_STAR_CONFIG_FILE}\""
                 fi
                 command echo
