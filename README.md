@@ -168,11 +168,11 @@ eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 
 ### Uninstalling
 
-There is currently no automatic uninstallation process.
+Each installation of star can be uninstalled using the provided `uninstall.sh` script. This script should be located at `$_STAR_HOME/share/star/uninstall.sh`.
 
-All stars can be removed at once using `star reset --force` (this does not remove the installed files).
+The script requires a manifest file to remove all installed files. This manifest file is created at installation time. It is by default located at `$_STAR_HOME/share/star/manifest.txt`. The uninstallation script uses by default the `_STAR_HOME` variable to locate the manifest file, but if it is unset you can manually pass the manifest file using the `--input` option.
 
-At installation, a `manifest.txt` file is created in `$_STAR_HOME/share/star/`. It contains a list of all installed files relative to `$_STAR_HOME`. You can use this file to manually remove all installed files. In the future, an `uninstall.sh` script will be provided to automate this process.
+Note that the best way to uninstall star is to have it initialized in the current shell, so that `_STAR_HOME` and other variables such as `$_STAR_DATA_HOME` and `$_STAR_CONFIG_FILE` are set properly.
 
 ## Configuration
 
