@@ -26,23 +26,32 @@ It is written in Bash, but can be used with Zsh as long as there is an available
 
 <details>
   <summary>Dynamically add bookmarks (called "stars")</summary>
+
+  - `star add <PATH> [NAME]`: add a star
+  - `star list`: list all stars
+
   <div align="left">
-    <img width="593" height="617" alt="01-dynamically-add" src="https://github.com/user-attachments/assets/5b59adb1-c9d2-461f-a6b9-1c2579c7f8a5" alt="Dynamically add bookmarks" />
+    <img width="593" height="617" alt="dynamically-add" src="https://github.com/user-attachments/assets/5b59adb1-c9d2-461f-a6b9-1c2579c7f8a5" alt="Dynamically add bookmarks" />
   </div>
 </details>
 
 <details>
   <summary>Instantly navigate into your favorite directories</summary>
-  <div align="left">
-    <img width="471" height="345" alt="02-navigate" src="https://github.com/user-attachments/assets/91c7cb10-33e3-457b-a1fa-d7f251d6a53f" />
-  </div>
 
+  - `star load <STAR>`: `cd` into the star's directory (the star is identified by its name or its index)
+  
+  <div align="left">
+    <img width="471" height="345" alt="navigate" src="https://github.com/user-attachments/assets/91c7cb10-33e3-457b-a1fa-d7f251d6a53f" />
+  </div>
+  
   > The output of `star list` is sorted according to when each element was loaded last (this can be configured).
 </details>
 
 <details>
   <summary>Autocompletion is your friend</summary>
   <div align="left">
+
+  Autocompletion is provided for the different modes and for the starred directories.
 
 https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
@@ -51,22 +60,43 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
 <details>
   <summary>Use the generated environment variables to interact with your directories</summary>
+
+  Those variable are prefixed with `STAR_`, and the rest is generated from the name of the star. Typing `STAR_` then pressing TAB two times will display the different variables available.
+
   <div align="left">
-    <img width="591" height="502" alt="04-envvars" src="https://github.com/user-attachments/assets/096a7078-0e11-4b48-933d-44304ae480af" />
+    <img width="591" height="502" alt="envvars" src="https://github.com/user-attachments/assets/096a7078-0e11-4b48-933d-44304ae480af" />
   </div>
 </details>
 
 <details>
   <summary>Manage your stars</summary>
+
+  - `star rename <OLD_NAME> <NEW_NAME>`: rename a star
+  - `star remove <STAR_NAME> [STAR_NAME]...`: remove one or multiple stars
+  - `star reset [--force]`: remove all star data
+  
   <div align="left">
-    <img width="466" height="434" alt="05-management" src="https://github.com/user-attachments/assets/c80ff5c3-9b4b-4248-86b7-1ae9e5e97f59" />
+    <img width="466" height="434" alt="management" src="https://github.com/user-attachments/assets/c80ff5c3-9b4b-4248-86b7-1ae9e5e97f59" />
+  </div>
+</details>
+
+<details>
+  <summary>Use the provided aliases to speed up your workflow</summary>
+
+  - `sta`: alias for `star add`
+  - `unstar` or `strm`: aliases for `star rm`
+  - `stl`: for `star list`
+  - `stl <STAR>`: for `star load <STAR>`
+  
+  <div align="left">
+    <img width="524" height="351" alt="aliases" src="https://github.com/user-attachments/assets/0ee83ce3-fc4c-4a07-9601-1d86dca45ce0" />
   </div>
 </details>
 
 <details>
   <summary>Customize colors, listing and more</summary>
   <div align="left">
-    <img width="593" height="718" alt="06-customization" src="https://github.com/user-attachments/assets/05a6030c-bb90-420a-ae33-09f6fda6226a" />
+    <img width="593" height="718" alt="customization" src="https://github.com/user-attachments/assets/05a6030c-bb90-420a-ae33-09f6fda6226a" />
   </div>
 </details>
 
