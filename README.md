@@ -17,7 +17,7 @@ It is written in Bash, but can be used with Zsh as long as there is an available
 - [Troubleshooting](#troubleshooting)
 - [Contributions and development](#contributions-and-development)
   - [Future work](#future-work)
-  - [Pull requests](#pull-requests)
+  - [Development](#development)
   - [Testing](#testing)
 - [Contributors](#contributors)
 - [License](#license)
@@ -233,8 +233,13 @@ See the [configuration file template](./share/star/config/star_config.sh.templat
 
 ## Troubleshooting
 
+If you encounter any issues while using star, please ensure that all required dependencies are installed and accessible in your PATH.
+
+If the problem persists, please open an issue on the [GitHub repository](https://github.com/Fruchame/star/issues).
+
 ## Contributions and development
-<!-- Contributions are welcome! Please submit issues or pull requests to improve star. -->
+
+Contributions are welcome! Please submit [issues](https://github.com/Fruchame/star/issues) or [pull requests](https://github.com/Fruchix/star/pulls) to improve star.
 
 ### Future work
 
@@ -255,13 +260,26 @@ See the [configuration file template](./share/star/config/star_config.sh.templat
 #### Dependencies removal  <!-- omit from toc -->
 - [ ] Remove dependency on `bash >= 3.2` for Zsh by translating the bash autocompletion system in pure Zsh
 
-### Pull requests
+### Development
 
-<!-- TODO -->
+Please read the [architecture documentation](./docs/architecture.md) to understand how star is structured and how to contribute effectively.
 
 ### Testing
 
-<!-- TODO -->
+Tests are written using [Bats](https://bats-core.readthedocs.io/en/stable/). To run the tests, ensure you have Bats installed and run the following command from the root of the repository:
+
+```sh
+bats tests/<subdirectory>
+
+# Example: 
+bats tests/core
+```
+
+To run all tests, use the following script:
+
+```sh
+./tests/run-tests.sh
+```
 
 ## Contributors
 
