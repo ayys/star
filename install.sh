@@ -113,6 +113,9 @@ main() {
 	install -Dm644 "$MANIFEST" "$DESTMANIFEST"
 	echo "Final manifest stored at: $DESTMANIFEST"
 
+	# remove local manifest
+	rm "$MANIFEST"
+
 	echo ""
 	echo "### SUMMARY"
 	echo "Installation completed at $(realpath "${DESTDIR}${PREFIX}")."
@@ -159,7 +162,7 @@ init_manifest() {
 	# ensure trailing slash
 	[[ -n $dest ]] && dest="${dest%%/}/"
 
-	DESTMANIFEST="$(realpath "${dest}manifest.txt")"
+	DESTMANIFEST="$(realpath --canonicalize-missing "${dest}manifest.txt")"
 	if [[ -f "$DESTMANIFEST" ]]; then
 		echo "A manifest already exists at '$DESTMANIFEST'. Content:"
 		cat "$DESTMANIFEST"
@@ -243,13 +246,11 @@ migration_1x_to_2x() {
 		return 0
 	fi
 
-	# echo ""
-	# echo "### MIGRATION FROM 1.x TO 2.x"
 	echo "Detected stars from an older star version, stored in '$HOME/.star':"
 	if command -v column >/dev/null 2>&1; then
-		find "$HOME/.star" -maxdepth 1 -type l -printf "- %f -> %l\n" | column -t
+		find "$HOME/.star" -maxdepth 1 -type l -printf " - %f -> %l\n" | column -t
 	else
-		find "$HOME/.star" -maxdepth 1 -type l -printf "- %f -> %l\n"
+		find "$HOME/.star" -maxdepth 1 -type l -printf " - %f -> %l\n"
 	fi
 
 	# detect where the new data home should be
