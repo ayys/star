@@ -35,6 +35,9 @@ fi
 # Enable (yes) or disable (no) environment variables
 export __STAR_ENABLE_ENVVARS="${__STAR_ENABLE_ENVVARS:-"yes"}"
 
+# Enable (yes) or disable (no) the aliases
+export __STAR_ENABLE_ALIASES="${__STAR_ENABLE_ALIASES:-"yes"}"
+
 _star_add_variable()
 {
     local star_name=$1
@@ -542,4 +545,21 @@ if [[ "$__STAR_ENABLE_ENVVARS" == "yes" ]]; then
     _star_set_variables
 else
     _star_unset_variables
+fi
+
+if [[ "$__STAR_ENABLE_ALIASES" == "yes" ]]; then
+    alias sta="star add"        # star add
+    alias unstar="star remove"  # star remove
+    alias strm="star remove"    # star remove
+
+    # function that can be used as alias for both: 
+    # - "star list" (without argument)
+    # - "star load" (whith argument)
+    stl() {
+        if [[ $# -eq 0 ]]; then
+            star list
+        else
+            star load "$@"
+        fi
+    }
 fi

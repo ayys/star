@@ -96,6 +96,10 @@ Those variables are prefixed by `__STAR_` (double underscore at the beginning). 
 Variables to toggle features:
 - `__STAR_ENABLE_ENVVARS`: whether to dynamicaly set environment variables named after the bookmarks.  
   Note that the environment variable `___STAR_ENABLE_ENVVARS_CURRENT_STATUS` (triple underscore) is used internally to track the current status of this feature. If the two variables are not the same (it means the configuration was updated), then the environment variables are set or unset accordingly (and current status variable is updated).
+- `__STAR_ENABLE_ALIASES`: whether to add aliases for common commands:
+  - `sta`: alias for `star add`
+  - `unstar` and `strm`: alias for `star remove`
+  - `stl`: actually a function, that serves as both `star list` (without arguments) AND `star load` (when an argument is provided)
 
 Variables to configure the colors:
 - `__STAR_COLOR_NAME`: 24-bits color for the name of a bookmark
@@ -257,7 +261,7 @@ Autocompletion is your friend
 ```sh
 cd
 star <TAB><TAB>
-star lo<TAB> d<TAB>
+star do<TAB> d<TAB>
 ```
 
 Use the generated environment variables to interract with your directories
@@ -268,6 +272,17 @@ ls $STAR_GOOGLE_DRIVE
 cat $STAR_GOOGLE_DRIVE/project.md
 cp $STAR_GOOGLE_DRIVE/project.md $STAR_DOTFILES/
 ls
+```
+
+Use the provided aliases to speed up your workflow
+```sh
+cd
+
+sta ~/Documents/tools mytools
+stl
+unstar mytools
+stl
+stl dotfiles
 ```
 
 Manage your stars

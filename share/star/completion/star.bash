@@ -27,10 +27,10 @@ _complete_star()
         case "${first_cw}" in
             star)       mode=starmodes ;;
             # functions and aliases
-            sadd)       mode=currentdirs ;;
-            sremove)    mode=starnamesfiltered ;;
+            sta)        mode=currentdirs ;;
+            strm)       mode=starnamesfiltered ;;
             unstar)     mode=starnamesfiltered ;;
-            sload)      mode=starnames ;;
+            stl)        mode=starnames ;;
         esac
     elif [[ "${COMP_CWORD}" -eq 2 ]]; then
         # two words completions
@@ -47,7 +47,7 @@ _complete_star()
                     *) return 0 ;;  # no completion for other subcommands
                 esac
             ;;
-            sremove|unstar)
+            strm|unstar)
                 # sremove <STAR_NAME> completions
                 mode=starnamesfiltered ; local current_star_names=("${COMP_WORDS[@]:1}")
                 ;;
@@ -116,27 +116,10 @@ _complete_star()
 # activate completion for star command
 complete -F _complete_star star
 
-# create useful aliases
-alias sadd="star add"       # star add
-alias slist="star list"     # star list
-alias sremove="star remove" # star remove
-alias unstar="star remove"  # star remove
-alias sconfig="star config" # star config
-
-# function that can be used as alias for both: 
-# - "star list" (without argument)
-# - "star load" (whith argument)
-sload() {
-    if [[ $# -eq 0 ]]; then
-        star list
-    else
-        star load "$@"
-    fi
-}
-
-# activate completion for the aliases
-complete -F _complete_star sload
-complete -F _complete_star sadd
-complete -F _complete_star slist
-complete -F _complete_star sremove
-complete -F _complete_star unstar
+if [[ "$__STAR_ENABLE_ALIASES" == "yes" ]]; then
+    # activate completion for the aliases
+    complete -F _complete_star sta
+    complete -F _complete_star unstar
+    complete -F _complete_star strm
+    complete -F _complete_star stl
+fi

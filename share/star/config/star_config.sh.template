@@ -19,6 +19,12 @@
 # Value: yes, no (default: yes)
 export __STAR_ENABLE_ENVVARS=yes
 
+# When set to "yes", the following alises will be added to the environment:
+# - sta: star add
+# - unstar: star remove
+# - strm: star remove
+# - stl: actually a function that serves as both star list (without arguments) AND star load (when an argument is provided)
+export __STAR_ENABLE_ALIASES=yes
 
 ### COLOR OPTIONS ###
 # Colors used in star output, associated with the star names and star paths.

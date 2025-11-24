@@ -200,11 +200,16 @@ Below is the list of the different environment variables that can be used to cus
 
 #### Enabling/disabling features <!-- omit from toc -->
 
-There is currently only one feature that can be enabled or disabled manually. When updating the environment variable, the change will only be effective at the next invocation of star.
+Some features can be enabled or disabled by setting the corresponding environment variable to `yes` or `no`.
 
 | Variable | Value | Default | Description |
 |----------|-------|---------|-------------|
 | `__STAR_ENABLE_ENVVARS` | `yes` / `no` | `yes` | Whether to dynamically set environment variables named after the bookmarks (see [Features](#features)) |
+| `__STAR_ENABLE_ALIASES` | `yes` / `no` | `yes` | Whether to add aliases for common commands (`sta`, `unstar`, `strm`, `stl`) (see [Features](#features)) |
+
+Note that when updating `__STAR_ENABLE_ENVVARS`, the change will only be effective at the next invocation of star.
+
+Note that when updating `__STAR_ENABLE_ALIASES`, the change will only be effective for the next shell.
 
 #### Configure the colors <!-- omit from toc -->
 
