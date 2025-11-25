@@ -342,12 +342,12 @@ eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 To quickly add those commands to your ~/.bashrc:
 ```sh
 echo '[[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.bashrc
+echo 'eval "$(command star init bash)"' >> ~/.bashrc
 ```
 or ~/.zshrc:
 ```sh
 echo '[[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.zshrc
+echo 'eval "$(command star init zsh)"' >> ~/.zshrc
 ```
 
 #### Recommended system installation (from release) <!-- omit from toc -->
@@ -369,12 +369,12 @@ eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 To quickly add those commands to your ~/.bashrc:
 ```sh
 echo '[[ ":${PATH}:" =~ ":/usr/local/bin:" ]] || export PATH="/usr/local/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.bashrc
+echo 'eval "$(command star init bash)"' >> ~/.bashrc
 ```
 or ~/.zshrc:
 ```sh
 echo '[[ ":${PATH}:" =~ ":/usr/local/bin:" ]] || export PATH="/usr/local/bin:$PATH"' >> ~/.zshrc
-echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.zshrc
+echo 'eval "$(command star init zsh)"' >> ~/.zshrc
 ```
 
 
