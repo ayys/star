@@ -325,11 +325,12 @@ Installation steps are the following:
 - add the `bin` directory (where star is installed) to the PATH if it is not alredy in it (the command to execute will be shown after installation)
 - initialize star using `eval "$(command star init YOUR_SHELL_TYPE)"` (see `command star --help`)
 
-#### Recommended user installation (from source) <!-- omit from toc -->
+#### Recommended user installation (from release) <!-- omit from toc -->
 
 ```sh
-git clone https://github.com/Fruchix/star.git
-cd star
+curl -L -o star-2.0.0.tar.gz https://github.com/Fruchix/star/releases/download/v2.0.0/star-2.0.0.tar.gz
+tar xvf star-2.0.0.tar.gz
+cd star-2.0.0
 ./configure --prefix=$HOME/.local
 ./install.sh
 
@@ -349,11 +350,12 @@ echo '[[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin
 echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.zshrc
 ```
 
-#### Recommended system installation (from source) <!-- omit from toc -->
+#### Recommended system installation (from release) <!-- omit from toc -->
 
 ```sh
-git clone https://github.com/Fruchix/star.git
-cd star
+curl -L -o star-2.0.0.tar.gz https://github.com/Fruchix/star/releases/download/v2.0.0/star-2.0.0.tar.gz
+tar xvf star-2.0.0.tar.gz
+cd star-2.0.0
 ./configure         # by default, prefix is set to: /usr/local
 sudo ./install.sh
 
