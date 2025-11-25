@@ -191,7 +191,10 @@ set_star_home() {
         export _STAR_HOME="${STAR_HOME}"
         return 0
     fi
-    script_dir="$(realpath "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )")"
+    local script_dir
+    # the "realpath ${BASH_SOURCE[0]}" is for the case where there is a symlink to this file,
+    # we want to resolve it to find the actual installation directory
+    script_dir="$(realpath "$( cd -- "$( dirname -- "$(realpath "${BASH_SOURCE[0]}")" )" && pwd )")"
 
     # star is expected to be located at: <installation_dir>/bin/star
     installation_dir="$(realpath "$script_dir/..")"
