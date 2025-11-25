@@ -100,10 +100,8 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
   </div>
 </details>
 
-More documentation:
-<!-- > Use `star --help` to get more information on the different modes and options.  -->
-<!-- > Use `star MODE_NAME --help` to get more information on a specific mode (e.g. `star config --help`) -->
-
+> #### More documentation
+> 
 > <details>
 >   <summary>Detailed usage</summary>
 >   <div align="left">
