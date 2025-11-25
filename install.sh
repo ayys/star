@@ -120,6 +120,8 @@ main() {
 	echo "### SUMMARY"
 	echo "Installation completed at $(realpath "${DESTDIR}${PREFIX}")."
 	echo "Installed files are listed in: ${DESTMANIFEST}"
+	echo ""
+	echo "You can uninstall star later by running the uninstall script located at '${SHAREDIR}/uninstall.sh'."
 
 	if [[ "$mode" == "release" ]]; then
 		echo ""
@@ -134,15 +136,28 @@ main() {
 		migration_1x_to_2x
 	fi
 
-	# when installing, check that the bin directory is in PATH
-	if [[ "$mode" == "install" ]] && ! echo ":$PATH:" | grep -q ":${BINDIR}:" ; then
-		echo "" >&2
-		echo "Warning: The installation directory '$BINDIR' is not in your PATH." >&2
-		echo "You may want to add the following line to your shell configuration file (e.g., ~/.bashrc or ~/.zshrc):" >&2
-		echo "" >&2
-		echo "    export PATH=\"${BINDIR}:\$PATH\"" >&2
-		echo "" >&2
-		echo "After adding it, do not forget to source your shell configuration file again." >&2
+	if [[ "$mode" == "install" ]]; then
+		echo ""
+		echo "### STAR INITIALIZATION"
+		local bin_dir_in_path=1
+		if ! echo ":$PATH:" | grep -q ":${BINDIR}:" ; then
+			bin_dir_in_path=0
+			echo "Warning: The installation directory '$BINDIR' is not in your PATH." >&2
+			echo ""
+		fi
+
+		echo "To initialize star run the following command(s):"
+		[[ $bin_dir_in_path -eq 0 ]] && echo "    export PATH=\"${BINDIR}:\$PATH\"" >&2
+		# shellcheck disable=SC2016
+		echo '    eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"'
+
+		echo ""
+		echo "You may want to also add this line to your shell configuration file to initialize star automatically on shell startup."
+		[[ $bin_dir_in_path -eq 0 ]] && echo "    echo 'export PATH=\"${BINDIR}:\$PATH\"' >> ~/.bashrc"
+		echo "    echo 'eval \"\$(command star init bash)\"' >> ~/.bashrc"
+		echo ""
+		[[ $bin_dir_in_path -eq 0 ]] && echo "    echo 'export PATH=\"${BINDIR}:\$PATH\"' >> ~/.zshrc"
+		echo "    echo 'eval \"\$(command star init zsh)\"' >> ~/.zshrc"
 	fi
 }
 
