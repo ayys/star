@@ -101,8 +101,165 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 </details>
 
 More documentation:
-> Use `star --help` to get more information on the different modes and options.  
-> Use `star MODE_NAME --help` to get more information on a specific mode (e.g. `star config --help`)
+<!-- > Use `star --help` to get more information on the different modes and options.  -->
+<!-- > Use `star MODE_NAME --help` to get more information on a specific mode (e.g. `star config --help`) -->
+
+> <details>
+>   <summary>Detailed usage</summary>
+>   <div align="left">
+> 
+> ```sh
+> Usage: star [MODE]
+>        star [OPTION]
+> 
+> Dynamically bookmark and cd into directories.
+> Bookmarks are called "stars".
+> 
+>     MODE (related to stars management)
+>         add     Add a new star
+>         list    List all stars
+>         load    cd into a starred directory
+>         rename  Change the name of a star
+>         remove  Remove a star
+>         reset   Delete all stars
+> 
+>     MODE (miscellaneous)
+>         config  Edit configuration file and apply changes
+>         help    Show this help message
+> 
+>     Get more information for each mode using:
+>         star MODE --help
+>         star help MODE
+> 
+>     OPTION
+>         -h, --help          Show this help message
+>         -v, --version       Show star version
+>         -I, --information   Show more information about the star installation
+> ```
+> 
+>   
+>   </div>
+> </details>
+> 
+> <details>
+>   <summary>Detailed usage for each mode</summary>
+>   <div align="left">
+>
+> #### add
+> ```sh
+> Usage: star add PATH [NAME]
+>        star a PATH [NAME]
+> 
+> Add a new star.
+> 
+>     PATH
+>         Relative path to the directory to star.
+>         e.g. "star add ." will star the current directory
+> 
+>     NAME
+>         The name of the new star if provided, otherwise it will use the name of the current directory.
+>         - Must be unique (among all stars)
+>         - Can contain slashes: "/"
+>         - Whitespaces will be replaced by a dash: "-"
+>         - Names with only numeric characters will by prefixed by "dir-"
+> ```
+> 
+> 
+> #### list
+> ```sh
+> Usage: star list [OPTIONS]
+>        star L [OPTIONS]
+> 
+> List all stars, by default sorted according to last load (top ones are the last loaded stars).
+> 
+> Listing can be customized either by:
+> - editing the environment variables in the configuration file (see 'star config' for more information)
+> - using options supported by the 'star-list' helper script
+> 
+> Get the 'star-list' usage and options by running:
+>  "${_STAR_HOME}/libexec/star/star-list" --help
+> ```
+> 
+> 
+> #### load
+> ```sh
+> Usage: star load STAR
+>        star l STAR
+> 
+> Navigate (cd) into the starred directory.
+> 
+>     STAR
+>         Should be the name or index of a starred directory (one that is listed using "star list").
+> ```
+> 
+> 
+> #### rename
+> ```sh
+> Usage: star rename <STAR> <NEW_STAR_NAME>
+> 
+> Rename an existing star.
+> 
+>     STAR
+>         Should be the name of a starred directory.
+> 
+>     NEW_STAR_NAME
+>         The new name of the star.
+>         - Must be unique (among all stars)
+>         - Can contain slashes /
+> ```
+> 
+> 
+> #### remove
+> ```sh
+> Usage: star remove <STAR> [STAR]...
+>        star rm <STAR> [STAR]...
+> 
+> Remove one or more stars.
+> 
+>     STAR
+>         Should be the name of a starred directory.
+> ```
+> 
+> 
+> #### reset
+> ```sh
+> Usage: star reset [-f|--force]
+> 
+> Remove all stars and the ".star" directory.
+> 
+>     --force, -f
+>         Force reset without prompting the user.
+> ```
+> 
+> 
+> #### config
+> ```sh
+> Usage: star config
+> 
+> Open the star configuration file in a terminal text editor then apply the updated configuration.
+> 
+> Configuration file:
+>     The configuration file is located at $_STAR_CONFIG_FILE, which is by default "$_STAR_CONFIG_HOME/star_config.sh".
+>     Customizing $_STAR_CONFIG_FILE will allow you to use any file for star configuration. Keep in mind that this file will get sourced after each "star config".
+> 
+>     Customizing $_STAR_CONFIG_HOME will allow you to change the directory where the default configuration file is stored (star_config.sh).
+>     By default, this corresponds to:
+>         - "$XDG_CONFIG_HOME/star" if XDG_CONFIG_HOME is defined
+>         - else "$HOME/.config/star"
+> 
+>     If the configuration file does not exist, star will suggest a command to create one from a provided template.
+> 
+>     Template location:
+>         $_STAR_HOME/share/star/config/star_config.sh.template
+> 
+> Editor:
+>     - use the one defined in the environment variable $EDITOR
+>     - else use "nano" if available
+>     - else use "vi" if available
+> ```
+>
+>   </div>
+> </details>
 
 ## Installation
 
