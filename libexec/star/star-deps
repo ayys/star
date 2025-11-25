@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+
+# This script is meant to be used by star.
+# It checks that all dependencies are met.
+
+# Check if a package is installed by verifying all its dependencies
+# Usage: check_package <package_name> <dep1> <dep2> ...
+check_package() {
+    local package_name="$1"
+    shift
+    local dependencies=("$@")
+
+    # Determine the grep pattern based on package name
+    local grep_pattern
+    if [[ "$package_name" == "coreutils" ]]; then
+        grep_pattern="GNU coreutils"
+    elif [[ "$package_name" == "findutils" ]]; then
+        grep_pattern="GNU findutils"
+    else
+        echo "Error: unsupported package name '$package_name' in check_package" >&2
+        return 1
+    fi
+
+    local missing_deps=()
+    local g_prefixed_deps=()
+    local non_gnu_deps=()
+
+    # Check each dependency
+    for dep_name in "${dependencies[@]}"; do
+        local FOUND_GTOOL=0
+        local IS_GNU=0
+        local BIN=""
+
+        # Detect if command is available
+        # When installing GNU commands via Homebrew (often on macOS), they are prefixed with 'g' by default
+        if command -v "${dep_name}" >/dev/null 2>&1; then
+            BIN=$(command -v "${dep_name}")
+        elif command -v "g${dep_name}" >/dev/null 2>&1; then
+            BIN=$(command -v "g${dep_name}")
+            FOUND_GTOOL=1
+        else
+            missing_deps+=("$dep_name")
+            continue
+        fi
+
+        # Check if it's GNU: only works when the output of --version contains the expected pattern
+        # Might not work on embedded systems with limited tool versions
+        if command "$BIN" --version 2>/dev/null | grep -q "$grep_pattern"; then
+            IS_GNU=1
+        fi
+        
+        if [[ $FOUND_GTOOL -eq 1 && $IS_GNU -eq 1 ]]; then
+            g_prefixed_deps+=("$dep_name")
+        elif [[ $IS_GNU -eq 0 ]]; then
+            non_gnu_deps+=("$dep_name")
+        fi
+    done
+
+    # Report errors grouped by issue type
+    local has_errors=0
+    
+    if [[ ${#missing_deps[@]} -gt 0 ]]; then
+        echo "Error: The following package is not installed or is missing some programs: $package_name" >&2
+        echo "It is required for the GNU version of: ${missing_deps[*]}" >&2
+        echo "" >&2
+        has_errors=1
+    fi
+
+    if [[ ${#non_gnu_deps[@]} -gt 0 ]]; then
+        echo "Error: The package '$package_name' appears to be missing or non-GNU versions are installed." >&2
+        echo "The following commands are not GNU versions: ${non_gnu_deps[*]}" >&2
+        echo "Please install the GNU version of $package_name." >&2
+        echo "" >&2
+        has_errors=1
+    fi
+
+    if [[ ${#g_prefixed_deps[@]} -gt 0 ]]; then
+        echo "Error: The package '$package_name' is installed, but some of its programs are prefixed with 'g':" >&2
+        echo "  ${g_prefixed_deps[*]}" >&2
+        echo "" >&2
+        echo "If $package_name was installed using Homebrew, you can add the following to your shell configuration file to fix the issue:" >&2
+        echo "" >&2
+        if [[ "$package_name" == "coreutils" ]]; then
+            echo "    export PATH=\"\$(brew --prefix)/opt/coreutils/libexec/gnubin:\$PATH\"" >&2
+        elif [[ "$package_name" == "findutils" ]]; then
+            echo "    export PATH=\"\$(brew --prefix)/opt/findutils/libexec/gnubin:\$PATH\"" >&2
+        fi
+        echo "" >&2
+        echo "Do not forget to source your shell configuration file again." >&2
+        echo "" >&2
+        has_errors=1
+    fi
+
+    return $has_errors
+}
+
+check_column_command() {
+    local BIN=""
+    local FOUND_GTOOL=0
+    
+    # Detect if command is available
+    if command -v "column" >/dev/null 2>&1; then
+        BIN=$(command -v "column")
+    elif command -v "gcolumn" >/dev/null 2>&1; then
+        BIN=$(command -v "gcolumn")
+        FOUND_GTOOL=1
+    else
+        echo "Error: The 'column' command is not installed." >&2
+        echo "It is required to properly format the 'star list' output." >&2
+        echo "Please install it." >&2
+        return 1
+    fi
+
+    # g-prefixed binary is not good, need unprefixed version
+    if [[ "$FOUND_GTOOL" -eq 1 ]]; then
+        echo "Error: The 'column' command is installed, but it is prefixed with 'g'." >&2
+        echo "If it was installed using Homebrew, you can add the following to your shell configuration file to fix the issue:" >&2
+        echo "" >&2
+        echo "    export PATH=\"\$(brew --prefix)/opt/util-linux/bin:\$PATH\"" >&2
+        echo "" >&2
+        echo "Do not forget to source your shell configuration file again." >&2
+        return 1
+    fi
+
+    # check if it supports the -s and -t options
+    # - option -t displays output in table format
+    # - option -s specifies the column separator
+    # Both of those options are used by the default column command.
+    # Normally, default column versions on GNU and MacOS support those options.
+    if ! "$BIN" -s $'\t' -t <<< $'col1\tcol2' >/dev/null 2>&1; then
+        echo "Error: The 'column' command does not support the required options '-s' and '-t'." >&2
+        echo "Please install a version of 'column' that supports those options." >&2
+        return 1
+    fi
+
+    return 0
+}
+
+# Track overall errors
+overall_errors=0
+
+# Check each package with its dependencies
+if ! check_column_command; then
+    overall_errors=$((overall_errors + 1))
+fi
+
+if ! check_package "findutils" "find"; then
+    overall_errors=$((overall_errors + 1))
+fi
+
+# we do not check "echo" from coreutils, as other implementations (like the one on macOS) should be sufficient
+if ! check_package "coreutils" "basename" "cp" "mv" "env" "ln" "realpath" "sort" "tr"; then
+    overall_errors=$((overall_errors + 1))
+fi
+
+# Exit with error if any package check failed
+if [[ $overall_errors -gt 0 ]]; then
+    echo "Error: One or more required packages/commands are missing or misconfigured." >&2
+    exit 1
+fi

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+usage() {
+    cat << EOF
+Usage: star-prune
+
+    Remove all broken symlinks in ${_STAR_DATA_HOME}/stars.
+    A broken symlink corresponds to a starred directory that does not exist anymore.
+EOF
+}
+
+main() {
+    if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
+        return 0
+    fi
+
+    local broken_stars_name bl line
+
+    broken_stars_name=()
+
+    while IFS= read -r line; do
+        # Extract just the star name from each line
+        broken_stars_name+=("$line")
+    # done < <(find "$DIR" -xtype l -printf "%f\n")
+    done < <("${_STAR_HOME}/libexec/star/star-list" --broken)
+
+    # return if no broken link was found
+    if [[ ${#broken_stars_name[@]} -le 0 ]]; then
+        return 0
+    fi
+
+    # else remove each broken link
+    for bl in "${broken_stars_name[@]}"; do
+        command rm "${_STAR_DATA_HOME}/stars/${bl}" || return
+    done
+}
+
+main "$@"

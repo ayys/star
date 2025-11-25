@@ -1,0 +1,138 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+jobs:
+  bash:
+    runs-on: ubuntu-latest
+    container:
+      image: bash:${{ matrix.bash_version }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        bash_version: ["3.2", "4.0", "5.2"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        id: setup
+        run: |
+          apk add --no-cache git findutils util-linux coreutils tree
+
+          git clone https://github.com/bats-core/bats-core.git
+          ./bats-core/install.sh /usr/local
+
+      - name: Core tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/bash"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/core
+
+      - name: Integration tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/bash"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/integration
+
+      - name: Environment variables tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/bash"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/envvars
+
+      - name: Performance tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/bash"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/perf
+        continue-on-error: true
+
+  zsh:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 5.7.1 is first ship of ZSH as MacOS default shell
+        zsh_version: ["4.2.0", "5.1", "5.7.1", "5.8", "5.9"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install zsh-${{ matrix.zsh_version }}
+        shell: 'script -q -e -c "bash {0}"' # trick to run as tty
+        run: |
+          zsh_version="${{ matrix.zsh_version }}"
+          # if zsh >= 5.0.8 then the archive has format .tar.xz
+          # else the archive has format .tar.gz
+          if [[ "$(echo -e "${zsh_version}\n5.0.8" | sort | head -n 1)" == "5.0.8" ]]; then
+            wget -O zsh-${zsh_version}.tar.xz https://sourceforge.net/projects/zsh/files/zsh/${zsh_version}/zsh-${zsh_version}.tar.xz/download
+            tar -xf zsh-${zsh_version}.tar.xz
+          else
+            wget -O zsh-${zsh_version}.tar.gz https://sourceforge.net/projects/zsh/files/zsh/${zsh_version}/zsh-${zsh_version}.tar.gz/download
+            tar -xzf zsh-${zsh_version}.tar.gz
+          fi
+          cd zsh-${zsh_version}
+          ./configure
+          make -j4
+          sudo make install
+
+      - name: Install dependencies
+        id: setup
+        run: |
+          sudo apt update
+          sudo apt install tree -y
+
+          git clone https://github.com/bats-core/bats-core.git
+          sudo ./bats-core/install.sh /usr/local
+
+      - name: Core tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/zsh"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/core
+    
+      - name: Integration tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/zsh"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/integration
+
+      - name: Environment variables tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/zsh"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/envvars
+
+      - name: Performance tests
+        if: ${{ steps.setup.outcome == 'success' && always() }}
+        run: |
+          SHELL_PATH="/usr/local/bin/zsh"
+          echo "Running with $SHELL_PATH"
+          $SHELL_PATH --version
+          TEST_SHELL="$SHELL_PATH" bats tests/perf
+        continue-on-error: true

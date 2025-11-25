@@ -1,0 +1,320 @@
+#!/usr/bin/env bash
+
+usage() {
+    cat << EOF
+Usage: star-list [LIST_MODE] [OPTIONS]...
+       star-list ITEM_MODE
+
+    List stars in \${_STAR_DATA_HOME}/stars.
+
+    LIST_MODE: Display the starred directories. List modes are exclusives.
+        -f, --format=FORMAT     Default mode, to print with a custom format.
+        -n, --names             Only print the star's names.
+        -p, --paths             Only print the star's paths.
+
+        OPTIONS: Changes how the stars are listed.
+            -s, --sort={name|loaded|none}   Default: loaded.
+            -o, --order={desc|asc}          Default: desc.
+            -i, --index={none|desc|asc}     Only with "--format". Default: asc.
+            -b, --broken                    Only search for broken symlinks.
+
+        FORMAT:
+        The format value will be passed to the "printf" option of GNU find, meaning its formatting can be used, e.g.:
+            %f  file's name
+            %l  file's symlink target (i.e. absolute path of the star)
+        This script also provides the following placeholders that can be used in the format string:
+            <INDEX>     will be replaced by an index
+            <BR>        column separator (it is effectively replaced by a tab character, that the default "column" command uses as separator)
+            <COLNAME>   color for star names (replaced by value of \$__STAR_COLOR_NAME)
+            <COLPATH>   color for star paths (replaced by value of \$__STAR_COLOR_PATH)
+            <COLRESET>  default color (replaced by value of \$__STAR_COLOR_RESET)
+    
+    ITEM_MODE: To retrieve a single bit of information.
+        -P, --get-path=NAME     Get the path of a star according to its name. Slashes should have been replaced by the separator.
+        -N, --get-name=PATH     Get the name of a star according to its path
+EOF
+}
+
+MAX_DEPTH=1
+
+### Possible values for options ###
+MODE_NAMES="names"
+MODE_PATHS="paths"
+MODE_CUSTOM_FORMAT="custom-format"
+MODE_GET_PATH="get-path"
+MODE_GET_NAME="get-name"
+
+SORT_NAME="name"
+SORT_LOADED="loaded"
+SORT_NONE="none"
+
+ORDER_DESC="desc"
+ORDER_ASC="asc"
+
+INDEX_NONE="none"
+INDEX_DESC="desc"
+INDEX_ASC="asc"
+
+
+### Default values ###
+MODE=$MODE_CUSTOM_FORMAT
+
+. "${_STAR_HOME}/libexec/star/star-setcolors.sh"
+
+FORMAT=${__STAR_LIST_FORMAT:-"<INDEX>:<BR><COLNAME>%f<COLRESET><BR>-><BR><COLPATH>%l<COLRESET>"}
+
+# <BR> placeholder represents a separator between columns
+# We effectively replace it by a tab character, because it will not appear in file names,
+# whereas splitting by spaces could lead to issues with file names containing spaces
+FORMAT=${FORMAT//<BR>/$'\t'}
+
+# Replace color placeholders
+FORMAT=${FORMAT//<COLNAME>/"${__STAR_COLOR_NAME}"}
+FORMAT=${FORMAT//<COLPATH>/"${__STAR_COLOR_PATH}"}
+FORMAT=${FORMAT//<COLRESET>/"${__STAR_COLOR_RESET}"}
+
+# determined which column command to use
+if [[ -z "$__STAR_LIST_FORMAT" ]] || [[ -z "$__STAR_LIST_COLUMN_COMMAND" ]]; then
+    # if default format is used OR custom format is used but no column command provided,
+    # then use default column command
+    COLUMN_COMMAND="command column -t -s $'\t'"
+else
+    # custom format and custom column command are used
+    COLUMN_COMMAND="${__STAR_LIST_COLUMN_COMMAND}"
+fi
+SORT=${__STAR_LIST_SORT:-"$SORT_LOADED"}
+ORDER=${__STAR_LIST_ORDER:-"$ORDER_DESC"}
+INDEX=${__STAR_LIST_INDEX:-"$INDEX_ASC"}
+
+if [[ -z "${_STAR_DATA_HOME}" ]]; then
+    echo "[star-list] Error: _STAR_DATA_HOME is not set." 1>&2
+    exit 2
+fi
+
+DIR="${_STAR_DATA_HOME}/stars"
+
+# by default, search for non broken symlinks
+TYPE_TEST="-type l -not -xtype l"
+
+list_stars() {
+    if [[ $# -lt 1 ]]; then
+        return 1
+    fi
+    local custom_format="$1"
+
+    if [[ "$SORT" == "$SORT_NONE" ]]; then
+        find "$DIR" -maxdepth "$MAX_DEPTH" $TYPE_TEST -printf "$format"
+        return $?
+    fi
+
+    local format=""
+    local sort_options="--numeric-sort"
+
+    # the sort is applied to the first "column"
+    # this column is delimited by the first whitespace, and will be removed before printing
+    case $SORT in
+        "$SORT_LOADED" ) format="%As $format" ;;
+        "$SORT_NAME" ) format="%f $format" ;;
+    esac
+
+    # one result per line
+    format="$format $custom_format\n"
+
+    # apply the sort order
+    # by default, sorting with numeric values (last loaded time) is smaller number to higher,
+    # but we want a descending order, so we need to reverse it if sort=loaded and order is desc
+    if [[ "$SORT" == "$SORT_LOADED" && "$ORDER" == "$ORDER_DESC" 
+        || "$SORT" == "$SORT_NAME" && "$ORDER" == "$ORDER_ASC" ]]; then
+        sort_options="$sort_options  --reverse"
+    fi
+
+    find "$DIR" -maxdepth "$MAX_DEPTH" $TYPE_TEST -printf "$format" | sort $sort_options | cut -d' ' -f3-
+}
+
+list_names() {
+    list_stars "%f"
+}
+
+list_paths() {
+    list_stars "%l"
+}
+
+list_custom_format() {
+    if [[ "$FORMAT" == *"<INDEX>"* ]]; then
+        local stars=()
+        while IFS= read -r; do
+            stars+=("$REPLY")
+        done < <(list_stars "$FORMAT")
+
+        if [[ "$INDEX" == "$INDEX_NONE" ]]; then
+            for s in "${stars[@]}"; do
+                echo "${s//<INDEX>/""}"
+            done
+        else
+            local index
+            if [[ "$INDEX" == "$INDEX_ASC" ]]; then
+                index=1
+            else
+                index="${#stars[@]}"
+            fi
+
+            for s in "${stars[@]}"; do
+                echo "${s//<INDEX>/$index}"
+                if [[ "$INDEX" == "$INDEX_ASC" ]]; then
+                    ((index++))
+                else
+                    ((index--))
+                fi
+            done
+        fi
+    else
+        list_stars "$FORMAT"
+    fi
+}
+
+get_item_name() {
+    list_stars "%f %l\n" | grep " ${GET_NAME}$" | head -n1 | cut -d' ' -f1
+}
+
+get_item_path() {
+    list_stars "%f %l\n" | grep "^${GET_PATH} " | head -n1 | cut -d' ' -f2-
+}
+
+main() {
+    local value
+    # character used to replace slashes in the star names
+    local star_dir_separator="»"
+
+    if [[ ! -d "${DIR}" ]]; then
+        return 0
+    fi
+
+    while [[ $# -gt 0 ]]; do
+        opt="$1";
+        shift;
+        case "$opt" in
+            "-h"|"--help")
+                usage
+                exit 0
+            ;;
+            "-f"|"--format="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+                FORMAT="$value"
+                MODE=$MODE_CUSTOM_FORMAT
+                ;;
+            "-p"|"--paths" )
+                MODE=$MODE_PATHS
+                ;;
+            "-n"|"--names" )
+                MODE=$MODE_NAMES
+                ;;
+            "-P"|"--get-path="*)
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+                GET_PATH="$value"
+                MODE=$MODE_GET_PATH
+                ;;
+            "-N"|"--get-name="*)
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+                GET_NAME="$value"
+                MODE=$MODE_GET_NAME
+                ;;
+            "-s"|"--sort="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ "$value" != "$SORT_NAME" && "$value" != "$SORT_LOADED" && "$value" != "$SORT_NONE" ]]; then
+                    echo "Invalid sort value: $value"
+                    usage
+                    exit 1
+                fi
+                SORT="$value"
+                ;;
+            "-o"|"--order="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ "$value" != "$ORDER_DESC" && "$value" != "$ORDER_ASC" ]]; then
+                    echo "Invalid order value: $value"
+                    usage
+                    exit 1
+                fi
+                ORDER="$value"
+                ;;
+            "-i"|"--index="* )
+                if [[ ${#opt} -eq 2 ]]; then
+                    value="$1"
+                    shift
+                else
+                    value="${opt#*=}"
+                fi
+
+                if [[ "$value" != "$INDEX_DESC" && "$value" != "$INDEX_ASC" && "$value" != "$INDEX_NONE" ]]; then
+                    echo "Invalid index value: $value"
+                    usage
+                    exit 1
+                fi
+                INDEX="$value"
+                ;;
+            "-b"|"--broken" )
+                MODE="$MODE_NAMES"
+                TYPE_TEST="-xtype l"
+                ;;
+            *)
+                echo "Invalid option/argument: $opt"
+                usage
+                exit 1
+                ;;
+        esac
+    done
+
+    case "$MODE" in
+        "$MODE_NAMES" )
+            list_names
+            exit $?
+            ;;
+        "$MODE_PATHS" )
+            list_paths
+            exit $?
+            ;;
+        "$MODE_CUSTOM_FORMAT" )
+            local stars_list_str
+            if ! stars_list_str=$(list_custom_format); then
+                exit $?
+            fi
+            echo "${stars_list_str//${star_dir_separator}//}" | eval "${COLUMN_COMMAND}"
+            ;;
+        "$MODE_GET_NAME" )
+            get_item_name
+            exit $?
+            ;;
+        "$MODE_GET_PATH" )
+            get_item_path
+            exit $?
+            ;;
+    esac
+}
+
+main "$@"
