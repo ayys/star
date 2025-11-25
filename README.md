@@ -459,6 +459,10 @@ Contributions are welcome! Please submit [issues](https://github.com/Fruchame/st
 ### Future work
 
 #### Features  <!-- omit from toc -->
+- [ ] Add a standalone script that can be sourced an have the same functionalities  
+  Note: this would be a pretty ugly script with a LOT of lines, but it would be interesting to be able to have only a single script to source in some cases.
+  - [ ] Maybe this script can be automatically built?
+  - [ ] Standalone would not be included in classic releases, and would have a specific release archive with only the standalone
 - [ ] Add setting for `star-purge`: automatically remove stars (auto), ask for user confirmation (ask), never remove stars (never)
   - [ ] Add a way to ignore some directories from being purged (e.g., using a `.starignore` file)
 - [ ] Implement a pure bash version of `column` that implements options `-t` and `-s`
@@ -468,6 +472,11 @@ Contributions are welcome! Please submit [issues](https://github.com/Fruchame/st
 #### Improvements  <!-- omit from toc -->
 - [ ] Replace echo -e with printf for better portability
 - [ ] Output all errors into stderr instead of stdout
+- [ ] Refactor the code to reduce the number of small dependency scripts (in the `libexec` directory)
+- [ ] Try to put as much code as possible in the star binary (and not the function) and benchmark the difference  
+  The idea would be to have a smaller wrapper function: the wrapper is usually smaller than the binary, here it is the opposite. The binary is almost only use to initialize the "wrapper" itself (hence it is not really a wrapper, just a shell function).
+  - [ ] If the performance is the same, put the code in the binary
+  - [ ] If the performance is worse, keep it in the star function
 
 #### Tests  <!-- omit from toc -->
 - [ ] Complete the tests for `star list` to test all options and combinations
