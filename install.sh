@@ -184,8 +184,9 @@ init_manifest() {
 				*) echo "Not a valid answer.";;
 			esac
 		done
-		rm "$MANIFEST"
+		rm "$DESTMANIFEST"
 	fi
+	rm "$MANIFEST"
 	touch "$MANIFEST"
 }
 
@@ -199,7 +200,7 @@ install_files() {
 	install_file 644 "$SOURCEDIR/libexec/star/star-setcolors.sh" "$LIBEXECDIR" "star-setcolors.sh"
 
 	install_file 644 "$SOURCEDIR/share/star/VERSION" "$SHAREDIR" "VERSION"
-	install_file 644 "$SOURCEDIR/uninstall.sh" "$SHAREDIR" "uninstall.sh"
+	install_file 755 "$SOURCEDIR/uninstall.sh" "$SHAREDIR" "uninstall.sh"
 	install_file 644 "$SOURCEDIR/share/star/completion/star.bash" "$SHAREDIR" "completion/star.bash"
 	install_file 644 "$SOURCEDIR/share/star/config/star_config.sh.template" "$SHAREDIR" "config/star_config.sh.template"
 	install_file 644 "$SOURCEDIR/share/star/init/star.bash" "$SHAREDIR" "init/star.bash"
