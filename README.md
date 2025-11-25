@@ -1,6 +1,6 @@
 # star <!-- omit from toc -->
 
-star is an (over-engineered) Unix command line bookmark manager. Dynamically star your favorite folders and instantly navigate (cd) to them.
+star is a (slightly over-engineered) Unix command line bookmark manager. Dynamically star your favorite folders and instantly navigate (cd) to them.
 
 It is written in Bash, but can be used with Zsh as long as there is an available Bash version (>= 3.2) (the autocompletion uses bash features even for Zsh).
 
@@ -263,6 +263,10 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
 
 ### Requirements
 
+> Before anything, an important note is that there already exist another CLI tool named `star`, from [Jörg Schilling's schilytools](https://codeberg.org/schilytools/schilytools). Its source code is available [here](https://codeberg.org/schilytools/schilytools/src/branch/master/star) and [here](https://github.com/Projeto-Pindorama/star).  
+> Is you have installed this tool (or any other command line tool named `star`), installing this star software will shadow the other tools.  
+> There is currently no clean way to make two different star software work together.
+
 To enable `star` to work properly, ensure your system meets the requirements:
 - package `GNU coreutils` (for `realpath`, `printf`, `mkdir`, `rm`, `mv`, `cp`, `echo`, etc.)
 - package `GNU findutils` (for `find`)
@@ -332,8 +336,17 @@ cd star
 # Automatically add bin and initialize star
 [[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"
 eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
+```
 
-# Do not forget to also add those commands to your ~/.bashrc or ~/.zshrc
+To quickly add those commands to your ~/.bashrc:
+```sh
+echo '[[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.bashrc
+```
+or ~/.zshrc:
+```sh
+echo '[[ ":${PATH}:" =~ ":$HOME/.local/bin:" ]] || export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.zshrc
 ```
 
 #### Recommended system installation (from source) <!-- omit from toc -->
@@ -350,6 +363,18 @@ eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"
 
 # Any user that would want to use star would have to add those commands to their ~/.bashrc or ~/.zshrc
 ```
+
+To quickly add those commands to your ~/.bashrc:
+```sh
+echo '[[ ":${PATH}:" =~ ":/usr/local/bin:" ]] || export PATH="/usr/local/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.bashrc
+```
+or ~/.zshrc:
+```sh
+echo '[[ ":${PATH}:" =~ ":/usr/local/bin:" ]] || export PATH="/usr/local/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(command star init "$([[ -n $BASH_VERSION ]] && echo bash || echo zsh)")"' >> ~/.zshrc
+```
+
 
 ### Uninstalling
 
@@ -436,6 +461,9 @@ Contributions are welcome! Please submit [issues](https://github.com/Fruchame/st
 #### Features  <!-- omit from toc -->
 - [ ] Add setting for `star-purge`: automatically remove stars (auto), ask for user confirmation (ask), never remove stars (never)
   - [ ] Add a way to ignore some directories from being purged (e.g., using a `.starignore` file)
+- [ ] Implement a pure bash version of `column` that implements options `-t` and `-s`
+  - [ ] Can either be in the `bin` directory, or `libexec` (depending on if we want the user to be able to use it)
+  - [ ] add a `--with-column`/`--without-column` configure option, to install and use this one (or not) by default
 
 #### Improvements  <!-- omit from toc -->
 - [ ] Replace echo -e with printf for better portability
