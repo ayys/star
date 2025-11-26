@@ -267,7 +267,7 @@ star()
             local dst_name dst_name_slash dst_basename existing_star existing_star_display
 
             if [[ ! -d "${_STAR_DATA_HOME}/stars" ]]; then
-                command mkdir "${_STAR_DATA_HOME}/stars"
+                command mkdir -p "${_STAR_DATA_HOME}/stars"
             fi
 
             if [[ ! "${star_to_store}" == "" ]]; then
