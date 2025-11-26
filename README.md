@@ -66,6 +66,11 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
   <div align="left">
     <img width="591" height="502" alt="envvars" src="https://github.com/user-attachments/assets/096a7078-0e11-4b48-933d-44304ae480af" />
   </div>
+
+#### More information <!-- omit from toc -->
+- The environment variables are only exported if they do not overwrite an already existing environment variable that is not related to star
+- This feature can be disabled (see [Enabling/disabling features](#enablingdisabling-features))
+
 </details>
 
 <details>
@@ -91,6 +96,10 @@ https://github.com/user-attachments/assets/a3917ccf-4a6a-424d-a729-24860235c83f
   <div align="left">
     <img width="524" height="351" alt="aliases" src="https://github.com/user-attachments/assets/0ee83ce3-fc4c-4a07-9601-1d86dca45ce0" />
   </div>
+
+#### More information <!-- omit from toc -->
+- This feature can be disabled (see [Enabling/disabling features](#enablingdisabling-features))
+
 </details>
 
 <details>
