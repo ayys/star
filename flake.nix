@@ -2,7 +2,7 @@
   description = "A Unix command line bookmark manager.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-25.11";
     flakeutils.url = "github:numtide/flake-utils";
   };
 
